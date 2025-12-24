@@ -29,6 +29,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -37,8 +44,8 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import ConfirmPasswordDialog from "@/components/ConfirmPasswordDialog";
 import { useAdminAuth } from "@/context/AdminAuthContext";
-import type { Batch, Exam, User } from "@/lib/types";
-import { PlusCircle } from "lucide-react";
+import type { Batch, Exam, User, SubjectConfig } from "@/lib/types";
+import { PlusCircle, ListChecks } from "lucide-react";
 import { EditExamModal } from "@/components/EditExamModal";
 import { CSVUploadComponent, CustomLoader } from "@/components";
 import QuestionSelector from "@/components/QuestionSelector";
@@ -57,7 +64,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
+import { combineDhakaDateTime, getCurrentDhakaTime } from "@/lib/utils";
 
 interface BatchDetailsClientProps {
   initialBatch: Batch;
@@ -125,6 +132,14 @@ export function BatchDetailsClient({
   const [useQuestionBank, setUseQuestionBank] = useState(false);
   const [fileId, setFileId] = useState("");
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
+  
+  // Creation Form Subject Configs
+  const [mandatorySubjectConfigs, setMandatorySubjectConfigs] = useState<SubjectConfig[]>([]);
+  const [optionalSubjectConfigs, setOptionalSubjectConfigs] = useState<SubjectConfig[]>([]);
+  const [activeSubjectSelection, setActiveSubjectSelection] = useState<{
+    id: string;
+    type: "mandatory" | "optional";
+  } | null>(null);
 
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [startHour, setStartHour] = useState("12");
@@ -144,33 +159,66 @@ export function BatchDetailsClient({
 
   useEffect(() => {
     if (mode === "live") {
-      const now = new Date();
-      setStartDate(now);
-      const currentHour = now.getHours();
-      setStartPeriod(currentHour >= 12 ? "PM" : "AM");
-      setStartHour(
-        (currentHour % 12 === 0 ? 12 : currentHour % 12)
-          .toString()
-          .padStart(2, "0"),
-      );
-      setStartMinute(now.getMinutes().toString().padStart(2, "0"));
+      const dhakaNow = getCurrentDhakaTime();
+      setStartDate(dhakaNow);
+      
+      let h = dhakaNow.getHours();
+      const p = h >= 12 ? "PM" : "AM";
+      h = h % 12;
+      h = h === 0 ? 12 : h;
+      
+      setStartPeriod(p);
+      setStartHour(h.toString().padStart(2, "0"));
+      setStartMinute(dhakaNow.getMinutes().toString().padStart(2, "0"));
 
-      const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-      setEndDate(oneHourLater);
-      const endHour24 = oneHourLater.getHours();
-      setEndPeriod(endHour24 >= 12 ? "PM" : "AM");
-      setEndHour(
-        (endHour24 % 12 === 0 ? 12 : endHour24 % 12)
-          .toString()
-          .padStart(2, "0"),
-      );
-      setEndMinute(oneHourLater.getMinutes().toString().padStart(2, "0"));
+      const dhakaEnd = new Date(dhakaNow.getTime() + 60 * 60 * 1000);
+      setEndDate(dhakaEnd);
+      
+      let eh = dhakaEnd.getHours();
+      const ep = eh >= 12 ? "PM" : "AM";
+      eh = eh % 12;
+      eh = eh === 0 ? 12 : eh;
+      
+      setEndPeriod(ep);
+      setEndHour(eh.toString().padStart(2, "0"));
+      setEndMinute(dhakaEnd.getMinutes().toString().padStart(2, "0"));
     }
   }, [mode]);
 
   const handleNumberInput = (e: FormEvent<HTMLInputElement>) => {
     const input = e.target as HTMLInputElement;
     input.value = bengaliToEnglishNumber(input.value);
+  };
+
+  const handleSubjectToggle = (subjectId: string, type: "mandatory" | "optional", checked: boolean) => {
+    if (type === "mandatory") {
+      setMandatorySubjectConfigs(prev => {
+        if (checked) {
+          return [...prev, { id: subjectId, count: 0, question_ids: [], type: "mandatory" }];
+        }
+        return prev.filter(s => s.id !== subjectId);
+      });
+    } else {
+      setOptionalSubjectConfigs(prev => {
+        if (checked) {
+          return [...prev, { id: subjectId, count: 0, question_ids: [], type: "optional" }];
+        }
+        return prev.filter(s => s.id !== subjectId);
+      });
+    }
+  };
+
+  const updateSubjectConfig = (
+    subjectId: string, 
+    type: "mandatory" | "optional", 
+    field: keyof SubjectConfig, 
+    value: string | number | string[]
+  ) => {
+    const updater = (prev: SubjectConfig[]) => 
+      prev.map(s => s.id === subjectId ? { ...s, [field]: value } : s);
+      
+    if (type === "mandatory") setMandatorySubjectConfigs(updater);
+    else setOptionalSubjectConfigs(updater);
   };
 
   const requestDeleteExam = (examId: string, examName?: string) => {
@@ -309,29 +357,6 @@ export function BatchDetailsClient({
     setIsSubmittingStudent(false);
   };
 
-  const combineDateTime = (
-    date?: Date,
-    hour?: string,
-    minute?: string,
-    period?: "AM" | "PM",
-  ) => {
-    if (!date || !hour || !minute || !period) return null;
-    let h24 = parseInt(hour, 10);
-    if (period === "PM" && h24 !== 12) {
-      h24 += 12;
-    }
-    if (period === "AM" && h24 === 12) {
-      h24 = 0;
-    }
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(h24).padStart(2, "0");
-    const mins = String(minute).padStart(2, "0");
-
-    return `${year}-${month}-${day} ${hours}:${mins}:00`;
-  };
-
   if (!batch) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -409,13 +434,13 @@ export function BatchDetailsClient({
                     if (batch_id) {
                       formData.append("batch_id", batch_id);
                     }
-                    const startAtISO = combineDateTime(
+                    const startAtISO = combineDhakaDateTime(
                       startDate,
                       startHour,
                       startMinute,
                       startPeriod,
                     );
-                    const endAtISO = combineDateTime(
+                    const endAtISO = combineDhakaDateTime(
                       endDate,
                       endHour,
                       endMinute,
@@ -424,9 +449,21 @@ export function BatchDetailsClient({
                     if (startAtISO) formData.set("start_at", startAtISO);
                     if (endAtISO) formData.set("end_at", endAtISO);
 
+                    // Aggregate all question IDs
+                    const allQuestionIds = new Set<string>(selectedQuestionIds);
+
+                    if (isCustomExam) {
+                      mandatorySubjectConfigs.forEach(s => s.question_ids?.forEach(qid => allQuestionIds.add(qid)));
+                      optionalSubjectConfigs.forEach(s => s.question_ids?.forEach(qid => allQuestionIds.add(qid)));
+                      
+                      // Serialize subject configs
+                      formData.set("mandatory_subjects", JSON.stringify(mandatorySubjectConfigs));
+                      formData.set("optional_subjects", JSON.stringify(optionalSubjectConfigs));
+                    }
+
                     formData.set(
                       "question_ids",
-                      JSON.stringify(selectedQuestionIds),
+                      JSON.stringify(Array.from(allQuestionIds)),
                     );
 
                     const result = await createExam(formData);
@@ -434,6 +471,8 @@ export function BatchDetailsClient({
                       toast({ title: "পরীক্ষা সফলভাবে যোগ করা হয়েছে" });
                       addExamFormRef.current?.reset();
                       setSelectedQuestionIds([]);
+                      setMandatorySubjectConfigs([]);
+                      setOptionalSubjectConfigs([]);
                       setIsAddExamOpen(false);
                       // Update exams list immediately
                       if (result.data) {
@@ -655,43 +694,47 @@ export function BatchDetailsClient({
                       value={mode === "practice" ? "true" : "false"}
                     />
                     <input type="hidden" name="file_id" value={fileId} />
+                    
+                    {!isCustomExam && (
+                        <>
+                            <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                id="use-question-bank-toggle-batch"
+                                checked={useQuestionBank}
+                                onCheckedChange={(checked) =>
+                                    setUseQuestionBank(checked as boolean)
+                                }
+                                />
+                                <Label htmlFor="use-question-bank-toggle-batch">
+                                প্রশ্ন ব্যাংক থেকে প্রশ্ন বাছুন
+                                </Label>
+                            </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="use-question-bank-toggle-batch"
-                          checked={useQuestionBank}
-                          onCheckedChange={(checked) =>
-                            setUseQuestionBank(checked as boolean)
-                          }
-                        />
-                        <Label htmlFor="use-question-bank-toggle-batch">
-                          প্রশ্ন ব্যাংক থেকে প্রশ্ন বাছুন
-                        </Label>
-                      </div>
+                            {useQuestionBank && (
+                                <div className="pt-2">
+                                <QuestionSelector
+                                    selectedIds={selectedQuestionIds}
+                                    onChange={setSelectedQuestionIds}
+                                    minimal
+                                />
+                                </div>
+                            )}
+                            </div>
 
-                      {useQuestionBank && (
-                        <div className="pt-2">
-                          <QuestionSelector
-                            selectedIds={selectedQuestionIds}
-                            onChange={setSelectedQuestionIds}
-                            minimal
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-6">
-                      <h3 className="text-lg font-medium mb-3">
-                        Or upload questions from CSV
-                      </h3>
-                      <CSVUploadComponent
-                        isBank={false}
-                        onUploadSuccess={(result) => {
-                          setFileId((result.file_id as string) || "");
-                        }}
-                      />
-                    </div>
+                            <div className="mt-6">
+                            <h3 className="text-lg font-medium mb-3">
+                                Or upload questions from CSV
+                            </h3>
+                            <CSVUploadComponent
+                                isBank={false}
+                                onUploadSuccess={(result) => {
+                                setFileId((result.file_id as string) || "");
+                                }}
+                            />
+                            </div>
+                        </>
+                    )}
                   </div>
 
                   <div className="flex items-center space-x-4 pt-2">
@@ -734,45 +777,109 @@ export function BatchDetailsClient({
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label>দাগানো বাধ্যতামূলক</Label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                          {subjects.map((subject) => (
-                            <div
-                              key={`mandatory-batch-${subject.id}`}
-                              className="flex items-center space-x-2"
-                            >
-                              <Checkbox
-                                id={`mandatory-batch-${subject.id}`}
-                                name="mandatory_subjects"
-                                value={subject.id}
-                              />
-                              <Label htmlFor={`mandatory-batch-${subject.id}`}>
-                                {subject.name} ({subject.id})
-                              </Label>
-                            </div>
-                          ))}
+                      <div className="space-y-4">
+                        <Label className="text-base font-bold">দাগানো বাধ্যতামূলক (Mandatory)</Label>
+                        <div className="space-y-3">
+                          {subjects.map((subject) => {
+                             const isSelected = mandatorySubjectConfigs.some(s => s.id === subject.id);
+                             const config = mandatorySubjectConfigs.find(s => s.id === subject.id);
+
+                             return (
+                               <div key={`mandatory-batch-${subject.id}`} className={`p-3 rounded-lg border ${isSelected ? 'bg-primary/5 border-primary/20' : 'bg-background'}`}>
+                                 <div className="flex items-center space-x-2 mb-2">
+                                   <Checkbox
+                                     id={`mandatory-batch-${subject.id}`}
+                                     value={subject.id}
+                                     checked={isSelected}
+                                     onCheckedChange={(checked) => handleSubjectToggle(subject.id, "mandatory", checked as boolean)}
+                                   />
+                                   <Label htmlFor={`mandatory-batch-${subject.id}`} className="font-semibold text-sm">
+                                     {subject.name}
+                                   </Label>
+                                 </div>
+                                 
+                                 {isSelected && config && (
+                                   <div className="pl-6 space-y-2">
+                                      <div className="flex items-center gap-2">
+                                        <Input 
+                                          type="number" 
+                                          placeholder="প্রশ্ন সংখ্যা" 
+                                          className="h-8 w-32 text-xs"
+                                          value={config.count || ""}
+                                          onChange={(e) => updateSubjectConfig(subject.id, "mandatory", "count", parseInt(e.target.value) || 0)}
+                                        />
+                                        <span className="text-xs text-muted-foreground">টি প্রশ্ন</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Button 
+                                          type="button" 
+                                          variant="outline" 
+                                          size="sm" 
+                                          className="h-8 text-xs"
+                                          onClick={() => setActiveSubjectSelection({ id: subject.id, type: "mandatory" })}
+                                        >
+                                          <ListChecks className="w-3 h-3 mr-1" />
+                                          প্রশ্ন বাছুন ({config.question_ids?.length || 0})
+                                        </Button>
+                                      </div>
+                                   </div>
+                                 )}
+                               </div>
+                             );
+                          })}
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label>অন্যান্য বিষয়</Label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                          {subjects.map((subject) => (
-                            <div
-                              key={`optional-batch-${subject.id}`}
-                              className="flex items-center space-x-2"
-                            >
-                              <Checkbox
-                                id={`optional-batch-${subject.id}`}
-                                name="optional_subjects"
-                                value={subject.id}
-                              />
-                              <Label htmlFor={`optional-batch-${subject.id}`}>
-                                {subject.name} ({subject.id})
-                              </Label>
-                            </div>
-                          ))}
+                      <div className="space-y-4">
+                        <Label className="text-base font-bold">অন্যান্য বিষয় (Optional)</Label>
+                        <div className="space-y-3">
+                          {subjects.map((subject) => {
+                             const isSelected = optionalSubjectConfigs.some(s => s.id === subject.id);
+                             const config = optionalSubjectConfigs.find(s => s.id === subject.id);
+
+                             return (
+                               <div key={`optional-batch-${subject.id}`} className={`p-3 rounded-lg border ${isSelected ? 'bg-secondary/5 border-secondary/20' : 'bg-background'}`}>
+                                 <div className="flex items-center space-x-2 mb-2">
+                                   <Checkbox
+                                     id={`optional-batch-${subject.id}`}
+                                     value={subject.id}
+                                     checked={isSelected}
+                                     onCheckedChange={(checked) => handleSubjectToggle(subject.id, "optional", checked as boolean)}
+                                   />
+                                   <Label htmlFor={`optional-batch-${subject.id}`} className="font-semibold text-sm">
+                                     {subject.name}
+                                   </Label>
+                                 </div>
+                                 
+                                 {isSelected && config && (
+                                   <div className="pl-6 space-y-2">
+                                      <div className="flex items-center gap-2">
+                                        <Input 
+                                          type="number" 
+                                          placeholder="প্রশ্ন সংখ্যা" 
+                                          className="h-8 w-32 text-xs"
+                                          value={config.count || ""}
+                                          onChange={(e) => updateSubjectConfig(subject.id, "optional", "count", parseInt(e.target.value) || 0)}
+                                        />
+                                        <span className="text-xs text-muted-foreground">টি প্রশ্ন</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Button 
+                                          type="button" 
+                                          variant="outline" 
+                                          size="sm" 
+                                          className="h-8 text-xs"
+                                          onClick={() => setActiveSubjectSelection({ id: subject.id, type: "optional" })}
+                                        >
+                                          <ListChecks className="w-3 h-3 mr-1" />
+                                          প্রশ্ন বাছুন ({config.question_ids?.length || 0})
+                                        </Button>
+                                      </div>
+                                   </div>
+                                 )}
+                               </div>
+                             );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -923,6 +1030,39 @@ export function BatchDetailsClient({
           );
         }}
       />
+      
+      {/* Secondary Dialog for Subject Question Selection (Creation Mode) */}
+      <Dialog open={!!activeSubjectSelection} onOpenChange={(open) => !open && setActiveSubjectSelection(null)}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0">
+          <DialogHeader className="p-4 border-b shrink-0">
+             <DialogTitle>
+                {activeSubjectSelection && subjects.find(s => s.id === activeSubjectSelection.id)?.name} - প্রশ্ন নির্বাচন
+             </DialogTitle>
+             <DialogDescription>
+                এই বিষয়ের জন্য প্রশ্ন নির্বাচন করুন
+             </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden p-4">
+             {activeSubjectSelection && (
+               <QuestionSelector
+                  selectedIds={
+                    (activeSubjectSelection.type === "mandatory" 
+                      ? mandatorySubjectConfigs.find(s => s.id === activeSubjectSelection.id)?.question_ids 
+                      : optionalSubjectConfigs.find(s => s.id === activeSubjectSelection.id)?.question_ids) || []
+                  }
+                  onChange={(ids) => {
+                     updateSubjectConfig(activeSubjectSelection.id, activeSubjectSelection.type, "question_ids", ids);
+                  }}
+               />
+             )}
+          </div>
+          <div className="p-4 border-t shrink-0 flex justify-end">
+            <Button onClick={() => setActiveSubjectSelection(null)}>
+              সম্পন্ন
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={showConfirmation} onOpenChange={setShowConfirmation}>
         <AlertDialogContent>

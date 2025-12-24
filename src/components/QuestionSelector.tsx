@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, FileText, ChevronRight, ArrowLeft, CheckCircle2, Filter, X } from "lucide-react";
+import { Search, FileText, ChevronRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { fetchQuestions, type RawQuestion } from "@/lib/fetchQuestions";
 import { apiRequest } from "@/lib/api";
 import LatexRenderer from "@/components/LatexRenderer";

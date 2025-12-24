@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Exam } from "@/lib/types";
+import type { Exam, SubjectConfig } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { updateExam } from "@/lib/actions";
 import { CustomLoader } from "@/components";
@@ -23,9 +23,9 @@ import {
 } from "./ui/select";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
-import { ScrollArea } from "./ui/scroll-area";
 import QuestionSelector from "./QuestionSelector";
-import { Plus, Trash2 } from "lucide-react";
+import { ListChecks } from "lucide-react";
+import { combineDhakaDateTime, parseDhakaDateTime } from "@/lib/utils";
 
 const subjects = [
   { id: "p", name: "পদার্থবিজ্ঞান" },
@@ -63,6 +63,15 @@ const minutes = Array.from({ length: 60 }, (_, i) =>
   i.toString().padStart(2, "0"),
 );
 
+const normalizeSubjects = (subs: string[] | SubjectConfig[] | null | undefined, type: "mandatory" | "optional"): SubjectConfig[] => {
+  if (!subs) return [];
+  if (subs.length === 0) return [];
+  if (typeof subs[0] === 'string') {
+    return (subs as string[]).map(id => ({ id, count: 0, question_ids: [], type }));
+  }
+  return (subs as SubjectConfig[]).map(s => ({ ...s, type }));
+};
+
 export function EditExamModal({ exam, isOpen, onClose, onSuccess }: EditExamModalProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,8 +80,12 @@ export function EditExamModal({ exam, isOpen, onClose, onSuccess }: EditExamModa
   const [shuffle, setShuffle] = useState(false);
   const [isCustomExam, setIsCustomExam] = useState(false);
   const [useQuestionBank, setUseQuestionBank] = useState(false);
-  const [mandatorySubjects, setMandatorySubjects] = useState<string[]>([]);
-  const [optionalSubjects, setOptionalSubjects] = useState<string[]>([]);
+  
+  // New state for Subject Configs
+  const [mandatorySubjects, setMandatorySubjects] = useState<SubjectConfig[]>([]);
+  const [optionalSubjects, setOptionalSubjects] = useState<SubjectConfig[]>([]);
+  
+  // Legacy global selection (still used if not custom exam or as fallback)
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -85,26 +98,30 @@ export function EditExamModal({ exam, isOpen, onClose, onSuccess }: EditExamModa
   const [endMinute, setEndMinute] = useState("00");
   const [endPeriod, setEndPeriod] = useState<"AM" | "PM">("AM");
 
+  const [activeSubjectSelection, setActiveSubjectSelection] = useState<{
+    id: string;
+    type: "mandatory" | "optional";
+  } | null>(null);
+
   useEffect(() => {
     if (exam) {
       formRef.current?.reset();
       setMode((exam?.is_practice ? "practice" : "live") as "live" | "practice");
       setShuffle(exam?.shuffle_questions || false);
       setIsCustomExam(!!exam.total_subjects && exam.total_subjects > 0);
-      setUseQuestionBank(exam.question_ids && exam.question_ids.length > 0);
-      setMandatorySubjects(exam.mandatory_subjects || []);
-      setOptionalSubjects(exam.optional_subjects || []);
+      setUseQuestionBank(!!(exam.question_ids && exam.question_ids.length > 0));
+      
+      setMandatorySubjects(normalizeSubjects(exam.mandatory_subjects, "mandatory"));
+      setOptionalSubjects(normalizeSubjects(exam.optional_subjects, "optional"));
+      
       setSelectedQuestionIds(exam.question_ids || []);
 
       if (exam.start_at) {
-        const d = new Date(exam.start_at);
-        setStartDate(d);
-        const hour24 = d.getHours();
-        setStartPeriod(hour24 >= 12 ? "PM" : "AM");
-        setStartHour(
-          (hour24 % 12 === 0 ? 12 : hour24 % 12).toString().padStart(2, "0"),
-        );
-        setStartMinute(d.getMinutes().toString().padStart(2, "0"));
+        const { date, hour, minute, period } = parseDhakaDateTime(exam.start_at);
+        setStartDate(date);
+        setStartHour(hour);
+        setStartMinute(minute);
+        setStartPeriod(period);
       } else {
         setStartDate(undefined);
         setStartHour("12");
@@ -113,14 +130,11 @@ export function EditExamModal({ exam, isOpen, onClose, onSuccess }: EditExamModa
       }
 
       if (exam.end_at) {
-        const d = new Date(exam.end_at);
-        setEndDate(d);
-        const hour24 = d.getHours();
-        setEndPeriod(hour24 >= 12 ? "PM" : "AM");
-        setEndHour(
-          (hour24 % 12 === 0 ? 12 : hour24 % 12).toString().padStart(2, "0"),
-        );
-        setEndMinute(d.getMinutes().toString().padStart(2, "0"));
+        const { date, hour, minute, period } = parseDhakaDateTime(exam.end_at);
+        setEndDate(date);
+        setEndHour(hour);
+        setEndMinute(minute);
+        setEndPeriod(period);
       } else {
         setEndDate(undefined);
         setEndHour("12");
@@ -135,416 +149,528 @@ export function EditExamModal({ exam, isOpen, onClose, onSuccess }: EditExamModa
     input.value = bengaliToEnglishNumber(input.value);
   };
 
-  const combineDateTime = (
-    date?: Date,
-    hour?: string,
-    minute?: string,
-    period?: "AM" | "PM",
-  ) => {
-    if (!date || !hour || !minute || !period) return null;
-    let h24 = parseInt(hour, 10);
-    if (period === "PM" && h24 !== 12) {
-      h24 += 12;
+  const handleSubjectToggle = (subjectId: string, type: "mandatory" | "optional", checked: boolean) => {
+    if (type === "mandatory") {
+      setMandatorySubjects(prev => {
+        if (checked) {
+          return [...prev, { id: subjectId, count: 0, question_ids: [], type: "mandatory" }];
+        }
+        return prev.filter(s => s.id !== subjectId);
+      });
+    } else {
+      setOptionalSubjects(prev => {
+        if (checked) {
+          return [...prev, { id: subjectId, count: 0, question_ids: [], type: "optional" }];
+        }
+        return prev.filter(s => s.id !== subjectId);
+      });
     }
-    if (period === "AM" && h24 === 12) {
-      h24 = 0;
-    }
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(h24).padStart(2, "0");
-    const mins = String(minute).padStart(2, "0");
+  };
 
-    return `${year}-${month}-${day} ${hours}:${mins}:00`;
+  const updateSubjectConfig = (
+    subjectId: string, 
+    type: "mandatory" | "optional", 
+    field: keyof SubjectConfig, 
+    value: string | number | string[]
+  ) => {
+    const updater = (prev: SubjectConfig[]) => 
+      prev.map(s => s.id === subjectId ? { ...s, [field]: value } : s);
+      
+    if (type === "mandatory") setMandatorySubjects(updater);
+    else setOptionalSubjects(updater);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] w-[95vw] rounded-2xl md:max-w-2xl p-4 md:p-6 overflow-y-auto flex flex-col">
-        <DialogHeader className="shrink-0">
-          <DialogTitle>পরীক্ষা সম্পাদন করুন</DialogTitle>
-          <DialogDescription>নিচে পরীক্ষার বিবরণ আপডেট করুন।</DialogDescription>
-        </DialogHeader>
-        <div className="flex-1 overflow-y-auto">
-          <form
-            ref={formRef}
-            action={async (formData) => {
-              setIsSubmitting(true);
-              if (exam?.id) {
-                formData.append("id", exam.id);
-              }
-              if (exam?.batch_id) {
-                formData.append("batch_id", exam.batch_id);
-              }
-
-              const startAtISO = combineDateTime(
-                startDate,
-                startHour,
-                startMinute,
-                startPeriod,
-              );
-              const endAtISO = combineDateTime(
-                endDate,
-                endHour,
-                endMinute,
-                endPeriod,
-              );
-
-              if (startAtISO) formData.set("start_at", startAtISO);
-              if (endAtISO) formData.set("end_at", endAtISO);
-              
-              formData.set("question_ids", JSON.stringify(selectedQuestionIds));
-
-              const result = await updateExam(formData);
-              if (result.success) {
-                toast({ title: "পরীক্ষা সফলভাবে আপডেট করা হয়েছে!" });
-                if (onSuccess && result.data) {
-                  onSuccess(result.data as Exam);
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-h-[90vh] w-[95vw] rounded-2xl md:max-w-2xl p-4 md:p-6 overflow-y-auto flex flex-col">
+          <DialogHeader className="shrink-0">
+            <DialogTitle>পরীক্ষা সম্পাদন করুন</DialogTitle>
+            <DialogDescription>নিচে পরীক্ষার বিবরণ আপডেট করুন।</DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto">
+            <form
+              ref={formRef}
+              action={async (formData) => {
+                setIsSubmitting(true);
+                if (exam?.id) {
+                  formData.append("id", exam.id);
                 }
-                onClose();
-              } else {
-                toast({
-                  title: "পরীক্ষা আপডেট করতে সমস্যা হয়েছে",
-                  description: result.message,
-                  variant: "destructive",
-                });
-              }
-              setIsSubmitting(false);
-            }}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="exam-name-edit">পরীক্ষার নাম</Label>
-              <Input
-                id="exam-name-edit"
-                type="text"
-                name="name"
-                defaultValue={exam?.name || ""}
-                placeholder="পরীক্ষার নাম"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="duration_minutes-edit">সময় (মিনিট)</Label>
-              <Input
-                id="duration_minutes-edit"
-                type="number"
-                name="duration_minutes"
-                defaultValue={String(exam?.duration_minutes || "")}
-                placeholder="সময় (মিনিট)"
-                onInput={handleNumberInput}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="marks_per_question-edit">
-                প্রশ্ন প্রতি মার্ক
-              </Label>
-              <Input
-                id="marks_per_question-edit"
-                type="number"
-                step="0.1"
-                name="marks_per_question"
-                defaultValue={String(exam?.marks_per_question || "1")}
-                placeholder="প্রশ্ন প্রতি মার্ক"
-                onInput={handleNumberInput}
-              />
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-center gap-3">
-              <Label>পরীক্ষার মোড</Label>
-              <Select
-                value={mode}
-                onValueChange={(value) => setMode(value as "live" | "practice")}
-              >
-                <SelectTrigger className="w-full md:w-[220px]">
-                  <SelectValue placeholder="পরীক্ষার মোড নির্বাচন করুন" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="live">লাইভ (Time-limited)</SelectItem>
-                  <SelectItem value="practice">প্রাকটিস (আনলিমিটেড)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {mode === "live" && (
-              <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">শুরুর তারিখ</Label>
-                    <Input
-                      type="date"
-                      value={
-                        startDate ? startDate.toLocaleDateString("en-CA") : ""
-                      }
-                      onChange={(e) =>
-                        setStartDate(
-                          e.target.value ? new Date(e.target.value) : undefined,
-                        )
-                      }
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">শুরুর সময়</Label>
-                    <div className="flex gap-1 items-center">
-                      <Select value={startHour} onValueChange={setStartHour}>
-                        <SelectTrigger className="w-20">
-                          <SelectValue placeholder="ঘন্টা" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {hours12.map((h) => (
-                            <SelectItem key={h} value={h}>
-                              {h}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <span className="text-lg font-bold text-muted-foreground">:</span>
-                      <Select value={startMinute} onValueChange={setStartMinute}>
-                        <SelectTrigger className="w-20">
-                          <SelectValue placeholder="মিনিট" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {minutes.map((m) => (
-                            <SelectItem key={m} value={m}>
-                              {m}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={startPeriod}
-                        onValueChange={(v) => setStartPeriod(v as "AM" | "PM")}
-                      >
-                        <SelectTrigger className="w-24">
-                          <SelectValue placeholder="AM/PM" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="AM">AM</SelectItem>
-                          <SelectItem value="PM">PM</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">শেষের তারিখ</Label>
-                    <Input
-                      type="date"
-                      value={
-                        endDate ? endDate.toLocaleDateString("en-CA") : ""
-                      }
-                      onChange={(e) =>
-                        setEndDate(
-                          e.target.value ? new Date(e.target.value) : undefined,
-                        )
-                      }
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">শেষের সময়</Label>
-                    <div className="flex gap-1 items-center">
-                      <Select value={endHour} onValueChange={setEndHour}>
-                        <SelectTrigger className="w-20">
-                          <SelectValue placeholder="ঘন্টা" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {hours12.map((h) => (
-                            <SelectItem key={h} value={h}>
-                              {h}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <span className="text-lg font-bold text-muted-foreground">:</span>
-                      <Select value={endMinute} onValueChange={setEndMinute}>
-                        <SelectTrigger className="w-20">
-                          <SelectValue placeholder="মিনিট" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {minutes.map((m) => (
-                            <SelectItem key={m} value={m}>
-                              {m}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={endPeriod}
-                        onValueChange={(v) => setEndPeriod(v as "AM" | "PM")}
-                      >
-                        <SelectTrigger className="w-24">
-                          <SelectValue placeholder="AM/PM" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="AM">AM</SelectItem>
-                          <SelectItem value="PM">PM</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="negative_marks-edit">নেগেটিভ মার্ক</Label>
-              <Input
-                id="negative_marks-edit"
-                type="number"
-                step="0.01"
-                name="negative_marks_per_wrong"
-                defaultValue={String(exam?.negative_marks_per_wrong || "")}
-                placeholder="নেগেটিভ মার্ক"
-                onInput={handleNumberInput}
-              />
-            </div>
-            <input
-              name="is_practice"
-              type="hidden"
-              value={mode === "practice" ? "true" : "false"}
-            />
-            <input
-              type="hidden"
-              name="file_id"
-              defaultValue={exam?.file_id || ""}
-            />
-            <div className="flex items-center space-x-2 pt-2">
-              <Checkbox
-                id="use-question-bank-toggle-edit"
-                checked={useQuestionBank}
-                onCheckedChange={(checked) =>
-                  setUseQuestionBank(checked as boolean)
+                if (exam?.batch_id) {
+                  formData.append("batch_id", exam.batch_id);
                 }
-              />
-              <Label htmlFor="use-question-bank-toggle-edit">প্রশ্ন ব্যাংক থেকে প্রশ্ন বাছুন</Label>
-            </div>
 
-            {useQuestionBank && (
-              <div className="space-y-2 p-4 border rounded-md bg-muted/30">
-                <Label className="text-sm font-semibold">প্রশ্ন নির্বাচন</Label>
-                <QuestionSelector
-                  selectedIds={selectedQuestionIds}
-                  onChange={setSelectedQuestionIds}
-                  minimal
+                const startAtISO = combineDhakaDateTime(
+                  startDate,
+                  startHour,
+                  startMinute,
+                  startPeriod,
+                );
+                const endAtISO = combineDhakaDateTime(
+                  endDate,
+                  endHour,
+                  endMinute,
+                  endPeriod,
+                );
+
+                if (startAtISO) formData.set("start_at", startAtISO);
+                if (endAtISO) formData.set("end_at", endAtISO);
+                
+                // Aggregate all question IDs
+                const allQuestionIds = new Set<string>(selectedQuestionIds);
+                
+                if (isCustomExam) {
+                  mandatorySubjects.forEach(s => s.question_ids?.forEach(qid => allQuestionIds.add(qid)));
+                  optionalSubjects.forEach(s => s.question_ids?.forEach(qid => allQuestionIds.add(qid)));
+                  
+                  // Serialize subject configs
+                  formData.set("mandatory_subjects", JSON.stringify(mandatorySubjects));
+                  formData.set("optional_subjects", JSON.stringify(optionalSubjects));
+                } else {
+                    // Fallback to simple string array if not custom exam (legacy support)
+                    formData.set("mandatory_subjects", JSON.stringify(mandatorySubjects.map(s => s.id)));
+                    formData.set("optional_subjects", JSON.stringify(optionalSubjects.map(s => s.id)));
+                }
+
+                formData.set("question_ids", JSON.stringify(Array.from(allQuestionIds)));
+
+                const result = await updateExam(formData);
+                if (result.success) {
+                  toast({ title: "পরীক্ষা সফলভাবে আপডেট করা হয়েছে!" });
+                  if (onSuccess && result.data) {
+                    onSuccess(result.data as Exam);
+                  }
+                  onClose();
+                } else {
+                  toast({
+                    title: "পরীক্ষা আপডেট করতে সমস্যা হয়েছে",
+                    description: result.message,
+                    variant: "destructive",
+                  });
+                }
+                setIsSubmitting(false);
+              }}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="exam-name-edit">পরীক্ষার নাম</Label>
+                <Input
+                  id="exam-name-edit"
+                  type="text"
+                  name="name"
+                  defaultValue={exam?.name || ""}
+                  placeholder="পরীক্ষার নাম"
+                  required
                 />
               </div>
-            )}
-
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="shuffle_questions_edit"
-                  name="shuffle_questions"
-                  checked={shuffle}
-                  onCheckedChange={(checked) => setShuffle(checked as boolean)}
-                  value="true"
+              <div className="space-y-2">
+                <Label htmlFor="duration_minutes-edit">সময় (মিনিট)</Label>
+                <Input
+                  id="duration_minutes-edit"
+                  type="number"
+                  name="duration_minutes"
+                  defaultValue={String(exam?.duration_minutes || "")}
+                  placeholder="সময় (মিনিট)"
+                  onInput={handleNumberInput}
                 />
-                <Label htmlFor="shuffle_questions_edit">
-                  প্রশ্নগুলো এলোমেলো করুন
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="marks_per_question-edit">
+                  প্রশ্ন প্রতি মার্ক
                 </Label>
+                <Input
+                  id="marks_per_question-edit"
+                  type="number"
+                  step="0.1"
+                  name="marks_per_question"
+                  defaultValue={String(exam?.marks_per_question || "1")}
+                  placeholder="প্রশ্ন প্রতি মার্ক"
+                  onInput={handleNumberInput}
+                />
               </div>
-            </div>
 
-            <div className="flex items-center space-x-2 pt-2">
-              <Checkbox
-                id="custom-exam-toggle-edit"
-                checked={isCustomExam}
-                onCheckedChange={(checked) =>
-                  setIsCustomExam(checked as boolean)
-                }
-              />
-              <Label htmlFor="custom-exam-toggle-edit">কাস্টম এক্সাম</Label>
-            </div>
+              <div className="flex flex-col md:flex-row md:items-center gap-3">
+                <Label>পরীক্ষার মোড</Label>
+                <Select
+                  value={mode}
+                  onValueChange={(value) => setMode(value as "live" | "practice")}
+                >
+                  <SelectTrigger className="w-full md:w-[220px]">
+                    <SelectValue placeholder="পরীক্ষার মোড নির্বাচন করুন" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="live">লাইভ (Time-limited)</SelectItem>
+                    <SelectItem value="practice">প্রাকটিস (আনলিমিটেড)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {isCustomExam && (
-              <div className="space-y-4 p-4 border rounded-md">
-                <div className="space-y-2">
-                  <Label htmlFor="total_subjects-edit">মোট বিষয়</Label>
-                  <Input
-                    id="total_subjects-edit"
-                    name="total_subjects"
-                    type="number"
-                    min="1"
-                    step="1"
-                    placeholder="e.g., 4"
-                    defaultValue={exam?.total_subjects || ""}
-                    onInput={handleNumberInput}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>দাগানো বাধ্যতামূলক</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {subjects.map((subject) => (
-                      <div
-                        key={`mandatory-edit-${subject.id}`}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={`mandatory-edit-${subject.id}`}
-                          name="mandatory_subjects"
-                          value={subject.id}
-                          checked={mandatorySubjects.includes(subject.id)}
-                          onCheckedChange={(checked) => {
-                            setMandatorySubjects((prev) =>
-                              checked
-                                ? [...prev, subject.id]
-                                : prev.filter((s) => s !== subject.id),
-                            );
-                          }}
-                        />
-                        <Label htmlFor={`mandatory-edit-${subject.id}`}>
-                          {subject.name} ({subject.id})
-                        </Label>
+              {mode === "live" && (
+                <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">শুরুর তারিখ</Label>
+                      <Input
+                        type="date"
+                        value={
+                          startDate ? startDate.toLocaleDateString("en-CA") : ""
+                        }
+                        onChange={(e) =>
+                          setStartDate(
+                            e.target.value ? new Date(e.target.value) : undefined,
+                          )
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">শুরুর সময়</Label>
+                      <div className="flex gap-1 items-center">
+                        <Select value={startHour} onValueChange={setStartHour}>
+                          <SelectTrigger className="w-20">
+                            <SelectValue placeholder="ঘন্টা" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {hours12.map((h) => (
+                              <SelectItem key={h} value={h}>
+                                {h}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span className="text-lg font-bold text-muted-foreground">:</span>
+                        <Select value={startMinute} onValueChange={setStartMinute}>
+                          <SelectTrigger className="w-20">
+                            <SelectValue placeholder="মিনিট" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {minutes.map((m) => (
+                              <SelectItem key={m} value={m}>
+                                {m}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select
+                          value={startPeriod}
+                          onValueChange={(v) => setStartPeriod(v as "AM" | "PM")}
+                        >
+                          <SelectTrigger className="w-24">
+                            <SelectValue placeholder="AM/PM" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="AM">AM</SelectItem>
+                            <SelectItem value="PM">PM</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                    ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">শেষের তারিখ</Label>
+                      <Input
+                        type="date"
+                        value={
+                          endDate ? endDate.toLocaleDateString("en-CA") : ""
+                        }
+                        onChange={(e) =>
+                          setEndDate(
+                            e.target.value ? new Date(e.target.value) : undefined,
+                          )
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">শেষের সময়</Label>
+                      <div className="flex gap-1 items-center">
+                        <Select value={endHour} onValueChange={setEndHour}>
+                          <SelectTrigger className="w-20">
+                            <SelectValue placeholder="ঘন্টা" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {hours12.map((h) => (
+                              <SelectItem key={h} value={h}>
+                                {h}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span className="text-lg font-bold text-muted-foreground">:</span>
+                        <Select value={endMinute} onValueChange={setEndMinute}>
+                          <SelectTrigger className="w-20">
+                            <SelectValue placeholder="মিনিট" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {minutes.map((m) => (
+                              <SelectItem key={m} value={m}>
+                                {m}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select
+                          value={endPeriod}
+                          onValueChange={(v) => setEndPeriod(v as "AM" | "PM")}
+                        >
+                          <SelectTrigger className="w-24">
+                            <SelectValue placeholder="AM/PM" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="AM">AM</SelectItem>
+                            <SelectItem value="PM">PM</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label>অন্যান্য বিষয়</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {subjects.map((subject) => (
-                      <div
-                        key={`optional-edit-${subject.id}`}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={`optional-edit-${subject.id}`}
-                          name="optional_subjects"
-                          value={subject.id}
-                          checked={optionalSubjects.includes(subject.id)}
-                          onCheckedChange={(checked) => {
-                            setOptionalSubjects((prev) =>
-                              checked
-                                ? [...prev, subject.id]
-                                : prev.filter((s) => s !== subject.id),
-                            );
-                          }}
-                        />
-                        <Label htmlFor={`optional-edit-${subject.id}`}>
-                          {subject.name} ({subject.id})
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? (
-                <CustomLoader minimal />
-              ) : (
-                "পরীক্ষা আপডেট করুন"
               )}
+              <div className="space-y-2">
+                <Label htmlFor="negative_marks-edit">নেগেটিভ মার্ক</Label>
+                <Input
+                  id="negative_marks-edit"
+                  type="number"
+                  step="0.01"
+                  name="negative_marks_per_wrong"
+                  defaultValue={String(exam?.negative_marks_per_wrong || "")}
+                  placeholder="নেগেটিভ মার্ক"
+                  onInput={handleNumberInput}
+                />
+              </div>
+              <input
+                name="is_practice"
+                type="hidden"
+                value={mode === "practice" ? "true" : "false"}
+              />
+              <input
+                type="hidden"
+                name="file_id"
+                defaultValue={exam?.file_id || ""}
+              />
+              
+              {!isCustomExam && (
+                <>
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Checkbox
+                      id="use-question-bank-toggle-edit"
+                      checked={useQuestionBank}
+                      onCheckedChange={(checked) =>
+                        setUseQuestionBank(checked as boolean)
+                      }
+                    />
+                    <Label htmlFor="use-question-bank-toggle-edit">প্রশ্ন ব্যাংক থেকে প্রশ্ন বাছুন</Label>
+                  </div>
+
+                  {useQuestionBank && (
+                    <div className="space-y-2 p-4 border rounded-md bg-muted/30">
+                      <Label className="text-sm font-semibold">প্রশ্ন নির্বাচন</Label>
+                      <QuestionSelector
+                        selectedIds={selectedQuestionIds}
+                        onChange={setSelectedQuestionIds}
+                        minimal
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="shuffle_questions_edit"
+                    name="shuffle_questions"
+                    checked={shuffle}
+                    onCheckedChange={(checked) => setShuffle(checked as boolean)}
+                    value="true"
+                  />
+                  <Label htmlFor="shuffle_questions_edit">
+                    প্রশ্নগুলো এলোমেলো করুন
+                  </Label>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 pt-2">
+                <Checkbox
+                  id="custom-exam-toggle-edit"
+                  checked={isCustomExam}
+                  onCheckedChange={(checked) =>
+                    setIsCustomExam(checked as boolean)
+                  }
+                />
+                <Label htmlFor="custom-exam-toggle-edit">কাস্টম এক্সাম (বিষয় ভিত্তিক)</Label>
+              </div>
+
+              {isCustomExam && (
+                <div className="space-y-4 p-4 border rounded-md">
+                  <div className="space-y-2">
+                    <Label htmlFor="total_subjects-edit">মোট বিষয়</Label>
+                    <Input
+                      id="total_subjects-edit"
+                      name="total_subjects"
+                      type="number"
+                      min="1"
+                      step="1"
+                      placeholder="e.g., 4"
+                      defaultValue={exam?.total_subjects || ""}
+                      onInput={handleNumberInput}
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <Label className="text-base font-bold">দাগানো বাধ্যতামূলক (Mandatory)</Label>
+                    <div className="space-y-3">
+                      {subjects.map((subject) => {
+                         const isSelected = mandatorySubjects.some(s => s.id === subject.id);
+                         const config = mandatorySubjects.find(s => s.id === subject.id);
+                         
+                         return (
+                           <div key={`mandatory-edit-${subject.id}`} className={`p-3 rounded-lg border ${isSelected ? 'bg-primary/5 border-primary/20' : 'bg-background'}`}>
+                             <div className="flex items-center space-x-2 mb-2">
+                               <Checkbox
+                                 id={`mandatory-edit-${subject.id}`}
+                                 value={subject.id}
+                                 checked={isSelected}
+                                 onCheckedChange={(checked) => handleSubjectToggle(subject.id, "mandatory", checked as boolean)}
+                               />
+                               <Label htmlFor={`mandatory-edit-${subject.id}`} className="font-semibold text-sm">
+                                 {subject.name}
+                               </Label>
+                             </div>
+                             
+                             {isSelected && config && (
+                               <div className="pl-6 space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <Input 
+                                      type="number" 
+                                      placeholder="প্রশ্ন সংখ্যা" 
+                                      className="h-8 w-32 text-xs"
+                                      value={config.count || ""}
+                                      onChange={(e) => updateSubjectConfig(subject.id, "mandatory", "count", parseInt(e.target.value) || 0)}
+                                    />
+                                    <span className="text-xs text-muted-foreground">টি প্রশ্ন</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="h-8 text-xs"
+                                      onClick={() => setActiveSubjectSelection({ id: subject.id, type: "mandatory" })}
+                                    >
+                                      <ListChecks className="w-3 h-3 mr-1" />
+                                      প্রশ্ন বাছুন ({config.question_ids?.length || 0})
+                                    </Button>
+                                  </div>
+                               </div>
+                             )}
+                           </div>
+                         );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Label className="text-base font-bold">অন্যান্য বিষয় (Optional)</Label>
+                    <div className="space-y-3">
+                      {subjects.map((subject) => {
+                         const isSelected = optionalSubjects.some(s => s.id === subject.id);
+                         const config = optionalSubjects.find(s => s.id === subject.id);
+
+                         return (
+                           <div key={`optional-edit-${subject.id}`} className={`p-3 rounded-lg border ${isSelected ? 'bg-secondary/5 border-secondary/20' : 'bg-background'}`}>
+                             <div className="flex items-center space-x-2 mb-2">
+                               <Checkbox
+                                 id={`optional-edit-${subject.id}`}
+                                 value={subject.id}
+                                 checked={isSelected}
+                                 onCheckedChange={(checked) => handleSubjectToggle(subject.id, "optional", checked as boolean)}
+                               />
+                               <Label htmlFor={`optional-edit-${subject.id}`} className="font-semibold text-sm">
+                                 {subject.name}
+                               </Label>
+                             </div>
+                             
+                             {isSelected && config && (
+                               <div className="pl-6 space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <Input 
+                                      type="number" 
+                                      placeholder="প্রশ্ন সংখ্যা" 
+                                      className="h-8 w-32 text-xs"
+                                      value={config.count || ""}
+                                      onChange={(e) => updateSubjectConfig(subject.id, "optional", "count", parseInt(e.target.value) || 0)}
+                                    />
+                                    <span className="text-xs text-muted-foreground">টি প্রশ্ন</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="h-8 text-xs"
+                                      onClick={() => setActiveSubjectSelection({ id: subject.id, type: "optional" })}
+                                    >
+                                      <ListChecks className="w-3 h-3 mr-1" />
+                                      প্রশ্ন বাছুন ({config.question_ids?.length || 0})
+                                    </Button>
+                                  </div>
+                               </div>
+                             )}
+                           </div>
+                         );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <Button type="submit" disabled={isSubmitting} className="w-full">
+                {isSubmitting ? (
+                  <CustomLoader minimal />
+                ) : (
+                  "পরীক্ষা আপডেট করুন"
+                )}
+              </Button>
+            </form>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Secondary Dialog for Subject Question Selection */}
+      <Dialog open={!!activeSubjectSelection} onOpenChange={(open) => !open && setActiveSubjectSelection(null)}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0">
+          <DialogHeader className="p-4 border-b shrink-0">
+             <DialogTitle>
+                {activeSubjectSelection && subjects.find(s => s.id === activeSubjectSelection.id)?.name} - প্রশ্ন নির্বাচন
+             </DialogTitle>
+             <DialogDescription>
+                এই বিষয়ের জন্য প্রশ্ন নির্বাচন করুন
+             </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden p-4">
+             {activeSubjectSelection && (
+               <QuestionSelector
+                  selectedIds={
+                    (activeSubjectSelection.type === "mandatory" 
+                      ? mandatorySubjects.find(s => s.id === activeSubjectSelection.id)?.question_ids 
+                      : optionalSubjects.find(s => s.id === activeSubjectSelection.id)?.question_ids) || []
+                  }
+                  onChange={(ids) => {
+                     updateSubjectConfig(activeSubjectSelection.id, activeSubjectSelection.type, "question_ids", ids);
+                  }}
+               />
+             )}
+          </div>
+          <div className="p-4 border-t shrink-0 flex justify-end">
+            <Button onClick={() => setActiveSubjectSelection(null)}>
+              সম্পন্ন
             </Button>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

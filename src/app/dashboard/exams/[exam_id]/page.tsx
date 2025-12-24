@@ -16,10 +16,6 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CustomLoader } from "@/components";
 import {
-  Alert,
-  AlertDescription as AlertDescriptionComponent,
-} from "@/components/ui/alert";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -29,7 +25,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import type { Exam, Question } from "@/lib/types";
 import {
@@ -103,12 +98,18 @@ function SubjectSelectionScreen({
   onStart: (selectedSubjects: string[]) => void;
   questionCount: number;
 }) {
-  const mandatorySubjects = exam.mandatory_subjects || [];
-  const optionalSubjects = exam.optional_subjects || [];
+  const normalize = (list: (string | import("@/lib/types").SubjectConfig)[] | null | undefined): string[] => {
+    if (!list || list.length === 0) return [];
+    if (typeof list[0] === 'string') return list as string[];
+    return (list as import("@/lib/types").SubjectConfig[]).map(i => i.id);
+  };
+
+  const mandatorySubjects = normalize(exam.mandatory_subjects);
+  const optionalSubjects = normalize(exam.optional_subjects);
   const totalSubjectsToAnswer = exam.total_subjects || 0;
 
   const numMandatory = mandatorySubjects.length;
-  const numToSelectFromOptional = totalSubjectsToAnswer - numMandatory;
+  const numToSelectFromOptional = Math.max(0, totalSubjectsToAnswer - numMandatory);
 
   const [selectedOptional, setSelectedOptional] = useState<string[]>([]);
 
@@ -117,13 +118,14 @@ function SubjectSelectionScreen({
       if (prev.includes(subjectId)) {
         return prev.filter((s) => s !== subjectId);
       }
-      if (prev.length < numToSelectFromOptional) {
+      if (numToSelectFromOptional > 0 && prev.length < numToSelectFromOptional) {
         return [...prev, subjectId];
       }
       return prev;
     });
   };
 
+  // If no optional subjects need to be selected (e.g. total_subjects covered by mandatory), allow start
   const canStart = selectedOptional.length === numToSelectFromOptional;
 
   const handleStartClick = () => {
@@ -253,17 +255,17 @@ function SubjectSelectionScreen({
             </div>
           )}
 
-          {numToSelectFromOptional > 0 && optionalSubjects.length > 0 && (
+          {optionalSubjects.length > 0 && (
             <div>
               <h3 className="font-semibold mb-2 text-sm md:text-base">
-                ঐচ্ছিক বিষয় (যেকোনো {numToSelectFromOptional}টি)
+                ঐচ্ছিক বিষয় {numToSelectFromOptional > 0 ? `(যেকোনো ${numToSelectFromOptional}টি)` : '(প্রয়োজন নেই)'}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 {optionalSubjects.map((sub) => {
                   const isChecked = selectedOptional.includes(sub);
                   const isDisabled =
                     !isChecked &&
-                    selectedOptional.length >= numToSelectFromOptional;
+                    selectedOptional.length >= numToSelectFromOptional && numToSelectFromOptional > 0;
                   return (
                     <label
                       key={sub}
@@ -335,6 +337,7 @@ export default function TakeExamPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [examStarted, setExamStarted] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
+  const [orderedSubjects, setOrderedSubjects] = useState<string[]>([]);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -352,6 +355,7 @@ export default function TakeExamPage() {
   
   // Get unique subjects and filter questions
   const uniqueSubjects = useMemo(() => {
+    if (orderedSubjects.length > 0) return orderedSubjects;
     const subjects = new Set<string>();
     allQuestions.forEach((q) => {
       if (q.subject) {
@@ -359,22 +363,155 @@ export default function TakeExamPage() {
       }
     });
     return Array.from(subjects).sort();
-  }, [allQuestions]);
+  }, [allQuestions, orderedSubjects]);
 
   // Filter questions based on selected subject
   const filteredQuestions = useMemo(() => {
     if (selectedSubject === "all") {
+      // If custom exam with subjects, showing "all" might violate the separation rule
+      // But we keep it as fallback or if specifically set.
       return questions;
     }
-    return questions.filter((q) => q.subject === selectedSubject);
+    // Match logic: Subject ID vs Question Subject
+    // Question.subject usually stores the name "physics" or ID "p"? 
+    // fetchQuestions usually maps it.
+    // Let's assume strict matching for now, or use the subjectsMap to check.
+    return questions.filter((q) => {
+        if (q.subject === selectedSubject) return true;
+        // Also check if mapped name matches
+        if (subjectsMap[selectedSubject] === q.subject) return true;
+        // Or reverse
+        const key = Object.keys(subjectsMap).find(k => subjectsMap[k] === q.subject);
+        if (key === selectedSubject) return true;
+        
+        return false;
+    });
   }, [questions, selectedSubject]);
 
   const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
   const startIndex = currentPageIndex * questionsPerPage;
   const endIndex = startIndex + questionsPerPage;
-  const currentPageQuestions = filteredQuestions.slice(startIndex, endIndex);
-
-  const handleSubmitExam = useCallback(async () => {
+    const currentPageQuestions = filteredQuestions.slice(startIndex, endIndex);
+  
+    const handleStartCustomExam = (selectedSubjectIds: string[]) => {
+      if (!exam) return;
+  
+          // Helper to find config for a subject ID
+          const findConfig = (id: string) => {
+              const mandatory = exam.mandatory_subjects as (string | import("@/lib/types").SubjectConfig)[];
+              const optional = exam.optional_subjects as (string | import("@/lib/types").SubjectConfig)[];
+              
+              const m = mandatory?.find(s => (typeof s === 'string' ? s : s.id) === id);
+              if (m) return typeof m === 'string' ? { id: m } : m;
+              
+              const o = optional?.find(s => (typeof s === 'string' ? s : s.id) === id);
+              if (o) return typeof o === 'string' ? { id: o } : o;
+              return null;
+          };
+            let selectedQuestions: Question[] = [];
+      const subjectsOrder: string[] = [];
+  
+      selectedSubjectIds.forEach(subId => {
+          const config = findConfig(subId);
+          // Map ID to subject name for display/filtering
+          // If the backend stores full names in question.subject, we need to map 'p' -> 'Physics'
+          // If we used QuestionSelector with specific IDs, we can match by ID.
+          
+          let subjectQuestions: Question[] = [];
+          
+          if (config && config.question_ids && config.question_ids.length > 0) {
+              // Priority: Use specific question IDs from config
+               subjectQuestions = allQuestions.filter(q => config.question_ids.includes(q.id));
+          } else {
+               // Fallback: Filter by subject tag
+               // Try both ID and mapped name
+               const subjectName = subjectsMap[subId] || subId;
+               subjectQuestions = allQuestions.filter(q => q.subject === subId || q.subject === subjectName);
+               
+               // If config has count, limit it?
+               if (config && config.count) {
+                   subjectQuestions = subjectQuestions.slice(0, config.count);
+               }
+          }
+          
+          // Tag them with the subject ID/Name for grouping
+          // We use the mapped name for display if available, or just the ID.
+          // Actually uniqueSubjects uses question.subject. 
+          // We should ensure question.subject aligns with what we want to display.
+          // If question.subject is "Physics" and we selected "p", uniqueSubjects will show "Physics".
+          // But if we want to enforce order, we should know which subject is which.
+          
+                  if (subjectQuestions.length > 0) {
+                      // Determine the display name for this subject section
+                      // We use the mapped name (e.g. "পদার্থবিজ্ঞান") if available, otherwise the ID.
+                      // We do NOT rely on question.subject because it might vary or be inconsistent.
+                      const displayName = subjectsMap[subId] || subId;
+                      
+                      // Override the subject property of the questions to match the section display name.
+                      // This ensures they are correctly filtered and grouped under this tab.
+                      subjectQuestions = subjectQuestions.map(q => ({ ...q, subject: displayName }));
+          
+                      if (!subjectsOrder.includes(displayName)) {
+                          subjectsOrder.push(displayName);
+                      }
+                      selectedQuestions = [...selectedQuestions, ...subjectQuestions];
+                  }
+              });
+          
+              setQuestions(selectedQuestions);
+              setOrderedSubjects(subjectsOrder);
+              if (subjectsOrder.length > 0) {
+                  setSelectedSubject(subjectsOrder[0]);
+              } else {
+                  setSelectedSubject("all");
+              }      
+      setTimeLeft((exam.duration_minutes || 0) * 60);
+      setExamStarted(true);
+    };
+  
+    const handleNextPage = () => {
+      if (currentPageIndex < totalPages - 1) {
+        setCurrentPageIndex(prev => prev + 1);
+        window.scrollTo(0, 0);
+      } else {
+        // Check for next subject
+        const currentSubjectIndex = uniqueSubjects.indexOf(selectedSubject);
+        if (currentSubjectIndex !== -1 && currentSubjectIndex < uniqueSubjects.length - 1) {
+           const nextSubject = uniqueSubjects[currentSubjectIndex + 1];
+           setSelectedSubject(nextSubject);
+           setCurrentPageIndex(0);
+           window.scrollTo(0, 0);
+           toast({ 
+               title: "বিষয় পরিবর্তন", 
+               description: `পরবর্তী বিষয়: ${nextSubject}`,
+           });
+        }
+      }
+    };
+  
+    const handlePrevPage = () => {
+       if (currentPageIndex > 0) {
+           setCurrentPageIndex(prev => prev - 1);
+           window.scrollTo(0, 0);
+       } else {
+           // Check for prev subject
+           const currentSubjectIndex = uniqueSubjects.indexOf(selectedSubject);
+           if (currentSubjectIndex > 0) {
+               const prevSubject = uniqueSubjects[currentSubjectIndex - 1];
+               setSelectedSubject(prevSubject);
+               // Go to last page of prev subject?
+               // We need to calculate pages for that subject.
+               // It's dynamic. Let's just go to page 0 for simplicity or calculate it.
+               setCurrentPageIndex(0); 
+               window.scrollTo(0, 0);
+           }
+       }
+    };
+  
+    const isLastPageOfExam = currentPageIndex === totalPages - 1 && uniqueSubjects.indexOf(selectedSubject) === uniqueSubjects.length - 1;
+  
+  
+    const handleSubmitExam = useCallback(async () => {
     setIsSubmitting(true);
     let correctAnswers = 0;
     let wrongAnswers = 0;
@@ -1112,11 +1249,8 @@ export default function TakeExamPage() {
               >
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    setCurrentPageIndex(Math.max(0, currentPageIndex - 1));
-                    window.scrollTo(0, 0);
-                  }}
-                  disabled={currentPageIndex === 0 || isSubmitting}
+                  onClick={handlePrevPage}
+                  disabled={(currentPageIndex === 0 && uniqueSubjects.indexOf(selectedSubject) === 0) || isSubmitting}
                   className="flex-1 h-10 px-2 text-xs md:text-sm"
                 >
                   <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
@@ -1127,14 +1261,9 @@ export default function TakeExamPage() {
                   {currentPageIndex + 1} / {totalPages}
                 </div>
 
-                {currentPageIndex < totalPages - 1 ? (
+                {!isLastPageOfExam ? (
                   <Button
-                    onClick={() => {
-                      setCurrentPageIndex(
-                        Math.min(totalPages - 1, currentPageIndex + 1),
-                      );
-                      window.scrollTo(0, 0);
-                    }}
+                    onClick={handleNextPage}
                     disabled={isSubmitting}
                     className="flex-1 h-10 px-2 text-xs md:text-sm"
                   >

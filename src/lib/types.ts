@@ -45,12 +45,20 @@ export type Exam = {
   start_at?: string | null;
   end_at?: string | null;
   total_subjects?: number | null;
-  mandatory_subjects?: string[] | null; // JSONB array in DB
-  optional_subjects?: string[] | null; // JSONB array in DB
+  mandatory_subjects?: SubjectConfig[] | string[] | null; // JSONB array in DB
+  optional_subjects?: SubjectConfig[] | string[] | null; // JSONB array in DB
   question_ids?: string[];
   created_at: string;
   questions?: Question[];
 }
+
+export type SubjectConfig = {
+  id: string;
+  name?: string;
+  count?: number;
+  question_ids?: string[];
+  type?: "mandatory" | "optional";
+};
 
 export type Question = {
   id?: string;

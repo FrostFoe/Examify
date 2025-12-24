@@ -202,6 +202,8 @@ export async function deleteBatch(formData: FormData) {
 
 export async function createExam(formData: FormData) {
   const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const course_name = formData.get("course_name") as string;
   const batch_id_raw = formData.get("batch_id") as string | null;
   const batch_id = batch_id_raw === "public" ? null : batch_id_raw;
   const durationRaw = formData.get("duration_minutes") as string;
@@ -224,12 +226,27 @@ export async function createExam(formData: FormData) {
   }
 
     const total_subjects = formData.get("total_subjects") ? parseInt(formData.get("total_subjects") as string) : null;
-    const mandatory_subjects = JSON.parse((formData.get("mandatory_subjects") as string) || "[]");
-    const optional_subjects = JSON.parse((formData.get("optional_subjects") as string) || "[]");
-    const question_ids = JSON.parse((formData.get("question_ids") as string) || "[]");
+    
+    let mandatory_subjects = [];
+    try {
+        const raw = formData.get("mandatory_subjects") as string;
+        mandatory_subjects = raw ? JSON.parse(raw) : [];
+    } catch { mandatory_subjects = []; }
+
+    let optional_subjects = [];
+    try {
+        const raw = formData.get("optional_subjects") as string;
+        optional_subjects = raw ? JSON.parse(raw) : [];
+    } catch { optional_subjects = []; }
+
+    let question_ids = [];
+    try {
+        const raw = formData.get("question_ids") as string;
+        question_ids = raw ? JSON.parse(raw) : [];
+    } catch { question_ids = []; }
 
     const result = await apiRequest("exams", "POST", {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       name,
       description,
       course_name,
@@ -308,6 +325,9 @@ export async function updateExam(formData: FormData) {
   const id = formData.get("id") as string;
   const batch_id = formData.get("batch_id") as string;
   const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const course_name = formData.get("course_name") as string;
+  
   const durationRaw = formData.get("duration_minutes") as string;
   const duration_minutes = parseInt(durationRaw, 10);
   const marks_per_question_raw = formData.get("marks_per_question") as string;
@@ -332,10 +352,31 @@ export async function updateExam(formData: FormData) {
   const total_subjects = total_subjects_raw
     ? parseInt(total_subjects_raw, 10)
     : null;
-  const mandatory_subjects = formData.getAll("mandatory_subjects") as string[];
-  const optional_subjects = formData.getAll("optional_subjects") as string[];
-  const question_ids_raw = formData.get("question_ids") as string | null;
-  const question_ids = question_ids_raw ? JSON.parse(question_ids_raw) : null;
+  
+  // Parse JSON strings from FormData
+  let mandatory_subjects = [];
+  try {
+     const raw = formData.get("mandatory_subjects") as string;
+     mandatory_subjects = raw ? JSON.parse(raw) : [];
+  } catch {
+     mandatory_subjects = [];
+  }
+
+  let optional_subjects = [];
+  try {
+     const raw = formData.get("optional_subjects") as string;
+     optional_subjects = raw ? JSON.parse(raw) : [];
+  } catch {
+     optional_subjects = [];
+  }
+
+  let question_ids = null;
+  try {
+     const raw = formData.get("question_ids") as string | null;
+     question_ids = raw ? JSON.parse(raw) : null;
+  } catch {
+     question_ids = null;
+  }
 
   const result = await apiRequest<Exam>(
     "exams",
@@ -343,6 +384,8 @@ export async function updateExam(formData: FormData) {
     {
       id,
       name,
+      description,
+      course_name,
       duration_minutes: isNaN(duration_minutes) ? null : duration_minutes,
       marks_per_question,
       negative_marks_per_wrong,
@@ -352,9 +395,8 @@ export async function updateExam(formData: FormData) {
       start_at: start_at,
       end_at: end_at,
       total_subjects,
-      mandatory_subjects:
-        mandatory_subjects.length > 0 ? mandatory_subjects : [],
-      optional_subjects: optional_subjects.length > 0 ? optional_subjects : [],
+      mandatory_subjects,
+      optional_subjects,
       question_ids,
     },
     { action: "update" },
