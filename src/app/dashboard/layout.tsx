@@ -34,12 +34,24 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const isExamPage = pathname?.match(/^\/dashboard\/exams\/[^/]+$/);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) return;
+    
+    // Define paths that are allowed for guests
+    const publicAllowedPaths = [
+      /^\/dashboard\/batches$/,
+      /^\/dashboard\/batches\/[^/]+$/,
+      /^\/dashboard\/exams\/[^/]+$/,
+      /^\/dashboard\/exams\/[^/]+\/solve$/,
+    ];
+    
+    const isPublicPath = publicAllowedPaths.some(regex => regex.test(pathname || ''));
+
+    if (!user && !isPublicPath) {
       router.push(`/login?redirect=${pathname}`);
     }
   }, [user, loading, router, pathname]);
 
-  if (loading || !user) {
+  if (loading || (!user && !pathname?.startsWith('/dashboard/batches') && !pathname?.startsWith('/dashboard/exams'))) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <CustomLoader />
@@ -57,9 +69,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Desktop Sidebar */}
       <DashboardSidebar
         items={sidebarNavItems}
-        userInfo={{
+        userInfo={user ? {
           name: user.name,
           role: `রোল: ${user.roll}`,
+        } : {
+          name: "Guest Student",
+          role: "পাবলিক অ্যাক্সেস",
         }}
         onLogout={handleLogout}
         panelType="student"
@@ -95,11 +110,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </Avatar>
             <div className="text-right">
               <p className="text-sm font-medium">
-                {user.name.length > 11
+                {user ? (user.name.length > 11
                   ? `${user.name.slice(0, 11)}...`
-                  : user.name}
+                  : user.name) : "Guest"}
               </p>
-              <p className="text-xs text-muted-foreground">রোল: {user.roll}</p>
+              <p className="text-xs text-muted-foreground">
+                {user ? `রোল: ${user.roll}` : "লগইন নেই"}
+              </p>
             </div>
           </div>
         </header>

@@ -32,7 +32,7 @@ export default function CSVUploadComponent({
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
@@ -53,22 +53,20 @@ export default function CSVUploadComponent({
       setSelectedFile(file);
       setError(null);
       setUploadResult(null);
+
+      // Auto upload
+      await uploadFile(file);
     }
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      setError("Please select a file first");
-      return;
-    }
-
+  const uploadFile = async (file: File) => {
     setIsUploading(true);
     setError(null);
     setUploadResult(null);
 
     try {
       const formData = new FormData();
-      formData.append("csv_file", selectedFile);
+      formData.append("csv_file", file);
       formData.append("is_bank", isBank ? "1" : "0");
 
       const result = await apiRequest("upload-csv", "POST", formData);
@@ -95,30 +93,43 @@ export default function CSVUploadComponent({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileSpreadsheet className="w-5 h-5" />
-          Upload Questions from CSV
-        </CardTitle>
-        <CardDescription>
-          Upload a CSV file containing questions to create or update your
-          question bank
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Label htmlFor="csv-upload" className="cursor-pointer">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors">
-              <Upload className="w-8 h-8 mx-auto text-gray-400" />
-              <p className="mt-2 font-medium">
-                {selectedFile ? selectedFile.name : "Click to select CSV file"}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">
-                {selectedFile
-                  ? `${(selectedFile.size / 1024).toFixed(2)} KB`
-                  : "Max file size: 5MB, Format: CSV"}
-              </p>
+    <Card className="w-full h-full">
+      <CardContent className="p-0">
+        <div className="relative w-full">
+          <Label 
+            htmlFor="csv-upload" 
+            className={`
+              flex flex-col items-center justify-center w-full h-64 
+              border-2 border-dashed rounded-lg cursor-pointer 
+              transition-all duration-200
+              ${isUploading ? 'bg-muted/50 border-muted-foreground/50' : 'hover:bg-muted/50 border-muted-foreground/25 hover:border-primary/50'}
+              ${error ? 'border-destructive/50 bg-destructive/5' : ''}
+              ${uploadResult ? 'border-green-500/50 bg-green-50/50' : ''}
+            `}
+          >
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              {isUploading ? (
+                <div className="flex flex-col items-center gap-3">
+                  <CustomLoader minimal />
+                  <p className="text-sm font-medium text-muted-foreground">Uploading...</p>
+                </div>
+              ) : (
+                <>
+                  <Upload className={`w-12 h-12 mb-3 ${selectedFile ? 'text-primary' : 'text-muted-foreground'}`} />
+                  {selectedFile ? (
+                     <div className="text-center">
+                        <p className="text-sm font-medium text-foreground truncate max-w-[200px]">
+                          {selectedFile.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {(selectedFile.size / 1024).toFixed(2)} KB
+                        </p>
+                     </div>
+                  ) : (
+                     <p className="text-sm text-muted-foreground font-medium">Click to upload CSV</p>
+                  )}
+                </>
+              )}
             </div>
           </Label>
           <Input
@@ -128,50 +139,42 @@ export default function CSVUploadComponent({
             onChange={handleFileChange}
             className="hidden"
             ref={fileInputRef}
+            disabled={isUploading}
           />
         </div>
 
-        {error && <AlertBox type="error" title={error} />}
-
-        {uploadResult && (
-          <AlertBox
-            type="success"
-            title={`Successfully uploaded ${uploadResult.total_questions || "some"} questions. File ID: ${uploadResult.file_id || "unknown"}`}
-          />
-        )}
-
-        <div className="flex gap-2">
-          <Button
-            onClick={handleUpload}
-            disabled={!selectedFile || isUploading}
-            className="flex items-center gap-2"
-          >
-            {isUploading ? (
-              <CustomLoader minimal />
-            ) : (
-              <>
-                <Upload className="w-4 h-4" />
-                Upload CSV
-              </>
+        {(error || uploadResult) && (
+          <div className="p-4 space-y-2">
+            {error && <AlertBox type="error" title={error} />}
+            {uploadResult && (
+               <AlertBox
+                 type="success"
+                 title={`Uploaded ${uploadResult.total_questions || "some"} questions. ID: ${uploadResult.file_id}`}
+               />
             )}
-          </Button>
-
-          {selectedFile && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSelectedFile(null);
-                setUploadResult(null);
-                setError(null);
-                if (fileInputRef.current) {
-                  fileInputRef.current.value = "";
-                }
-              }}
-            >
-              Clear
-            </Button>
-          )}
-        </div>
+            
+            {selectedFile && !isUploading && (
+              <div className="flex justify-center pt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSelectedFile(null);
+                    setUploadResult(null);
+                    setError(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = "";
+                    }
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Clear Selection
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -124,14 +124,16 @@ export default function SolvePage() {
         });
       }
 
-      if (user?.uid && exam_id) {
-        const storageKey = `exam_answers_${user.uid}_${exam_id}`;
+      if (exam_id) {
+        const storageKey = user?.uid 
+          ? `exam_answers_${user.uid}_${exam_id}`
+          : `exam_answers_guest_${exam_id}`;
 
         const savedData = localStorage.getItem(storageKey);
         if (savedData) {
           try {
             const parsedData = JSON.parse(savedData);
-            setLoadedUserAnswers(parsedData.answers || parsedData); // For backward compatibility
+            setLoadedUserAnswers(parsedData.answers || parsedData);
           } catch (e) {
             console.error("Failed to parse saved answers", e);
           }
