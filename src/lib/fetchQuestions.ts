@@ -1,0 +1,127 @@
+import { apiRequest } from "@/lib/api";
+
+export interface Question {
+  id?: string;
+  question: string;
+  option1: string;
+  option2: string;
+  option3: string;
+  option4: string;
+  option5?: string;
+  answer: string;
+  explanation?: string;
+  type: string;
+  file_id?: number;
+}
+
+export interface RawQuestion {
+  id?: string;
+  uid?: string;
+  question?: string;
+  question_text?: string;
+  option1?: string;
+  option2?: string;
+  option3?: string;
+  option4?: string;
+  option5?: string;
+  answer?: string;
+  correct?: string;
+  explanation?: string;
+  subject?: string;
+  paper?: string;
+  chapter?: string;
+  highlight?: string;
+  type?: string;
+  file_id?: number;
+  options?: string[];
+  question_image_url?: string;
+  explanation_image_url?: string;
+  question_marks?: number | string;
+  [key: string]: unknown;
+}
+
+export async function fetchQuestions(
+  fileId?: string | number,
+  examId?: string,
+): Promise<RawQuestion[]> {
+  try {
+    const params: Record<string, string> = {};
+    if (fileId) {
+      params.file_id = String(fileId);
+    }
+    if (examId) {
+      params.exam_id = examId;
+    }
+
+    const result = await apiRequest<unknown>("questions", "GET", null, params);
+
+    if (!result) {
+       throw new Error("No response from API");
+    }
+
+    // Determine the array of raw questions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let rawData: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyResult = result as any;
+
+    if (Array.isArray(result)) {
+      rawData = result;
+    } else if (anyResult.success && Array.isArray(anyResult.data)) {
+        // If apiRequest normalized it (unlikely given current implementation but possible)
+        rawData = anyResult.data;
+    } else if (anyResult.data && Array.isArray(anyResult.data)) {
+        rawData = anyResult.data;
+    } else if (anyResult.questions && Array.isArray(anyResult.questions)) {
+        rawData = anyResult.questions;
+    } else {
+        // If result is an error object
+        if (anyResult.success === false) {
+             throw new Error(anyResult.message || "Failed to fetch questions");
+        }
+        // Fallback: maybe empty or unexpected format
+        console.warn("Unexpected API response format in fetchQuestions", result);
+        rawData = [];
+    }
+
+    // Transform the data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transformed: RawQuestion[] = rawData.map((q: any) => ({
+      id: q.id,
+      file_id: q.file_id,
+      question: q.question_text || "",
+      question_text: q.question_text || "",
+       
+       
+      options: [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
+        (o: unknown) => o && typeof o === 'string' && o.trim() !== "",
+      ),
+      option1: q.option1,
+      option2: q.option2,
+      option3: q.option3,
+      option4: q.option4,
+      option5: q.option5,
+      correct: q.answer, // legacy front-end expects 'correct'
+      answer: q.answer,
+      explanation: q.explanation || "",
+      type: q.type,
+      question_image: q.question_image,
+      explanation_image: q.explanation_image,
+      question_image_url: q.question_image_url,
+      explanation_image_url: q.explanation_image_url,
+      question_marks: q.question_marks,
+      subject: q.subject,
+      paper: q.paper,
+      chapter: q.chapter,
+      highlight: q.highlight,
+      order_index: q.order_index,
+      created_at: q.created_at,
+    }));
+
+    return transformed;
+  } catch (error) {
+    // Bubble up a useful error for callers
+    if (error instanceof Error) throw error;
+    throw new Error(String(error));
+  }
+}
