@@ -17,20 +17,22 @@ export default function RegisterPage() {
           <div className="flex justify-center items-center mb-4">
             <GraduationCap className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">MNR Study</CardTitle>
-          <CardDescription>Registration is currently closed.</CardDescription>
+          <CardTitle className="text-2xl">Examify</CardTitle>
+          <CardDescription>
+            অ্যাকাউন্ট তৈরি করতে নিচের ফর্মটি পূরণ করুন
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 text-center">
-          <p className="text-lg font-semibold">
-            Please contact MNR World admins to obtain your account.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="underline hover:text-primary">
-              Login here
-            </Link>
-          </p>
-        </CardContent>
+          <CardFooter className="flex-col">
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link href="/login" className="underline hover:text-primary">
+                Login here
+              </Link>
+            </p>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Please contact Examify admins to obtain your account.
+            </p>
+          </CardFooter>
       </Card>
     </div>
   );

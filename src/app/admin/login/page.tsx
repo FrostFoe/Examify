@@ -49,7 +49,7 @@ export default function AdminLoginPage() {
           <div className="flex justify-center items-center mb-4">
             <Shield className="h-10 w-10 text-destructive" />
           </div>
-          <CardTitle className="text-2xl">অ্যাডমিন লগইন</CardTitle>
+          <CardTitle className="text-2xl">Examify অ্যাডমিন লগইন</CardTitle>
           <CardDescription>
             অ্যাডমিন প্যানেলে প্রবেশ করতে আপনার প্রমাণপত্র লিখুন।
           </CardDescription>
