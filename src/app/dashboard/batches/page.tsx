@@ -79,25 +79,17 @@ export default function StudentBatchesPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="my-batches" className="mt-6">
-          {user ? (
-            enrolledBatches.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {enrolledBatches.map((batch) => (
-                  <StudentBatchCard key={batch.id} batch={batch} />
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                icon={<BookOpen className="h-12 w-12 text-primary" />}
-                title="কোনো ব্যাচে ভর্তি হননি"
-                description="আপনি কোনো ব্যাচে ভর্তি নন। পাবলিক ব্যাচ ট্যাবে সকল ব্যাচগুলো দেখুন।"
-              />
-            )
+          {enrolledBatches.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {enrolledBatches.map((batch) => (
+                <StudentBatchCard key={batch.id} batch={batch} />
+              ))}
+            </div>
           ) : (
             <EmptyState
               icon={<BookOpen className="h-12 w-12 text-primary" />}
-              title="লগইন করুন"
-              description="আপনার ভর্তি হওয়া ব্যাচগুলো দেখতে লগইন করুন।"
+              title="কোনো ব্যাচে ভর্তি হননি"
+              description="আপনি কোনো ব্যাচে ভর্তি নন। পাবলিক ব্যাচ ট্যাবে সকল ব্যাচগুলো দেখুন।"
             />
           )}
         </TabsContent>

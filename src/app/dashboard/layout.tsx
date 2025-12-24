@@ -35,23 +35,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (loading) return;
-    
-    // Define paths that are allowed for guests
-    const publicAllowedPaths = [
-      /^\/dashboard\/batches$/,
-      /^\/dashboard\/batches\/[^/]+$/,
-      /^\/dashboard\/exams\/[^/]+$/,
-      /^\/dashboard\/exams\/[^/]+\/solve$/,
-    ];
-    
-    const isPublicPath = publicAllowedPaths.some(regex => regex.test(pathname || ''));
 
-    if (!user && !isPublicPath) {
+    if (!user) {
       router.push(`/login?redirect=${pathname}`);
     }
   }, [user, loading, router, pathname]);
 
-  if (loading || (!user && !pathname?.startsWith('/dashboard/batches') && !pathname?.startsWith('/dashboard/exams'))) {
+  if (loading || !user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <CustomLoader />
@@ -69,12 +59,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Desktop Sidebar */}
       <DashboardSidebar
         items={sidebarNavItems}
-        userInfo={user ? {
-          name: user.name,
-          role: `রোল: ${user.roll}`,
-        } : {
-          name: "Guest Student",
-          role: "পাবলিক অ্যাক্সেস",
+        userInfo={{
+          name: user?.name || "User",
+          role: user?.roll ? `রোল: ${user.roll}` : "Student",
         }}
         onLogout={handleLogout}
         panelType="student"
@@ -110,12 +97,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </Avatar>
             <div className="text-right">
               <p className="text-sm font-medium">
-                {user ? (user.name.length > 11
+                {user?.name && user.name.length > 11
                   ? `${user.name.slice(0, 11)}...`
-                  : user.name) : "Guest"}
+                  : user?.name || "User"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {user ? `রোল: ${user.roll}` : "লগইন নেই"}
+                {user?.roll ? `রোল: ${user.roll}` : "Student"}
               </p>
             </div>
           </div>

@@ -433,10 +433,8 @@ export default function TakeExamPage() {
       }
     }
 
-    if (exam_id) {
-      const storageKey = user 
-        ? `exam_answers_${user.uid}_${exam_id}`
-        : `exam_answers_guest_${exam_id}`;
+    if (exam_id && user) {
+      const storageKey = `exam_answers_${user.uid}_${exam_id}`;
 
       const dataToStore = {
         answers: selectedAnswers,
@@ -543,6 +541,11 @@ export default function TakeExamPage() {
           return;
         }
 
+        if (!user?.uid) {
+          setIsAuthorized(false);
+          return;
+        }
+
         if (!exam.batch_id) {
           setIsAuthorized(true);
           return;
@@ -558,11 +561,6 @@ export default function TakeExamPage() {
           batchResult.data.is_public
         ) {
           setIsAuthorized(true);
-          return;
-        }
-
-        if (!user?.uid) {
-          setIsAuthorized(false);
           return;
         }
 
@@ -945,22 +943,6 @@ export default function TakeExamPage() {
               </div>
             )}
           </div>
-          {!user && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescriptionComponent>
-                আপনি অতিথি হিসেবে এই পাবলিক পরীক্ষায় অংশগ্রহণ করছেন — আপনার ফলাফল
-                সংরক্ষিত হবে না। স্কোর সংরক্ষণ করতে অনুগ্রহ করে{" "}
-                <Link href="/login" className="underline">
-                  লগইন
-                </Link>{" "}
-                বা{" "}
-                <Link href="/register" className="underline">
-                  নিবন্ধন
-                </Link>{" "}
-                করুন।
-              </AlertDescriptionComponent>
-            </Alert>
-          )}
 
           <Tabs defaultValue="questions" className="w-full">
             <TabsList className="grid w-full grid-cols-1 mb-6">
