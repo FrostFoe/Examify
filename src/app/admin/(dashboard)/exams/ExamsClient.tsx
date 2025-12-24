@@ -78,6 +78,7 @@ export function ExamsClient({
   const [mode, setMode] = useState<"live" | "practice">("live");
   const [exams, setExams] = useState<Exam[]>(initialExams);
   const [isCustomExam, setIsCustomExam] = useState(false);
+  const [useQuestionBank, setUseQuestionBank] = useState(false);
   const [fileId, setFileId] = useState("");
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
 
@@ -479,12 +480,28 @@ export function ExamsClient({
                     <input type="hidden" name="file_id" value={fileId} />
 
                     <div className="space-y-2">
-                      <Label>প্রশ্ন ব্যাংক থেকে প্রশ্ন বাছুন</Label>
-                      <QuestionSelector
-                        selectedIds={selectedQuestionIds}
-                        onChange={setSelectedQuestionIds}
-                        minimal
-                      />
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="use-question-bank-toggle"
+                          checked={useQuestionBank}
+                          onCheckedChange={(checked) =>
+                            setUseQuestionBank(checked as boolean)
+                          }
+                        />
+                        <Label htmlFor="use-question-bank-toggle">
+                          প্রশ্ন ব্যাংক থেকে প্রশ্ন বাছুন
+                        </Label>
+                      </div>
+                      
+                      {useQuestionBank && (
+                        <div className="pt-2">
+                          <QuestionSelector
+                            selectedIds={selectedQuestionIds}
+                            onChange={setSelectedQuestionIds}
+                            minimal
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-6">

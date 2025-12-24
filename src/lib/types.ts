@@ -47,20 +47,10 @@ export type Exam = {
   total_subjects?: number | null;
   mandatory_subjects?: string[] | null; // JSONB array in DB
   optional_subjects?: string[] | null; // JSONB array in DB
-  blueprint?: ExamBlueprintRule[] | null;
   question_ids?: string[];
   created_at: string;
   questions?: Question[];
-};
-
-export type ExamBlueprintRule = {
-  subject?: string;
-  paper?: string;
-  chapter?: string;
-  highlight?: string;
-  count: number;
-  marks?: number;
-};
+}
 
 export type Question = {
   id?: string;

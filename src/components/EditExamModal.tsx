@@ -26,7 +26,6 @@ import { Label } from "./ui/label";
 import { ScrollArea } from "./ui/scroll-area";
 import QuestionSelector from "./QuestionSelector";
 import { Plus, Trash2 } from "lucide-react";
-import type { ExamBlueprintRule } from "@/lib/types";
 
 const subjects = [
   { id: "p", name: "পদার্থবিজ্ঞান" },
@@ -75,7 +74,6 @@ export function EditExamModal({ exam, isOpen, onClose, onSuccess }: EditExamModa
   const [mandatorySubjects, setMandatorySubjects] = useState<string[]>([]);
   const [optionalSubjects, setOptionalSubjects] = useState<string[]>([]);
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
-  const [blueprint, setBlueprint] = useState<ExamBlueprintRule[]>([]);
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [startHour, setStartHour] = useState("12");
@@ -97,7 +95,6 @@ export function EditExamModal({ exam, isOpen, onClose, onSuccess }: EditExamModa
       setMandatorySubjects(exam.mandatory_subjects || []);
       setOptionalSubjects(exam.optional_subjects || []);
       setSelectedQuestionIds(exam.question_ids || []);
-      setBlueprint(exam.blueprint || []);
 
       if (exam.start_at) {
         const d = new Date(exam.start_at);
@@ -197,7 +194,6 @@ export function EditExamModal({ exam, isOpen, onClose, onSuccess }: EditExamModa
               if (endAtISO) formData.set("end_at", endAtISO);
               
               formData.set("question_ids", JSON.stringify(selectedQuestionIds));
-              formData.set("blueprint", JSON.stringify(blueprint));
 
               const result = await updateExam(formData);
               if (result.success) {
@@ -450,155 +446,6 @@ export function EditExamModal({ exam, isOpen, onClose, onSuccess }: EditExamModa
                   প্রশ্নগুলো এলোমেলো করুন
                 </Label>
               </div>
-            </div>
-
-            <div className="space-y-4 border rounded-lg p-4 bg-muted/10">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-bold">এক্সাম ব্লুপ্রিন্ট (ডাইনামিক সিলেকশন)</Label>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setBlueprint([...blueprint, { count: 10, marks: 1.0 }])}
-                >
-                  <Plus className="h-4 w-4 mr-1" /> রুল যোগ করুন
-                </Button>
-              </div>
-              
-              {blueprint.length > 0 ? (
-                <div className="space-y-3">
-                  {blueprint.map((rule, idx) => (
-                    <div key={idx} className="grid grid-cols-1 md:grid-cols-6 gap-2 p-3 border rounded-md bg-background relative group">
-                      <div className="md:col-span-1">
-                        <Label className="text-[10px]">বিষয়</Label>
-                        <Select 
-                          value={rule.subject || "none"} 
-                          onValueChange={(val) => {
-                            const newB = [...blueprint];
-                            newB[idx].subject = val === "none" ? "" : val;
-                            setBlueprint(newB);
-                          }}
-                        >
-                          <SelectTrigger className="h-8 text-[10px] px-2">
-                            <SelectValue placeholder="Subject" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            <SelectItem value="physics">Physics</SelectItem>
-                            <SelectItem value="chemistry">Chemistry</SelectItem>
-                            <SelectItem value="higher_math">Higher Math</SelectItem>
-                            <SelectItem value="biology">Biology</SelectItem>
-                            <SelectItem value="bangla">Bangla</SelectItem>
-                            <SelectItem value="english">English</SelectItem>
-                            <SelectItem value="ict">ICT</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="md:col-span-1">
-                        <Label className="text-[10px]">পত্র</Label>
-                        <Select 
-                          value={rule.paper || "none"} 
-                          onValueChange={(val) => {
-                            const newB = [...blueprint];
-                            newB[idx].paper = val === "none" ? "" : val;
-                            setBlueprint(newB);
-                          }}
-                        >
-                          <SelectTrigger className="h-8 text-[10px] px-2">
-                            <SelectValue placeholder="Paper" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            <SelectItem value="1st">1st Paper</SelectItem>
-                            <SelectItem value="2nd">2nd Paper</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="md:col-span-1">
-                        <Label className="text-[10px]">অধ্যায়</Label>
-                        <Select 
-                          value={rule.chapter || "none"} 
-                          onValueChange={(val) => {
-                            const newB = [...blueprint];
-                            newB[idx].chapter = val === "none" ? "" : val;
-                            setBlueprint(newB);
-                          }}
-                        >
-                          <SelectTrigger className="h-8 text-[10px] px-2">
-                            <SelectValue placeholder="Chapter" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {Array.from({ length: 20 }, (_, i) => (
-                              <SelectItem key={i + 1} value={String(i + 1)}>Chapter {i + 1}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="md:col-span-1">
-                        <Label className="text-[10px]">হাইলাইট</Label>
-                        <Select 
-                          value={rule.highlight || "none"} 
-                          onValueChange={(val) => {
-                            const newB = [...blueprint];
-                            newB[idx].highlight = val === "none" ? "" : val;
-                            setBlueprint(newB);
-                          }}
-                        >
-                          <SelectTrigger className="h-8 text-[10px] px-2">
-                            <SelectValue placeholder="Highlight" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            <SelectItem value="Board">Board</SelectItem>
-                            <SelectItem value="Admission">Admission</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="md:col-span-1">
-                        <Label className="text-[10px]">সংখ্যা</Label>
-                        <Input 
-                          type="number" 
-                          value={rule.count} 
-                          onChange={(e) => {
-                            const newB = [...blueprint];
-                            newB[idx].count = parseInt(e.target.value) || 0;
-                            setBlueprint(newB);
-                          }}
-                          className="h-8 text-xs"
-                        />
-                      </div>
-                      <div className="md:col-span-1 flex items-end gap-1">
-                        <div className="flex-1">
-                          <Label className="text-[10px]">মার্ক</Label>
-                          <Input 
-                            type="number" 
-                            step="0.1"
-                            value={rule.marks || 1.0} 
-                            onChange={(e) => {
-                              const newB = [...blueprint];
-                              newB[idx].marks = parseFloat(e.target.value) || 0;
-                              setBlueprint(newB);
-                            }}
-                            className="h-8 text-xs"
-                          />
-                        </div>
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-destructive"
-                          onClick={() => setBlueprint(blueprint.filter((_, i) => i !== idx))}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground text-center py-2">কোনো ব্লুপ্রিন্ট রুল নেই।</p>
-              )}
             </div>
 
             <div className="flex items-center space-x-2 pt-2">

@@ -223,41 +223,30 @@ export async function createExam(formData: FormData) {
     end_at = null;
   }
 
-  const total_subjects_raw = formData.get("total_subjects") as string;
-  const total_subjects = total_subjects_raw
-    ? parseInt(total_subjects_raw, 10)
-    : null;
-  const mandatory_subjects = formData.getAll("mandatory_subjects") as string[];
-  const optional_subjects = formData.getAll("optional_subjects") as string[];
-  const question_ids_raw = formData.get("question_ids") as string | null;
-  const question_ids = question_ids_raw ? JSON.parse(question_ids_raw) : [];
-  const blueprint_raw = formData.get("blueprint") as string | null;
-  const blueprint = blueprint_raw ? JSON.parse(blueprint_raw) : [];
+    const total_subjects = formData.get("total_subjects") ? parseInt(formData.get("total_subjects") as string) : null;
+    const mandatory_subjects = JSON.parse((formData.get("mandatory_subjects") as string) || "[]");
+    const optional_subjects = JSON.parse((formData.get("optional_subjects") as string) || "[]");
+    const question_ids = JSON.parse((formData.get("question_ids") as string) || "[]");
 
-  const result = await apiRequest<Exam>(
-    "exams",
-    "POST",
-    {
+    const result = await apiRequest("exams", "POST", {
+      id: uuidv4(),
       name,
+      description,
+      course_name,
       batch_id,
       duration_minutes,
       marks_per_question,
       negative_marks_per_wrong,
-      file_id: file_id || null,
-      is_practice: is_practice || false,
+      file_id,
+      is_practice,
       shuffle_questions,
       start_at,
       end_at,
       total_subjects,
-      mandatory_subjects:
-        mandatory_subjects.length > 0 ? mandatory_subjects : null,
-      optional_subjects:
-        optional_subjects.length > 0 ? optional_subjects : null,
+      mandatory_subjects,
+      optional_subjects,
       question_ids,
-      blueprint,
-    },
-    { action: "create" },
-  );
+    }, { action: 'create' });
 
   if (!result.success) {
     return {
@@ -347,8 +336,6 @@ export async function updateExam(formData: FormData) {
   const optional_subjects = formData.getAll("optional_subjects") as string[];
   const question_ids_raw = formData.get("question_ids") as string | null;
   const question_ids = question_ids_raw ? JSON.parse(question_ids_raw) : null;
-  const blueprint_raw = formData.get("blueprint") as string | null;
-  const blueprint = blueprint_raw ? JSON.parse(blueprint_raw) : [];
 
   const result = await apiRequest<Exam>(
     "exams",
@@ -369,7 +356,6 @@ export async function updateExam(formData: FormData) {
         mandatory_subjects.length > 0 ? mandatory_subjects : [],
       optional_subjects: optional_subjects.length > 0 ? optional_subjects : [],
       question_ids,
-      blueprint,
     },
     { action: "update" },
   );
