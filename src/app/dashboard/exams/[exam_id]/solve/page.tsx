@@ -54,6 +54,15 @@ export default function SolvePage() {
     }
   }, [exam_id, user, searchParams]);
 
+  useEffect(() => {
+    if (questions.length > 0) {
+      console.log("SolvePage: Questions loaded", questions.length, questions[0]);
+    }
+    if (loadedUserAnswers) {
+      console.log("SolvePage: User answers loaded", loadedUserAnswers);
+    }
+  }, [questions, loadedUserAnswers]);
+
   const fetchExamAndAnswers = async () => {
     setLoading(true);
     try {
@@ -515,8 +524,9 @@ export default function SolvePage() {
                     <div className="grid gap-2">
                       {(Array.isArray(question.options)
                         ? question.options
-                        : Object.values(question.options)
+                        : Object.values(question.options || {})
                       ).map((option, optIdx) => {
+                        if (!option) return null;
                         const isSelected = userAnswer === optIdx;
                         const isRightAnswer = correctAnswer === optIdx;
                         const bengaliLetters = [
