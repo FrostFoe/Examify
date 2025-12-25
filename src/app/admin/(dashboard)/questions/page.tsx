@@ -66,8 +66,7 @@ export default function AdminFilesPage() {
       if (result.success && result.data) {
         setFiles(result.data);
       } else if (Array.isArray(result)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setFiles(result as any);
+        setFiles(result);
       }
     } catch {
       console.error("Failed to fetch files");

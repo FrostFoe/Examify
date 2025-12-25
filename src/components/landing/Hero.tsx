@@ -1,15 +1,9 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  Sparkles,
-  CheckCircle,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Sparkles, CheckCircle, Zap } from "lucide-react";
 
 export function Hero() {
-
   return (
     <div className="w-full">
       {/* Hero Section */}
@@ -44,7 +38,8 @@ export function Hero() {
 
               {/* Subtitle */}
               <p className="text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Examify-এর সাথে বিশ্বমানের পরীক্ষা প্রস্তুতি নিন। লাইভ পরীক্ষা, বিস্তারিত বিশ্লেষণ এবং ব্যক্তিগত গাইডেন্স সবই এক প্ল্যাটফর্মে।
+                Examify-এর সাথে বিশ্বমানের পরীক্ষা প্রস্তুতি নিন। লাইভ পরীক্ষা,
+                বিস্তারিত বিশ্লেষণ এবং ব্যক্তিগত গাইডেন্স সবই এক প্ল্যাটফর্মে।
               </p>
 
               {/* CTA Buttons */}
@@ -86,7 +81,8 @@ export function Hero() {
                   ))}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">১০,০০০+</strong> শিক্ষার্থী আমাদের বিশ্বাস করেন
+                  <strong className="text-foreground">১০,০০০+</strong>{" "}
+                  শিক্ষার্থী আমাদের বিশ্বাস করেন
                 </p>
               </div>
             </div>
@@ -108,7 +104,9 @@ export function Hero() {
                       style={{ animationDelay: `${i * 100}ms` }}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{item.title}</span>
+                        <span className="text-sm font-medium">
+                          {item.title}
+                        </span>
                         <span className="text-lg font-bold text-primary">
                           {item.score}
                         </span>

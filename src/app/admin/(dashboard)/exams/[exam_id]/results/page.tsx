@@ -275,11 +275,17 @@ export default function AdminExamResultsPage() {
 
   const avgScore =
     results.length > 0
-      ? results.reduce((sum, r) => sum + parseFloat(String(r.score || 0)), 0) / results.length
+      ? results.reduce((sum, r) => sum + parseFloat(String(r.score || 0)), 0) /
+        results.length
       : 0;
-  const maxScore = Math.max(...results.map((r) => parseFloat(String(r.score || 0))), 0);
+  const maxScore = Math.max(
+    ...results.map((r) => parseFloat(String(r.score || 0))),
+    0,
+  );
   const minScore =
-    results.length > 0 ? Math.min(...results.map((r) => parseFloat(String(r.score || 0)))) : 0;
+    results.length > 0
+      ? Math.min(...results.map((r) => parseFloat(String(r.score || 0))))
+      : 0;
 
   return (
     <div className="container mx-auto p-2 md:p-4 space-y-6">
@@ -313,7 +319,9 @@ export default function AdminExamResultsPage() {
             <CardTitle className="text-sm font-medium">গড় স্কোর</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{parseFloat(String(avgScore)).toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              {parseFloat(String(avgScore)).toFixed(2)}
+            </div>
           </CardContent>
         </Card>
 
@@ -324,7 +332,9 @@ export default function AdminExamResultsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{parseFloat(String(maxScore)).toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              {parseFloat(String(maxScore)).toFixed(2)}
+            </div>
           </CardContent>
         </Card>
 
@@ -335,7 +345,9 @@ export default function AdminExamResultsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{parseFloat(String(minScore)).toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              {parseFloat(String(minScore)).toFixed(2)}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -418,7 +430,9 @@ export default function AdminExamResultsPage() {
                       {result.student_id_obj?.name || "N/A"}
                     </TableCell>
                     <TableCell className="text-right font-bold">
-                      {result.score ? parseFloat(String(result.score)).toFixed(2) : 0}
+                      {result.score
+                        ? parseFloat(String(result.score)).toFixed(2)
+                        : 0}
                     </TableCell>
                     <TableCell className="text-center text-green-600">
                       {result.correct_answers || 0}

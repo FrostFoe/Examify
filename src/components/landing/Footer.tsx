@@ -78,7 +78,10 @@ export function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 mb-12">
             {/* Brand Section */}
             <div className="lg:col-span-1">
-              <Link href="/" className="inline-flex items-center space-x-2.5 group mb-4">
+              <Link
+                href="/"
+                className="inline-flex items-center space-x-2.5 group mb-4"
+              >
                 <div className="relative">
                   <div className="h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-110">
                     <NotebookText size={32} className="h-full w-full" />
@@ -91,7 +94,8 @@ export function Footer() {
               </Link>
 
               <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-                আপনার চূড়ান্ত পরীক্ষার প্রস্তুতি সঙ্গী। বিশ্বমানের শিক্ষা, ব্যক্তিগত গাইডেন্স এবং সফলতার পথ।
+                আপনার চূড়ান্ত পরীক্ষার প্রস্তুতি সঙ্গী। বিশ্বমানের শিক্ষা,
+                ব্যক্তিগত গাইডেন্স এবং সফলতার পথ।
               </p>
 
               <div className="flex items-center flex-wrap gap-2">
@@ -148,7 +152,10 @@ export function Footer() {
                   placeholder="আপনার ইমেইল..."
                   className="flex-1 bg-background border-primary/20 focus:border-primary"
                 />
-                <Button size="sm" className="bg-gradient-to-r from-primary to-primary/80">
+                <Button
+                  size="sm"
+                  className="bg-gradient-to-r from-primary to-primary/80"
+                >
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -169,9 +176,9 @@ export function Footer() {
                 Made with
                 <span className="text-primary mx-1">❤</span>
                 by
-                <a 
-                  href="https://shop.frostfoe.me" 
-                  target="_blank" 
+                <a
+                  href="https://shop.frostfoe.me"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="font-mono ml-1.5 hover:text-primary transition-colors font-medium"
                 >

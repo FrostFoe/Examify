@@ -75,10 +75,7 @@ export default function BatchLeaderboardPage() {
 
         const examIds = exams.map((exam) => exam.id);
         const negativeMarksMap = new Map(
-          exams.map((e) => [
-            e.id,
-            e.negative_marks_per_wrong ?? 0,
-          ]),
+          exams.map((e) => [e.id, e.negative_marks_per_wrong ?? 0]),
         );
 
         if (examIds.length === 0) {
@@ -90,9 +87,14 @@ export default function BatchLeaderboardPage() {
         // Fetch all results for these exams
         // We need a way to fetch results for multiple exams or a batch
         // I'll update results.php to support batch_id
-        const resultsResult = await apiRequest<ApiResult[]>("results", "GET", null, {
-          batch_id,
-        });
+        const resultsResult = await apiRequest<ApiResult[]>(
+          "results",
+          "GET",
+          null,
+          {
+            batch_id,
+          },
+        );
         if (!resultsResult.success || !resultsResult.data)
           throw new Error(resultsResult.message);
         const results = resultsResult.data;

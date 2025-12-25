@@ -109,9 +109,9 @@ function LoginPageContent() {
             </p>
             <p className="mt-4 text-center text-[10px] text-muted-foreground/60">
               Made with <span className="text-destructive mx-0.5">❤</span> by{" "}
-              <a 
-                href="https://shop.frostfoe.me" 
-                target="_blank" 
+              <a
+                href="https://shop.frostfoe.me"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="font-mono hover:text-primary transition-colors"
               >
@@ -127,11 +127,13 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
       <LoginPageContent />
     </Suspense>
   );

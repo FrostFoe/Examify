@@ -22,17 +22,17 @@ export default function RegisterPage() {
             অ্যাকাউন্ট তৈরি করতে নিচের ফর্মটি পূরণ করুন
           </CardDescription>
         </CardHeader>
-          <CardFooter className="flex-col">
-            <p className="mt-4 text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/login" className="underline hover:text-primary">
-                Login here
-              </Link>
-            </p>
-            <p className="mt-2 text-center text-xs text-muted-foreground">
-              Please contact Examify admins to obtain your account.
-            </p>
-          </CardFooter>
+        <CardFooter className="flex-col">
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link href="/login" className="underline hover:text-primary">
+              Login here
+            </Link>
+          </p>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            Please contact Examify admins to obtain your account.
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );

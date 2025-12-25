@@ -113,7 +113,9 @@ export function BatchDetailsClient({
   const [isSubmittingExam, setIsSubmittingExam] = useState(false);
   const [isAddExamOpen, setIsAddExamOpen] = useState(false);
   const [mode, setMode] = useState<"live" | "practice">("live");
-  const [enrolledStudents, setEnrolledStudents] = useState<User[]>(initialEnrolledStudents);
+  const [enrolledStudents, setEnrolledStudents] = useState<User[]>(
+    initialEnrolledStudents,
+  );
   const [newStudentRoll, setNewStudentRoll] = useState("");
   const [isSubmittingStudent, setIsSubmittingStudent] = useState(false);
   const [editingExam, setEditingExam] = useState<Exam | null>(null);
@@ -132,10 +134,14 @@ export function BatchDetailsClient({
   const [useQuestionBank, setUseQuestionBank] = useState(false);
   const [fileId, setFileId] = useState("");
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
-  
+
   // Creation Form Subject Configs
-  const [mandatorySubjectConfigs, setMandatorySubjectConfigs] = useState<SubjectConfig[]>([]);
-  const [optionalSubjectConfigs, setOptionalSubjectConfigs] = useState<SubjectConfig[]>([]);
+  const [mandatorySubjectConfigs, setMandatorySubjectConfigs] = useState<
+    SubjectConfig[]
+  >([]);
+  const [optionalSubjectConfigs, setOptionalSubjectConfigs] = useState<
+    SubjectConfig[]
+  >([]);
   const [activeSubjectSelection, setActiveSubjectSelection] = useState<{
     id: string;
     type: "mandatory" | "optional";
@@ -161,24 +167,24 @@ export function BatchDetailsClient({
     if (mode === "live") {
       const dhakaNow = getCurrentDhakaTime();
       setStartDate(dhakaNow);
-      
+
       let h = dhakaNow.getHours();
       const p = h >= 12 ? "PM" : "AM";
       h = h % 12;
       h = h === 0 ? 12 : h;
-      
+
       setStartPeriod(p);
       setStartHour(h.toString().padStart(2, "0"));
       setStartMinute(dhakaNow.getMinutes().toString().padStart(2, "0"));
 
       const dhakaEnd = new Date(dhakaNow.getTime() + 60 * 60 * 1000);
       setEndDate(dhakaEnd);
-      
+
       let eh = dhakaEnd.getHours();
       const ep = eh >= 12 ? "PM" : "AM";
       eh = eh % 12;
       eh = eh === 0 ? 12 : eh;
-      
+
       setEndPeriod(ep);
       setEndHour(eh.toString().padStart(2, "0"));
       setEndMinute(dhakaEnd.getMinutes().toString().padStart(2, "0"));
@@ -190,33 +196,43 @@ export function BatchDetailsClient({
     input.value = bengaliToEnglishNumber(input.value);
   };
 
-  const handleSubjectToggle = (subjectId: string, type: "mandatory" | "optional", checked: boolean) => {
+  const handleSubjectToggle = (
+    subjectId: string,
+    type: "mandatory" | "optional",
+    checked: boolean,
+  ) => {
     if (type === "mandatory") {
-      setMandatorySubjectConfigs(prev => {
+      setMandatorySubjectConfigs((prev) => {
         if (checked) {
-          return [...prev, { id: subjectId, count: 0, question_ids: [], type: "mandatory" }];
+          return [
+            ...prev,
+            { id: subjectId, count: 0, question_ids: [], type: "mandatory" },
+          ];
         }
-        return prev.filter(s => s.id !== subjectId);
+        return prev.filter((s) => s.id !== subjectId);
       });
     } else {
-      setOptionalSubjectConfigs(prev => {
+      setOptionalSubjectConfigs((prev) => {
         if (checked) {
-          return [...prev, { id: subjectId, count: 0, question_ids: [], type: "optional" }];
+          return [
+            ...prev,
+            { id: subjectId, count: 0, question_ids: [], type: "optional" },
+          ];
         }
-        return prev.filter(s => s.id !== subjectId);
+        return prev.filter((s) => s.id !== subjectId);
       });
     }
   };
 
   const updateSubjectConfig = (
-    subjectId: string, 
-    type: "mandatory" | "optional", 
-    field: keyof SubjectConfig, 
-    value: string | number | string[]
+    subjectId: string,
+    type: "mandatory" | "optional",
+    field: keyof SubjectConfig,
+    value: string | number | string[],
   ) => {
-    const updater = (prev: SubjectConfig[]) => 
-      prev.map(s => s.id === subjectId ? { ...s, [field]: value } : s);
-      
+    const updater = (prev: SubjectConfig[]) =>
+      prev.map((s) => (s.id === subjectId ? { ...s, [field]: value } : s));
+
     if (type === "mandatory") setMandatorySubjectConfigs(updater);
     else setOptionalSubjectConfigs(updater);
   };
@@ -269,7 +285,7 @@ export function BatchDetailsClient({
         toast({ title: "ছাত্রছাত্রী সফলভাবে মুছে ফেলা হয়েছে" });
         // Remove from students list immediately
         setEnrolledStudents((prev) =>
-          prev.filter((s) => s.uid !== pendingDelete.id)
+          prev.filter((s) => s.uid !== pendingDelete.id),
         );
       } else {
         toast({
@@ -453,12 +469,26 @@ export function BatchDetailsClient({
                     const allQuestionIds = new Set<string>(selectedQuestionIds);
 
                     if (isCustomExam) {
-                      mandatorySubjectConfigs.forEach(s => s.question_ids?.forEach(qid => allQuestionIds.add(qid)));
-                      optionalSubjectConfigs.forEach(s => s.question_ids?.forEach(qid => allQuestionIds.add(qid)));
-                      
+                      mandatorySubjectConfigs.forEach((s) =>
+                        s.question_ids?.forEach((qid) =>
+                          allQuestionIds.add(qid),
+                        ),
+                      );
+                      optionalSubjectConfigs.forEach((s) =>
+                        s.question_ids?.forEach((qid) =>
+                          allQuestionIds.add(qid),
+                        ),
+                      );
+
                       // Serialize subject configs
-                      formData.set("mandatory_subjects", JSON.stringify(mandatorySubjectConfigs));
-                      formData.set("optional_subjects", JSON.stringify(optionalSubjectConfigs));
+                      formData.set(
+                        "mandatory_subjects",
+                        JSON.stringify(mandatorySubjectConfigs),
+                      );
+                      formData.set(
+                        "optional_subjects",
+                        JSON.stringify(optionalSubjectConfigs),
+                      );
                     }
 
                     formData.set(
@@ -694,46 +724,46 @@ export function BatchDetailsClient({
                       value={mode === "practice" ? "true" : "false"}
                     />
                     <input type="hidden" name="file_id" value={fileId} />
-                    
+
                     {!isCustomExam && (
-                        <>
-                            <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                id="use-question-bank-toggle-batch"
-                                checked={useQuestionBank}
-                                onCheckedChange={(checked) =>
-                                    setUseQuestionBank(checked as boolean)
-                                }
-                                />
-                                <Label htmlFor="use-question-bank-toggle-batch">
-                                প্রশ্ন ব্যাংক থেকে প্রশ্ন বাছুন
-                                </Label>
-                            </div>
-
-                            {useQuestionBank && (
-                                <div className="pt-2">
-                                <QuestionSelector
-                                    selectedIds={selectedQuestionIds}
-                                    onChange={setSelectedQuestionIds}
-                                    minimal
-                                />
-                                </div>
-                            )}
-                            </div>
-
-                            <div className="mt-6">
-                            <h3 className="text-lg font-medium mb-3">
-                                Or upload questions from CSV
-                            </h3>
-                            <CSVUploadComponent
-                                isBank={false}
-                                onUploadSuccess={(result) => {
-                                setFileId((result.file_id as string) || "");
-                                }}
+                      <>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="use-question-bank-toggle-batch"
+                              checked={useQuestionBank}
+                              onCheckedChange={(checked) =>
+                                setUseQuestionBank(checked as boolean)
+                              }
                             />
+                            <Label htmlFor="use-question-bank-toggle-batch">
+                              প্রশ্ন ব্যাংক থেকে প্রশ্ন বাছুন
+                            </Label>
+                          </div>
+
+                          {useQuestionBank && (
+                            <div className="pt-2">
+                              <QuestionSelector
+                                selectedIds={selectedQuestionIds}
+                                onChange={setSelectedQuestionIds}
+                                minimal
+                              />
                             </div>
-                        </>
+                          )}
+                        </div>
+
+                        <div className="mt-6">
+                          <h3 className="text-lg font-medium mb-3">
+                            Or upload questions from CSV
+                          </h3>
+                          <CSVUploadComponent
+                            isBank={false}
+                            onUploadSuccess={(result) => {
+                              setFileId((result.file_id as string) || "");
+                            }}
+                          />
+                        </div>
+                      </>
                     )}
                   </div>
 
@@ -778,107 +808,173 @@ export function BatchDetailsClient({
                       </div>
 
                       <div className="space-y-4">
-                        <Label className="text-base font-bold">দাগানো বাধ্যতামূলক (Mandatory)</Label>
+                        <Label className="text-base font-bold">
+                          দাগানো বাধ্যতামূলক (Mandatory)
+                        </Label>
                         <div className="space-y-3">
                           {subjects.map((subject) => {
-                             const isSelected = mandatorySubjectConfigs.some(s => s.id === subject.id);
-                             const config = mandatorySubjectConfigs.find(s => s.id === subject.id);
+                            const isSelected = mandatorySubjectConfigs.some(
+                              (s) => s.id === subject.id,
+                            );
+                            const config = mandatorySubjectConfigs.find(
+                              (s) => s.id === subject.id,
+                            );
 
-                             return (
-                               <div key={`mandatory-batch-${subject.id}`} className={`p-3 rounded-lg border ${isSelected ? 'bg-primary/5 border-primary/20' : 'bg-background'}`}>
-                                 <div className="flex items-center space-x-2 mb-2">
-                                   <Checkbox
-                                     id={`mandatory-batch-${subject.id}`}
-                                     value={subject.id}
-                                     checked={isSelected}
-                                     onCheckedChange={(checked) => handleSubjectToggle(subject.id, "mandatory", checked as boolean)}
-                                   />
-                                   <Label htmlFor={`mandatory-batch-${subject.id}`} className="font-semibold text-sm">
-                                     {subject.name}
-                                   </Label>
-                                 </div>
-                                 
-                                 {isSelected && config && (
-                                   <div className="pl-6 space-y-2">
-                                      <div className="flex items-center gap-2">
-                                        <Input 
-                                          type="number" 
-                                          placeholder="প্রশ্ন সংখ্যা" 
-                                          className="h-8 w-32 text-xs"
-                                          value={config.count || ""}
-                                          onChange={(e) => updateSubjectConfig(subject.id, "mandatory", "count", parseInt(e.target.value) || 0)}
-                                        />
-                                        <span className="text-xs text-muted-foreground">টি প্রশ্ন</span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Button 
-                                          type="button" 
-                                          variant="outline" 
-                                          size="sm" 
-                                          className="h-8 text-xs"
-                                          onClick={() => setActiveSubjectSelection({ id: subject.id, type: "mandatory" })}
-                                        >
-                                          <ListChecks className="w-3 h-3 mr-1" />
-                                          প্রশ্ন বাছুন ({config.question_ids?.length || 0})
-                                        </Button>
-                                      </div>
-                                   </div>
-                                 )}
-                               </div>
-                             );
+                            return (
+                              <div
+                                key={`mandatory-batch-${subject.id}`}
+                                className={`p-3 rounded-lg border ${isSelected ? "bg-primary/5 border-primary/20" : "bg-background"}`}
+                              >
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <Checkbox
+                                    id={`mandatory-batch-${subject.id}`}
+                                    value={subject.id}
+                                    checked={isSelected}
+                                    onCheckedChange={(checked) =>
+                                      handleSubjectToggle(
+                                        subject.id,
+                                        "mandatory",
+                                        checked as boolean,
+                                      )
+                                    }
+                                  />
+                                  <Label
+                                    htmlFor={`mandatory-batch-${subject.id}`}
+                                    className="font-semibold text-sm"
+                                  >
+                                    {subject.name}
+                                  </Label>
+                                </div>
+
+                                {isSelected && config && (
+                                  <div className="pl-6 space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        type="number"
+                                        placeholder="প্রশ্ন সংখ্যা"
+                                        className="h-8 w-32 text-xs"
+                                        value={config.count || ""}
+                                        onChange={(e) =>
+                                          updateSubjectConfig(
+                                            subject.id,
+                                            "mandatory",
+                                            "count",
+                                            parseInt(e.target.value) || 0,
+                                          )
+                                        }
+                                      />
+                                      <span className="text-xs text-muted-foreground">
+                                        টি প্রশ্ন
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 text-xs"
+                                        onClick={() =>
+                                          setActiveSubjectSelection({
+                                            id: subject.id,
+                                            type: "mandatory",
+                                          })
+                                        }
+                                      >
+                                        <ListChecks className="w-3 h-3 mr-1" />
+                                        প্রশ্ন বাছুন (
+                                        {config.question_ids?.length || 0})
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
                           })}
                         </div>
                       </div>
 
                       <div className="space-y-4">
-                        <Label className="text-base font-bold">অন্যান্য বিষয় (Optional)</Label>
+                        <Label className="text-base font-bold">
+                          অন্যান্য বিষয় (Optional)
+                        </Label>
                         <div className="space-y-3">
                           {subjects.map((subject) => {
-                             const isSelected = optionalSubjectConfigs.some(s => s.id === subject.id);
-                             const config = optionalSubjectConfigs.find(s => s.id === subject.id);
+                            const isSelected = optionalSubjectConfigs.some(
+                              (s) => s.id === subject.id,
+                            );
+                            const config = optionalSubjectConfigs.find(
+                              (s) => s.id === subject.id,
+                            );
 
-                             return (
-                               <div key={`optional-batch-${subject.id}`} className={`p-3 rounded-lg border ${isSelected ? 'bg-secondary/5 border-secondary/20' : 'bg-background'}`}>
-                                 <div className="flex items-center space-x-2 mb-2">
-                                   <Checkbox
-                                     id={`optional-batch-${subject.id}`}
-                                     value={subject.id}
-                                     checked={isSelected}
-                                     onCheckedChange={(checked) => handleSubjectToggle(subject.id, "optional", checked as boolean)}
-                                   />
-                                   <Label htmlFor={`optional-batch-${subject.id}`} className="font-semibold text-sm">
-                                     {subject.name}
-                                   </Label>
-                                 </div>
-                                 
-                                 {isSelected && config && (
-                                   <div className="pl-6 space-y-2">
-                                      <div className="flex items-center gap-2">
-                                        <Input 
-                                          type="number" 
-                                          placeholder="প্রশ্ন সংখ্যা" 
-                                          className="h-8 w-32 text-xs"
-                                          value={config.count || ""}
-                                          onChange={(e) => updateSubjectConfig(subject.id, "optional", "count", parseInt(e.target.value) || 0)}
-                                        />
-                                        <span className="text-xs text-muted-foreground">টি প্রশ্ন</span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Button 
-                                          type="button" 
-                                          variant="outline" 
-                                          size="sm" 
-                                          className="h-8 text-xs"
-                                          onClick={() => setActiveSubjectSelection({ id: subject.id, type: "optional" })}
-                                        >
-                                          <ListChecks className="w-3 h-3 mr-1" />
-                                          প্রশ্ন বাছুন ({config.question_ids?.length || 0})
-                                        </Button>
-                                      </div>
-                                   </div>
-                                 )}
-                               </div>
-                             );
+                            return (
+                              <div
+                                key={`optional-batch-${subject.id}`}
+                                className={`p-3 rounded-lg border ${isSelected ? "bg-secondary/5 border-secondary/20" : "bg-background"}`}
+                              >
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <Checkbox
+                                    id={`optional-batch-${subject.id}`}
+                                    value={subject.id}
+                                    checked={isSelected}
+                                    onCheckedChange={(checked) =>
+                                      handleSubjectToggle(
+                                        subject.id,
+                                        "optional",
+                                        checked as boolean,
+                                      )
+                                    }
+                                  />
+                                  <Label
+                                    htmlFor={`optional-batch-${subject.id}`}
+                                    className="font-semibold text-sm"
+                                  >
+                                    {subject.name}
+                                  </Label>
+                                </div>
+
+                                {isSelected && config && (
+                                  <div className="pl-6 space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        type="number"
+                                        placeholder="প্রশ্ন সংখ্যা"
+                                        className="h-8 w-32 text-xs"
+                                        value={config.count || ""}
+                                        onChange={(e) =>
+                                          updateSubjectConfig(
+                                            subject.id,
+                                            "optional",
+                                            "count",
+                                            parseInt(e.target.value) || 0,
+                                          )
+                                        }
+                                      />
+                                      <span className="text-xs text-muted-foreground">
+                                        টি প্রশ্ন
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 text-xs"
+                                        onClick={() =>
+                                          setActiveSubjectSelection({
+                                            id: subject.id,
+                                            type: "optional",
+                                          })
+                                        }
+                                      >
+                                        <ListChecks className="w-3 h-3 mr-1" />
+                                        প্রশ্ন বাছুন (
+                                        {config.question_ids?.length || 0})
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
                           })}
                         </div>
                       </div>
@@ -1026,35 +1122,50 @@ export function BatchDetailsClient({
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={(updatedExam) => {
           setExams((prev) =>
-            prev.map((e) => (e.id === updatedExam.id ? updatedExam : e))
+            prev.map((e) => (e.id === updatedExam.id ? updatedExam : e)),
           );
         }}
       />
-      
+
       {/* Secondary Dialog for Subject Question Selection (Creation Mode) */}
-      <Dialog open={!!activeSubjectSelection} onOpenChange={(open) => !open && setActiveSubjectSelection(null)}>
+      <Dialog
+        open={!!activeSubjectSelection}
+        onOpenChange={(open) => !open && setActiveSubjectSelection(null)}
+      >
         <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0">
           <DialogHeader className="p-4 border-b shrink-0">
-             <DialogTitle>
-                {activeSubjectSelection && subjects.find(s => s.id === activeSubjectSelection.id)?.name} - প্রশ্ন নির্বাচন
-             </DialogTitle>
-             <DialogDescription>
-                এই বিষয়ের জন্য প্রশ্ন নির্বাচন করুন
-             </DialogDescription>
+            <DialogTitle>
+              {activeSubjectSelection &&
+                subjects.find((s) => s.id === activeSubjectSelection.id)
+                  ?.name}{" "}
+              - প্রশ্ন নির্বাচন
+            </DialogTitle>
+            <DialogDescription>
+              এই বিষয়ের জন্য প্রশ্ন নির্বাচন করুন
+            </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-hidden p-4">
-             {activeSubjectSelection && (
-               <QuestionSelector
-                  selectedIds={
-                    (activeSubjectSelection.type === "mandatory" 
-                      ? mandatorySubjectConfigs.find(s => s.id === activeSubjectSelection.id)?.question_ids 
-                      : optionalSubjectConfigs.find(s => s.id === activeSubjectSelection.id)?.question_ids) || []
-                  }
-                  onChange={(ids) => {
-                     updateSubjectConfig(activeSubjectSelection.id, activeSubjectSelection.type, "question_ids", ids);
-                  }}
-               />
-             )}
+            {activeSubjectSelection && (
+              <QuestionSelector
+                selectedIds={
+                  (activeSubjectSelection.type === "mandatory"
+                    ? mandatorySubjectConfigs.find(
+                        (s) => s.id === activeSubjectSelection.id,
+                      )?.question_ids
+                    : optionalSubjectConfigs.find(
+                        (s) => s.id === activeSubjectSelection.id,
+                      )?.question_ids) || []
+                }
+                onChange={(ids) => {
+                  updateSubjectConfig(
+                    activeSubjectSelection.id,
+                    activeSubjectSelection.type,
+                    "question_ids",
+                    ids,
+                  );
+                }}
+              />
+            )}
           </div>
           <div className="p-4 border-t shrink-0 flex justify-end">
             <Button onClick={() => setActiveSubjectSelection(null)}>

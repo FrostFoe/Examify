@@ -89,17 +89,43 @@ export default function BulkQuestionViewer({
                     <strong className="text-lg">প্রশ্ন {idx + 1}.</strong>
                     {(q.subject || q.paper || q.chapter || q.highlight) && (
                       <div className="flex flex-wrap gap-1.5">
-                        {q.subject && <Badge variant="outline" className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-200 font-normal">{q.subject as string}</Badge>}
-                        {q.paper && <Badge variant="outline" className="text-[10px] h-5 bg-green-50 text-green-600 border-green-200 font-normal">{q.paper as string}</Badge>}
-                        {q.chapter && <Badge variant="outline" className="text-[10px] h-5 bg-purple-50 text-purple-600 border-purple-200 font-normal">{q.chapter as string}</Badge>}
-                        {q.highlight && <Badge variant="outline" className="text-[10px] h-5 bg-amber-50 text-amber-600 border-amber-200 font-normal">{q.highlight as string}</Badge>}
+                        {q.subject && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-200 font-normal"
+                          >
+                            {q.subject as string}
+                          </Badge>
+                        )}
+                        {q.paper && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 bg-green-50 text-green-600 border-green-200 font-normal"
+                          >
+                            {q.paper as string}
+                          </Badge>
+                        )}
+                        {q.chapter && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 bg-purple-50 text-purple-600 border-purple-200 font-normal"
+                          >
+                            {q.chapter as string}
+                          </Badge>
+                        )}
+                        {q.highlight && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 bg-amber-50 text-amber-600 border-amber-200 font-normal"
+                          >
+                            {q.highlight as string}
+                          </Badge>
+                        )}
                       </div>
                     )}
                   </div>
                   <div className="mt-2">
-                    <LatexRenderer
-                      html={q.question || q.question_text || ""}
-                    />
+                    <LatexRenderer html={q.question || q.question_text || ""} />
                   </div>
                   {q.question_image_url && (
                     <div className="my-3 rounded-lg overflow-hidden border border-border bg-muted/30 max-w-md">

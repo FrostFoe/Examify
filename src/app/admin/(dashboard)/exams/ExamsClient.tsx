@@ -75,7 +75,7 @@ export function ExamsClient({
           }
           onUpdate={(updatedExam) =>
             setExams((prev) =>
-              prev.map((e) => (e.id === updatedExam.id ? updatedExam : e))
+              prev.map((e) => (e.id === updatedExam.id ? updatedExam : e)),
             )
           }
         />
@@ -111,7 +111,11 @@ export function ExamsClient({
             </Collapsible>
 
             {batchedExams.map((batch) => (
-              <Collapsible key={batch.id} className="rounded-lg border" defaultOpen={true}>
+              <Collapsible
+                key={batch.id}
+                className="rounded-lg border"
+                defaultOpen={true}
+              >
                 <CollapsibleTrigger className="flex w-full items-center justify-between p-4 font-semibold">
                   <span>
                     {batch.name} ({batch.exams.length})

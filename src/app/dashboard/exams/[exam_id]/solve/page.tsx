@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { apiRequest } from "@/lib/api";
-import { fetchQuestions, normalizeQuestion, type RawQuestion } from "@/lib/fetchQuestions";
+import {
+  fetchQuestions,
+  normalizeQuestion,
+  type RawQuestion,
+} from "@/lib/fetchQuestions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -69,14 +73,18 @@ export default function SolvePage() {
       let finalQuestions: Question[] = [];
 
       // Check if questions are already embedded in the exam data (e.g., custom exams)
-      if (examData.questions && Array.isArray(examData.questions) && examData.questions.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        finalQuestions = examData.questions.map((q: any) => {
+      if (
+        examData.questions &&
+        Array.isArray(examData.questions) &&
+        examData.questions.length > 0
+      ) {
+        finalQuestions = examData.questions.map((q: RawQuestion) => {
           const normalized = normalizeQuestion(q);
           return {
             ...normalized,
             // Ensure compatibility with Question
-            answer: typeof normalized.answer === 'number' ? normalized.answer : -1, 
+            answer:
+              typeof normalized.answer === "number" ? normalized.answer : -1,
             options: normalized.options || [],
           } as unknown as Question;
         });
@@ -85,11 +93,11 @@ export default function SolvePage() {
         const fetched = await fetchQuestions(examData.file_id, examData.id);
         if (Array.isArray(fetched) && fetched.length > 0) {
           finalQuestions = fetched.map((q: RawQuestion) => {
-             return {
-                ...q,
-                answer: typeof q.answer === 'number' ? q.answer : -1,
-                options: q.options || [],
-             } as unknown as Question;
+            return {
+              ...q,
+              answer: typeof q.answer === "number" ? q.answer : -1,
+              options: q.options || [],
+            } as unknown as Question;
           });
         }
       }
@@ -150,9 +158,12 @@ export default function SolvePage() {
     const answeredIds = Object.keys(loadedUserAnswers);
 
     questions.forEach((q) => {
-      const qMarks = (q.question_marks !== null && q.question_marks !== undefined && q.question_marks !== "") 
-        ? parseFloat(String(q.question_marks)) 
-        : (exam?.marks_per_question || 1);
+      const qMarks =
+        q.question_marks !== null &&
+        q.question_marks !== undefined &&
+        q.question_marks !== ""
+          ? parseFloat(String(q.question_marks))
+          : exam?.marks_per_question || 1;
       const qNeg = parseFloat(String(exam?.negative_marks_per_wrong || 0));
 
       const qId = String(q.id);
@@ -257,7 +268,9 @@ export default function SolvePage() {
             <CardContent className="p-3 md:p-6 space-y-1 md:space-y-2">
               <div className="flex items-center gap-2 text-success">
                 <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">সঠিক</span>
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                  সঠিক
+                </span>
               </div>
               <p className="text-xl md:text-3xl font-black text-success">
                 {correctAnswers}
@@ -272,7 +285,9 @@ export default function SolvePage() {
             <CardContent className="p-3 md:p-6 space-y-1 md:space-y-2">
               <div className="flex items-center gap-2 text-destructive">
                 <AlertCircle className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">ভুল</span>
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                  ভুল
+                </span>
               </div>
               <p className="text-xl md:text-3xl font-black text-destructive">
                 {wrongAnswers}
@@ -287,10 +302,16 @@ export default function SolvePage() {
             <CardContent className="p-3 md:p-6 space-y-1 md:space-y-2">
               <div className="flex items-center gap-2 text-warning">
                 <HelpCircle className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">স্কিপ</span>
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                  স্কিপ
+                </span>
               </div>
-              <p className="text-xl md:text-3xl font-black text-warning">{unattempted}</p>
-              <p className="text-[9px] md:text-xs text-muted-foreground font-medium">মার্ক: 0.0</p>
+              <p className="text-xl md:text-3xl font-black text-warning">
+                {unattempted}
+              </p>
+              <p className="text-[9px] md:text-xs text-muted-foreground font-medium">
+                মার্ক: 0.0
+              </p>
             </CardContent>
           </Card>
 
@@ -298,7 +319,9 @@ export default function SolvePage() {
             <CardContent className="p-3 md:p-6 space-y-1 md:space-y-2">
               <div className="flex items-center gap-2 text-primary">
                 <Zap className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">নেগেটিভ</span>
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                  নেগেটিভ
+                </span>
               </div>
               <p className="text-xl md:text-3xl font-black text-primary">
                 {negativeMarks.toFixed(1)}
@@ -425,22 +448,58 @@ export default function SolvePage() {
                             <span className="mr-1">
                               প্রশ্ন {filteredQuestions.indexOf(question) + 1}.
                             </span>
-                            {(question.subject || question.paper || question.chapter || question.highlight) && (
+                            {(question.subject ||
+                              question.paper ||
+                              question.chapter ||
+                              question.highlight) && (
                               <div className="flex flex-wrap gap-1">
-                                {question.subject && <Badge variant="outline" className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-600 border-blue-200 font-normal">{question.subject}</Badge>}
-                                {question.paper && <Badge variant="outline" className="text-[10px] h-4 px-1.5 bg-green-50 text-green-600 border-green-200 font-normal">{question.paper}</Badge>}
-                                {question.chapter && <Badge variant="outline" className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-600 border-purple-200 font-normal">{question.chapter}</Badge>}
-                                {question.highlight && <Badge variant="outline" className="text-[10px] h-4 px-1.5 bg-amber-50 text-amber-600 border-amber-200 font-normal">{question.highlight}</Badge>}
+                                {question.subject && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-600 border-blue-200 font-normal"
+                                  >
+                                    {question.subject}
+                                  </Badge>
+                                )}
+                                {question.paper && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-green-50 text-green-600 border-green-200 font-normal"
+                                  >
+                                    {question.paper}
+                                  </Badge>
+                                )}
+                                {question.chapter && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-600 border-purple-200 font-normal"
+                                  >
+                                    {question.chapter}
+                                  </Badge>
+                                )}
+                                {question.highlight && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-amber-50 text-amber-600 border-amber-200 font-normal"
+                                  >
+                                    {question.highlight}
+                                  </Badge>
+                                )}
                               </div>
                             )}
                           </div>
                           <LatexRenderer html={question.question || ""} />
                         </h3>
-                        {question.question_image_url && typeof question.question_image_url === 'string' && (
+                        {question.question_image_url &&
+                          typeof question.question_image_url === "string" && (
                             <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
-                                <img src={question.question_image_url} alt="Question" className="w-full h-auto object-contain max-h-[300px]" />
+                              <img
+                                src={question.question_image_url}
+                                alt="Question"
+                                className="w-full h-auto object-contain max-h-[300px]"
+                              />
                             </div>
-                        )}
+                          )}
                       </div>
                     </div>
                   </CardHeader>
@@ -506,18 +565,20 @@ export default function SolvePage() {
                       <div className="mt-4 pb-16 p-4 bg-muted/50 rounded-lg text-sm">
                         <p className="font-semibold mb-1">ব্যাখ্যা:</p>
                         <LatexRenderer html={question.explanation || ""} />
-                        {question.explanation_image_url && typeof question.explanation_image_url === 'string' && (
+                        {question.explanation_image_url &&
+                          typeof question.explanation_image_url ===
+                            "string" && (
                             <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
-                                <img
-                                  src={question.explanation_image_url}
-                                  alt="Explanation"
-                                  className="w-full h-auto object-contain max-h-[200px]"
-                                  onContextMenu={(e) => e.preventDefault()}
-                                  onDragStart={(e) => e.preventDefault()}
-                                  style={{ userSelect: "none" }}
-                                />
+                              <img
+                                src={question.explanation_image_url}
+                                alt="Explanation"
+                                className="w-full h-auto object-contain max-h-[200px]"
+                                onContextMenu={(e) => e.preventDefault()}
+                                onDragStart={(e) => e.preventDefault()}
+                                style={{ userSelect: "none" }}
+                              />
                             </div>
-                        )}
+                          )}
                       </div>
                     )}
                   </CardContent>

@@ -46,8 +46,8 @@ export function UnifiedLoginForm({
     <Shield className="h-8 w-8 text-white" />
   );
   const userTypeLabel = isStudent ? "শিক্ষার্থী পোর্টাল" : "অ্যাডমিন প্যানেল";
-  const buttonBg = isStudent 
-    ? "bg-primary hover:bg-primary/90" 
+  const buttonBg = isStudent
+    ? "bg-primary hover:bg-primary/90"
     : "bg-destructive hover:bg-destructive/90";
   const otherTypeHref = isStudent ? "/admin/login" : "/login";
   const otherTypeText = isStudent ? "অ্যাডমিন লগইন" : "শিক্ষার্থী লগইন";
@@ -91,7 +91,9 @@ export function UnifiedLoginForm({
             <CardTitle className="text-3xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Examify
             </CardTitle>
-            <p className="text-sm font-medium text-muted-foreground mt-2">{userTypeLabel}</p>
+            <p className="text-sm font-medium text-muted-foreground mt-2">
+              {userTypeLabel}
+            </p>
             <CardDescription className="text-base mt-3 text-muted-foreground">
               {isStudent
                 ? "আপনার অ্যাকাউন্টে প্রবেশ করুন"
@@ -101,7 +103,10 @@ export function UnifiedLoginForm({
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-semibold text-foreground">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-semibold text-foreground"
+                >
                   {fieldLabel}
                 </Label>
                 <Input
@@ -118,10 +123,16 @@ export function UnifiedLoginForm({
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-sm font-semibold text-foreground">
+                  <Label
+                    htmlFor="password"
+                    className="text-sm font-semibold text-foreground"
+                  >
                     পাসওয়ার্ড
                   </Label>
-                  <a href="#" className="text-xs font-medium text-primary hover:underline transition-colors">
+                  <a
+                    href="#"
+                    className="text-xs font-medium text-primary hover:underline transition-colors"
+                  >
                     পাসওয়ার্ড ভুলে গেছেন?
                   </a>
                 </div>
@@ -153,7 +164,9 @@ export function UnifiedLoginForm({
 
               {displayError && (
                 <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                  <p className="text-sm font-medium text-destructive">{displayError}</p>
+                  <p className="text-sm font-medium text-destructive">
+                    {displayError}
+                  </p>
                 </div>
               )}
 
@@ -177,7 +190,9 @@ export function UnifiedLoginForm({
                   <span className="w-full border-t border-border"></span>
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-2 bg-background text-muted-foreground font-medium">বা</span>
+                  <span className="px-2 bg-background text-muted-foreground font-medium">
+                    বা
+                  </span>
                 </div>
               </div>
 
@@ -205,7 +220,7 @@ export function UnifiedLoginForm({
             </form>
           </CardContent>
         </Card>
-        
+
         <p className="text-center text-xs text-muted-foreground mt-6">
           নিরাপত্তা এবং গোপনীয়তার সাথে আপনার তথ্য সুরক্ষিত রাখা হয়।
         </p>

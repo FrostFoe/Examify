@@ -58,31 +58,21 @@ export default function EditFileQuestionsPage() {
     try {
       setLoading(true);
       // Fetch File Details
-      const filesResult = await apiRequest<Record<string, unknown>>(
-        "files",
-        "GET",
-      );
-      const filesData = filesResult.data || filesResult;
-      if (Array.isArray(filesData)) {
-        const foundFile = filesData.find(
-          (f: Record<string, unknown>) => f.id === file_id,
-        );
+      const filesResult = await apiRequest<FileRecord[]>("files", "GET");
+      if (filesResult.success && Array.isArray(filesResult.data)) {
+        const foundFile = filesResult.data.find((f) => f.id === file_id);
         setFile(foundFile || null);
       }
 
       // Fetch Questions
-      const questionsResult = await apiRequest<Record<string, unknown>>(
+      const questionsResult = await apiRequest<Question[]>(
         "questions",
         "GET",
         null,
         { file_id },
       );
-      if (questionsResult.success) {
-        setQuestions(
-          (Array.isArray(questionsResult.data)
-            ? questionsResult.data
-            : []) as Question[],
-        );
+      if (questionsResult.success && Array.isArray(questionsResult.data)) {
+        setQuestions(questionsResult.data);
       }
     } catch {
       setError("তথ্য লোড করতে সমস্যা হয়েছে");
@@ -119,7 +109,9 @@ export default function EditFileQuestionsPage() {
       (q.question_text || q.question || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      String(q.answer || "").toLowerCase().includes(searchTerm.toLowerCase()),
+      String(q.answer || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()),
   );
 
   if (!admin) {
@@ -216,8 +208,7 @@ export default function EditFileQuestionsPage() {
             size="sm"
             className="flex-1 sm:flex-initial rounded-xl gap-2 shadow-lg shadow-primary/10"
             onClick={() => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              setEditingQuestion({ id: "", file_id } as any);
+              setEditingQuestion({ id: "", file_id, question: "" } as Question);
               setShowEditor(true);
             }}
           >
@@ -271,17 +262,43 @@ export default function EditFileQuestionsPage() {
                     </Badge>
                     {(q.subject || q.paper || q.chapter || q.highlight) && (
                       <div className="flex flex-wrap gap-1.5">
-                        {q.subject && <Badge variant="outline" className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-200 font-normal">{q.subject}</Badge>}
-                        {q.paper && <Badge variant="outline" className="text-[10px] h-5 bg-green-50 text-green-600 border-green-200 font-normal">{q.paper}</Badge>}
-                        {q.chapter && <Badge variant="outline" className="text-[10px] h-5 bg-purple-50 text-purple-600 border-purple-200 font-normal">{q.chapter}</Badge>}
-                        {q.highlight && <Badge variant="outline" className="text-[10px] h-5 bg-amber-50 text-amber-600 border-amber-200 font-normal">{q.highlight}</Badge>}
+                        {q.subject && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-200 font-normal"
+                          >
+                            {q.subject}
+                          </Badge>
+                        )}
+                        {q.paper && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 bg-green-50 text-green-600 border-green-200 font-normal"
+                          >
+                            {q.paper}
+                          </Badge>
+                        )}
+                        {q.chapter && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 bg-purple-50 text-purple-600 border-purple-200 font-normal"
+                          >
+                            {q.chapter}
+                          </Badge>
+                        )}
+                        {q.highlight && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 bg-amber-50 text-amber-600 border-amber-200 font-normal"
+                          >
+                            {q.highlight}
+                          </Badge>
+                        )}
                       </div>
                     )}
                   </div>
                   <div className="text-base md:text-lg font-medium leading-relaxed text-foreground">
-                    <LatexRenderer
-                      html={q.question_text || q.question || ""}
-                    />
+                    <LatexRenderer html={q.question_text || q.question || ""} />
                   </div>
                   {q.question_image_url && (
                     <div className="mt-3 rounded-xl overflow-hidden border max-w-md bg-white">

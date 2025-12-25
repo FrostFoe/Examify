@@ -74,11 +74,7 @@ const ContributorCard: React.FC<{ contributor: Contributor }> = ({
         if (!Icon || !href) return null;
         return (
           <Link key={key} href={href} target="_blank" rel="noopener noreferrer">
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full"
-            >
+            <Button variant="outline" size="icon" className="rounded-full">
               <Icon className="h-5 w-5" />
             </Button>
           </Link>

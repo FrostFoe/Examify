@@ -37,7 +37,8 @@ export default function QuestionEditor({
     file_id: file_id,
     exam_id: exam_id,
     question: initialQuestion?.question || initialQuestion?.question_text || "",
-    question_text: initialQuestion?.question_text || initialQuestion?.question || "",
+    question_text:
+      initialQuestion?.question_text || initialQuestion?.question || "",
     options: initialQuestion?.options || [],
     option1: initialQuestion?.option1 || "",
     option2: initialQuestion?.option2 || "",
@@ -67,12 +68,24 @@ export default function QuestionEditor({
   };
 
   const handleOptionChange = (index: number, value: string) => {
-    const optionNames: (keyof Question)[] = ["option1", "option2", "option3", "option4", "option5"];
+    const optionNames: (keyof Question)[] = [
+      "option1",
+      "option2",
+      "option3",
+      "option4",
+      "option5",
+    ];
     setFormData((prev) => ({ ...prev, [optionNames[index]]: value }));
   };
 
   const addOption = () => {
-    const optionNames: (keyof Question)[] = ["option1", "option2", "option3", "option4", "option5"];
+    const optionNames: (keyof Question)[] = [
+      "option1",
+      "option2",
+      "option3",
+      "option4",
+      "option5",
+    ];
     for (let i = 0; i < optionNames.length; i++) {
       if (!formData[optionNames[i]]) {
         setFormData((prev) => ({ ...prev, [optionNames[i]]: "" }));
@@ -82,7 +95,13 @@ export default function QuestionEditor({
   };
 
   const removeLastOption = () => {
-    const optionNames: (keyof Question)[] = ["option5", "option4", "option3", "option2", "option1"];
+    const optionNames: (keyof Question)[] = [
+      "option5",
+      "option4",
+      "option3",
+      "option2",
+      "option1",
+    ];
     for (let i = 0; i < optionNames.length; i++) {
       const optionName = optionNames[i];
       if (formData[optionName] && formData[optionName] !== "") {
@@ -107,18 +126,19 @@ export default function QuestionEditor({
   ) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      
+
       // Limit check (e.g. 500KB for base64)
       if (file.size > 500 * 1024) {
-          alert("Image size should be less than 500KB");
-          return;
+        alert("Image size should be less than 500KB");
+        return;
       }
 
       try {
         const base64 = await convertToBase64(file);
-        setFormData(prev => ({
-            ...prev,
-            [type === "question" ? "question_image" : "explanation_image"]: base64
+        setFormData((prev) => ({
+          ...prev,
+          [type === "question" ? "question_image" : "explanation_image"]:
+            base64,
         }));
       } catch {
         alert("Failed to process image");
@@ -127,9 +147,9 @@ export default function QuestionEditor({
   };
 
   const removeImage = (type: "question" | "explanation") => {
-    setFormData(prev => ({
-        ...prev,
-        [type === "question" ? "question_image" : "explanation_image"]: undefined
+    setFormData((prev) => ({
+      ...prev,
+      [type === "question" ? "question_image" : "explanation_image"]: undefined,
     }));
     if (type === "question" && qImgRef.current) qImgRef.current.value = "";
     if (type === "explanation" && eImgRef.current) eImgRef.current.value = "";
@@ -144,15 +164,15 @@ export default function QuestionEditor({
       let result;
       if (initialQuestion?.id) {
         result = await apiRequest("update-question", "POST", {
-            ...formData,
-            id: initialQuestion.id
+          ...formData,
+          id: initialQuestion.id,
         });
       } else {
         result = await apiRequest("create-question", "POST", formData);
       }
 
       if (!result.success) {
-         throw new Error(result.message || "Failed to save question");
+        throw new Error(result.message || "Failed to save question");
       }
 
       // Use the returned data if available, otherwise fallback to formData
@@ -177,7 +197,9 @@ export default function QuestionEditor({
           {error && <AlertBox type="error" title={error} />}
 
           <div className="space-y-2">
-            <Label htmlFor="question_text" className="font-bold">প্রশ্ন (Question) *</Label>
+            <Label htmlFor="question_text" className="font-bold">
+              প্রশ্ন (Question) *
+            </Label>
             <Textarea
               id="question_text"
               name="question_text"
@@ -192,35 +214,57 @@ export default function QuestionEditor({
           <div className="space-y-3">
             <Label className="font-bold">অপশনসমূহ (Options)</Label>
             <div className="grid grid-cols-1 gap-3">
-                {[0, 1, 2, 3, 4].map((index) => {
-                const optionNames: (keyof Question)[] = ["option1", "option2", "option3", "option4", "option5"];
+              {[0, 1, 2, 3, 4].map((index) => {
+                const optionNames: (keyof Question)[] = [
+                  "option1",
+                  "option2",
+                  "option3",
+                  "option4",
+                  "option5",
+                ];
                 const optionName = optionNames[index];
 
                 if (!formData[optionName] && index > 3) return null;
 
                 return (
-                    <div key={index} className="flex items-center gap-2 group">
+                  <div key={index} className="flex items-center gap-2 group">
                     <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-xs shrink-0">
-                        {String.fromCharCode(65 + index)}
+                      {String.fromCharCode(65 + index)}
                     </span>
                     <Input
-                        name={optionName}
-                        value={(formData[optionName] as string) || ""}
-                        onChange={(e) => handleOptionChange(index, e.target.value)}
-                        placeholder={`Option ${index + 1}`}
-                        className="rounded-xl"
+                      name={optionName}
+                      value={(formData[optionName] as string) || ""}
+                      onChange={(e) =>
+                        handleOptionChange(index, e.target.value)
+                      }
+                      placeholder={`Option ${index + 1}`}
+                      className="rounded-xl"
                     />
-                    </div>
+                  </div>
                 );
-                })}
+              })}
             </div>
 
             <div className="flex flex-wrap gap-2 mt-2">
-              <Button type="button" variant="outline" size="sm" onClick={addOption} className="rounded-lg h-8 flex-1 sm:flex-none">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addOption}
+                className="rounded-lg h-8 flex-1 sm:flex-none"
+              >
                 <Plus className="w-3 h-3 mr-1" /> অপশন যোগ করুন
               </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={removeLastOption} className="rounded-lg h-8 text-destructive flex-1 sm:flex-none"
-                disabled={!formData.option5 || (!formData.option4 && formData.option5 === "")}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={removeLastOption}
+                className="rounded-lg h-8 text-destructive flex-1 sm:flex-none"
+                disabled={
+                  !formData.option5 ||
+                  (!formData.option4 && formData.option5 === "")
+                }
               >
                 <X className="w-3 h-3 mr-1" /> শেষটি বাদ দিন
               </Button>
@@ -229,8 +273,10 @@ export default function QuestionEditor({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-                <Label htmlFor="answer" className="font-bold text-success">সঠিক উত্তর *</Label>
-                <Input
+              <Label htmlFor="answer" className="font-bold text-success">
+                সঠিক উত্তর *
+              </Label>
+              <Input
                 id="answer"
                 name="answer"
                 value={formData.answer}
@@ -238,92 +284,124 @@ export default function QuestionEditor({
                 required
                 className="rounded-xl border-success/30 focus:ring-success/20"
                 placeholder="e.g., A, B or 1, 2"
-                />
+              />
             </div>
-            
+
             <div className="space-y-2">
-                <Label htmlFor="explanation" className="font-bold">ব্যাখ্যা (Explanation)</Label>
-                <Input
+              <Label htmlFor="explanation" className="font-bold">
+                ব্যাখ্যা (Explanation)
+              </Label>
+              <Input
                 id="explanation"
                 name="explanation"
                 value={formData.explanation || ""}
                 onChange={handleChange}
                 className="rounded-xl"
                 placeholder="Provide explanation..."
-                />
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 border-t pt-6">
             <div className="space-y-2">
-                <Label htmlFor="subject" className="font-bold text-xs">Subject</Label>
-                <Select 
-                  value={formData.subject || "none"} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, subject: val === "none" ? "" : val }))}
-                >
-                  <SelectTrigger className="rounded-xl h-9 text-sm">
-                    <SelectValue placeholder="Select Subject" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="physics">Physics</SelectItem>
-                    <SelectItem value="chemistry">Chemistry</SelectItem>
-                    <SelectItem value="higher_math">Higher Math</SelectItem>
-                    <SelectItem value="biology">Biology</SelectItem>
-                    <SelectItem value="bangla">Bangla</SelectItem>
-                    <SelectItem value="english">English</SelectItem>
-                    <SelectItem value="ict">ICT</SelectItem>
-                  </SelectContent>
-                </Select>
+              <Label htmlFor="subject" className="font-bold text-xs">
+                Subject
+              </Label>
+              <Select
+                value={formData.subject || "none"}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    subject: val === "none" ? "" : val,
+                  }))
+                }
+              >
+                <SelectTrigger className="rounded-xl h-9 text-sm">
+                  <SelectValue placeholder="Select Subject" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="physics">Physics</SelectItem>
+                  <SelectItem value="chemistry">Chemistry</SelectItem>
+                  <SelectItem value="higher_math">Higher Math</SelectItem>
+                  <SelectItem value="biology">Biology</SelectItem>
+                  <SelectItem value="bangla">Bangla</SelectItem>
+                  <SelectItem value="english">English</SelectItem>
+                  <SelectItem value="ict">ICT</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-                <Label htmlFor="paper" className="font-bold text-xs">Paper</Label>
-                <Select 
-                  value={formData.paper || "none"} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, paper: val === "none" ? "" : val }))}
-                >
-                  <SelectTrigger className="rounded-xl h-9 text-sm">
-                    <SelectValue placeholder="Select Paper" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="1st">1st Paper</SelectItem>
-                    <SelectItem value="2nd">2nd Paper</SelectItem>
-                  </SelectContent>
-                </Select>
+              <Label htmlFor="paper" className="font-bold text-xs">
+                Paper
+              </Label>
+              <Select
+                value={formData.paper || "none"}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    paper: val === "none" ? "" : val,
+                  }))
+                }
+              >
+                <SelectTrigger className="rounded-xl h-9 text-sm">
+                  <SelectValue placeholder="Select Paper" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="1st">1st Paper</SelectItem>
+                  <SelectItem value="2nd">2nd Paper</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-                <Label htmlFor="chapter" className="font-bold text-xs">Chapter</Label>
-                <Select 
-                  value={formData.chapter || "none"} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, chapter: val === "none" ? "" : val }))}
-                >
-                  <SelectTrigger className="rounded-xl h-9 text-sm">
-                    <SelectValue placeholder="Select Chapter" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {Array.from({ length: 20 }, (_, i) => (
-                      <SelectItem key={i + 1} value={String(i + 1)}>Chapter {i + 1}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <Label htmlFor="chapter" className="font-bold text-xs">
+                Chapter
+              </Label>
+              <Select
+                value={formData.chapter || "none"}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    chapter: val === "none" ? "" : val,
+                  }))
+                }
+              >
+                <SelectTrigger className="rounded-xl h-9 text-sm">
+                  <SelectValue placeholder="Select Chapter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {Array.from({ length: 20 }, (_, i) => (
+                    <SelectItem key={i + 1} value={String(i + 1)}>
+                      Chapter {i + 1}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-                <Label htmlFor="highlight" className="font-bold text-xs">Highlight</Label>
-                <Select 
-                  value={formData.highlight || "none"} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, highlight: val === "none" ? "" : val }))}
-                >
-                  <SelectTrigger className="rounded-xl h-9 text-sm">
-                    <SelectValue placeholder="Select Highlight" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="Board">Board</SelectItem>
-                    <SelectItem value="Admission">Admission</SelectItem>
-                  </SelectContent>
-                </Select>
+              <Label htmlFor="highlight" className="font-bold text-xs">
+                Highlight
+              </Label>
+              <Select
+                value={formData.highlight || "none"}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    highlight: val === "none" ? "" : val,
+                  }))
+                }
+              >
+                <SelectTrigger className="rounded-xl h-9 text-sm">
+                  <SelectValue placeholder="Select Highlight" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="Board">Board</SelectItem>
+                  <SelectItem value="Admission">Admission</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -395,7 +473,11 @@ export default function QuestionEditor({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t">
-            <Button type="submit" disabled={loading} className="flex-1 rounded-xl h-11 order-1 sm:order-2">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="flex-1 rounded-xl h-11 order-1 sm:order-2"
+            >
               {loading ? (
                 <CustomLoader minimal />
               ) : initialQuestion ? (
@@ -404,7 +486,12 @@ export default function QuestionEditor({
                 "সেভ করুন"
               )}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel} className="rounded-xl h-11 flex-1 order-2 sm:order-1">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="rounded-xl h-11 flex-1 order-2 sm:order-1"
+            >
               বাতিল
             </Button>
           </div>

@@ -62,8 +62,9 @@ export function FeatureGrid() {
 
         if (result.success && result.data) {
           setStats({
-            courses: ((result.data as Record<string, unknown>)
-              .batchesCount as number) || 5,
+            courses:
+              ((result.data as Record<string, unknown>)
+                .batchesCount as number) || 5,
             exams: result.data.examsCount || 0,
             students: result.data.usersCount || 0,
           });

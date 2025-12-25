@@ -18,7 +18,11 @@ interface AdminExamCardProps {
   onUpdate?: (updatedExam: Exam) => void;
 }
 
-export function AdminExamCard({ exam, onDelete, onUpdate }: AdminExamCardProps) {
+export function AdminExamCard({
+  exam,
+  onDelete,
+  onUpdate,
+}: AdminExamCardProps) {
   const { toast } = useToast();
   const [deleting, setDeleting] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -110,19 +114,30 @@ export function AdminExamCard({ exam, onDelete, onUpdate }: AdminExamCardProps) 
 
         {/* Actions */}
         <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 grid grid-cols-2 gap-2">
-          <Link href={`/admin/exams/${exam.id}/questions`} className="col-span-2 sm:col-span-1">
+          <Link
+            href={`/admin/exams/${exam.id}/questions`}
+            className="col-span-2 sm:col-span-1"
+          >
             <Button variant="outline" size="sm" className="w-full text-xs">
               <FileText className="w-3.5 h-3.5 mr-1.5" />
               Questions
             </Button>
           </Link>
-          <Link href={`/admin/exams/${exam.id}/results`} className="col-span-2 sm:col-span-1">
+          <Link
+            href={`/admin/exams/${exam.id}/results`}
+            className="col-span-2 sm:col-span-1"
+          >
             <Button variant="outline" size="sm" className="w-full text-xs">
               <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
               Results
             </Button>
           </Link>
-          <Button variant="outline" size="sm" className="w-full text-xs" onClick={handleCopyLink}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full text-xs"
+            onClick={handleCopyLink}
+          >
             <Copy className="w-3.5 h-3.5 mr-1.5" />
             Copy Link
           </Button>

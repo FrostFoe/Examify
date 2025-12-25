@@ -3,10 +3,7 @@
 import { useState, useRef, ChangeEvent } from "react";
 import { apiRequest } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertBox, CustomLoader } from "@/components";
@@ -23,9 +20,10 @@ export default function CSVUploadComponent({
 }: CSVUploadComponentProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<Record<string, unknown> | null>(
-    null
-  );
+  const [uploadResult, setUploadResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,7 +70,10 @@ export default function CSVUploadComponent({
         throw new Error(result.message || "Upload failed");
       }
 
-      setUploadResult((result.data as Record<string, unknown>) || (result as Record<string, unknown>));
+      setUploadResult(
+        (result.data as Record<string, unknown>) ||
+          (result as Record<string, unknown>),
+      );
       if (onUploadSuccess) {
         onUploadSuccess(result);
       }
@@ -93,37 +94,43 @@ export default function CSVUploadComponent({
     <Card className="w-full h-full">
       <CardContent className="p-0">
         <div className="relative w-full">
-          <Label 
-            htmlFor="csv-upload" 
+          <Label
+            htmlFor="csv-upload"
             className={`
               flex flex-col items-center justify-center w-full h-64 
               border-2 border-dashed rounded-lg cursor-pointer 
               transition-all duration-200
-              ${isUploading ? 'bg-muted/50 border-muted-foreground/50' : 'hover:bg-muted/50 border-muted-foreground/25 hover:border-primary/50'}
-              ${error ? 'border-destructive/50 bg-destructive/5' : ''}
-              ${uploadResult ? 'border-green-500/50 bg-green-50/50' : ''}
+              ${isUploading ? "bg-muted/50 border-muted-foreground/50" : "hover:bg-muted/50 border-muted-foreground/25 hover:border-primary/50"}
+              ${error ? "border-destructive/50 bg-destructive/5" : ""}
+              ${uploadResult ? "border-green-500/50 bg-green-50/50" : ""}
             `}
           >
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
               {isUploading ? (
                 <div className="flex flex-col items-center gap-3">
                   <CustomLoader minimal />
-                  <p className="text-sm font-medium text-muted-foreground">Uploading...</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Uploading...
+                  </p>
                 </div>
               ) : (
                 <>
-                  <Upload className={`w-12 h-12 mb-3 ${selectedFile ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <Upload
+                    className={`w-12 h-12 mb-3 ${selectedFile ? "text-primary" : "text-muted-foreground"}`}
+                  />
                   {selectedFile ? (
-                     <div className="text-center">
-                        <p className="text-sm font-medium text-foreground truncate max-w-[200px]">
-                          {selectedFile.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {(selectedFile.size / 1024).toFixed(2)} KB
-                        </p>
-                     </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-foreground truncate max-w-[200px]">
+                        {selectedFile.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {(selectedFile.size / 1024).toFixed(2)} KB
+                      </p>
+                    </div>
                   ) : (
-                     <p className="text-sm text-muted-foreground font-medium">Click to upload CSV</p>
+                    <p className="text-sm text-muted-foreground font-medium">
+                      Click to upload CSV
+                    </p>
                   )}
                 </>
               )}
@@ -144,12 +151,12 @@ export default function CSVUploadComponent({
           <div className="p-4 space-y-2">
             {error && <AlertBox type="error" title={error} />}
             {uploadResult && (
-               <AlertBox
-                 type="success"
-                 title={`Uploaded ${uploadResult.total_questions || "some"} questions. ID: ${uploadResult.file_id}`}
-               />
+              <AlertBox
+                type="success"
+                title={`Uploaded ${uploadResult.total_questions || "some"} questions. ID: ${uploadResult.file_id}`}
+              />
             )}
-            
+
             {selectedFile && !isUploading && (
               <div className="flex justify-center pt-2">
                 <Button

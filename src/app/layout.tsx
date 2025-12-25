@@ -10,9 +10,11 @@ export const metadata: Metadata = {
   description:
     "Examify-এর সাথে আপনার পরীক্ষার প্রস্তুতি আরও সহজ ও কার্যকর করুন।",
   keywords:
-    "examify,examify world,examify study,study platform,admission calendar,admission news 2025,admission 2025,university admission,question bank,bangladesh university,public university,private university,college admission,ভর্তি তথ্য,বিশ্ববিদ্যালয় ভর্তি,প্রশ্নব্যাংক,অ্যাডমিশন ক্যালেন্ডার,ভর্তি পরীক্ষা,মডেল টেস্ট,বিশ্ববিদ্যালয় ভর্তি প্রস্তুতি",  icons: {
+    "examify,examify world,examify study,study platform,admission calendar,admission news 2025,admission 2025,university admission,question bank,bangladesh university,public university,private university,college admission,ভর্তি তথ্য,বিশ্ববিদ্যালয় ভর্তি,প্রশ্নব্যাংক,অ্যাডমিশন ক্যালেন্ডার,ভর্তি পরীক্ষা,মডেল টেস্ট,বিশ্ববিদ্যালয় ভর্তি প্রস্তুতি",
+  icons: {
     icon: "/icon.png",
-  },};
+  },
+};
 
 export default function RootLayout({
   children,
@@ -31,7 +33,9 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className={cn("min-h-screen bg-background antialiased font-hind-siliguri")}
+        className={cn(
+          "min-h-screen bg-background antialiased font-hind-siliguri",
+        )}
       >
         <ThemeProvider
           attribute="class"

@@ -225,27 +225,38 @@ export async function createExam(formData: FormData) {
     end_at = null;
   }
 
-    const total_subjects = formData.get("total_subjects") ? parseInt(formData.get("total_subjects") as string) : null;
-    
-    let mandatory_subjects = [];
-    try {
-        const raw = formData.get("mandatory_subjects") as string;
-        mandatory_subjects = raw ? JSON.parse(raw) : [];
-    } catch { mandatory_subjects = []; }
+  const total_subjects = formData.get("total_subjects")
+    ? parseInt(formData.get("total_subjects") as string)
+    : null;
 
-    let optional_subjects = [];
-    try {
-        const raw = formData.get("optional_subjects") as string;
-        optional_subjects = raw ? JSON.parse(raw) : [];
-    } catch { optional_subjects = []; }
+  let mandatory_subjects = [];
+  try {
+    const raw = formData.get("mandatory_subjects") as string;
+    mandatory_subjects = raw ? JSON.parse(raw) : [];
+  } catch {
+    mandatory_subjects = [];
+  }
 
-    let question_ids = [];
-    try {
-        const raw = formData.get("question_ids") as string;
-        question_ids = raw ? JSON.parse(raw) : [];
-    } catch { question_ids = []; }
+  let optional_subjects = [];
+  try {
+    const raw = formData.get("optional_subjects") as string;
+    optional_subjects = raw ? JSON.parse(raw) : [];
+  } catch {
+    optional_subjects = [];
+  }
 
-    const result = await apiRequest("exams", "POST", {
+  let question_ids = [];
+  try {
+    const raw = formData.get("question_ids") as string;
+    question_ids = raw ? JSON.parse(raw) : [];
+  } catch {
+    question_ids = [];
+  }
+
+  const result = await apiRequest(
+    "exams",
+    "POST",
+    {
       id: crypto.randomUUID(),
       name,
       description,
@@ -263,7 +274,9 @@ export async function createExam(formData: FormData) {
       mandatory_subjects,
       optional_subjects,
       question_ids,
-    }, { action: 'create' });
+    },
+    { action: "create" },
+  );
 
   if (!result.success) {
     return {
@@ -327,7 +340,7 @@ export async function updateExam(formData: FormData) {
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   const course_name = formData.get("course_name") as string;
-  
+
   const durationRaw = formData.get("duration_minutes") as string;
   const duration_minutes = parseInt(durationRaw, 10);
   const marks_per_question_raw = formData.get("marks_per_question") as string;
@@ -352,30 +365,30 @@ export async function updateExam(formData: FormData) {
   const total_subjects = total_subjects_raw
     ? parseInt(total_subjects_raw, 10)
     : null;
-  
+
   // Parse JSON strings from FormData
   let mandatory_subjects = [];
   try {
-     const raw = formData.get("mandatory_subjects") as string;
-     mandatory_subjects = raw ? JSON.parse(raw) : [];
+    const raw = formData.get("mandatory_subjects") as string;
+    mandatory_subjects = raw ? JSON.parse(raw) : [];
   } catch {
-     mandatory_subjects = [];
+    mandatory_subjects = [];
   }
 
   let optional_subjects = [];
   try {
-     const raw = formData.get("optional_subjects") as string;
-     optional_subjects = raw ? JSON.parse(raw) : [];
+    const raw = formData.get("optional_subjects") as string;
+    optional_subjects = raw ? JSON.parse(raw) : [];
   } catch {
-     optional_subjects = [];
+    optional_subjects = [];
   }
 
   let question_ids = null;
   try {
-     const raw = formData.get("question_ids") as string | null;
-     question_ids = raw ? JSON.parse(raw) : null;
+    const raw = formData.get("question_ids") as string | null;
+    question_ids = raw ? JSON.parse(raw) : null;
   } catch {
-     question_ids = null;
+    question_ids = null;
   }
 
   const result = await apiRequest<Exam>(

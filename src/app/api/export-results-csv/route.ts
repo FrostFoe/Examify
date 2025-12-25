@@ -37,9 +37,14 @@ export async function POST(request: NextRequest) {
     const exam = examResult.data;
 
     // Fetch all student results for this exam
-    const resultsResult = await apiRequest<ResultData[]>("results", "GET", null, {
-      exam_id: examId,
-    });
+    const resultsResult = await apiRequest<ResultData[]>(
+      "results",
+      "GET",
+      null,
+      {
+        exam_id: examId,
+      },
+    );
 
     if (!resultsResult.success || !resultsResult.data) {
       return NextResponse.json(
@@ -77,8 +82,7 @@ export async function POST(request: NextRequest) {
     (results || []).forEach((result, idx) => {
       const finalScore =
         parseFloat(result.correct_answers) -
-        parseFloat(result.wrong_answers) *
-          (exam.negative_marks_per_wrong || 0);
+        parseFloat(result.wrong_answers) * (exam.negative_marks_per_wrong || 0);
       const row = [
         idx + 1,
         `"${result.student_roll || "N/A"}"`,

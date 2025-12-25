@@ -91,9 +91,14 @@ export default function ResultsPage() {
 
     try {
       // Fetch all student exam results
-      const resultsResult = await apiRequest<RawStudentExam[]>("results", "GET", null, {
-        student_id: user?.uid,
-      });
+      const resultsResult = await apiRequest<RawStudentExam[]>(
+        "results",
+        "GET",
+        null,
+        {
+          student_id: user?.uid,
+        },
+      );
 
       if (!resultsResult.success || !resultsResult.data) {
         setError("ফলাফল আনতে ব্যর্থ");
@@ -124,31 +129,27 @@ export default function ResultsPage() {
         throw new Error(batchesResult.message);
       setBatches(batchesResult.data);
 
-      const transformedResults: ExamResult[] = allStudentExams.map(
-        (result) => {
-          const examDetails = examLookup[result.exam_id];
-          const negativeMarks =
-            examDetails?.negative_marks_per_wrong || 0;
-          const finalScore =
-            parseFloat(result.correct_answers) -
-            parseFloat(result.wrong_answers) * negativeMarks;
+      const transformedResults: ExamResult[] = allStudentExams.map((result) => {
+        const examDetails = examLookup[result.exam_id];
+        const negativeMarks = examDetails?.negative_marks_per_wrong || 0;
+        const finalScore =
+          parseFloat(result.correct_answers) -
+          parseFloat(result.wrong_answers) * negativeMarks;
 
-          return {
-            id: result.id,
-            exam_id: result.exam_id,
-            exam_name: examDetails?.name || "অজানা পরীক্ষা",
-            score: finalScore,
-            correct_answers: parseInt(result.correct_answers),
-            wrong_answers: parseInt(result.wrong_answers),
-            unattempted: parseInt(result.unattempted),
-            submitted_at: result.submitted_at,
-            negative_marks_per_wrong: negativeMarks,
-            marks_per_question:
-              examDetails?.marks_per_question || 1,
-            batch_id: examDetails?.batch_id || null,
-          };
-        },
-      );
+        return {
+          id: result.id,
+          exam_id: result.exam_id,
+          exam_name: examDetails?.name || "অজানা পরীক্ষা",
+          score: finalScore,
+          correct_answers: parseInt(result.correct_answers),
+          wrong_answers: parseInt(result.wrong_answers),
+          unattempted: parseInt(result.unattempted),
+          submitted_at: result.submitted_at,
+          negative_marks_per_wrong: negativeMarks,
+          marks_per_question: examDetails?.marks_per_question || 1,
+          batch_id: examDetails?.batch_id || null,
+        };
+      });
 
       setResults(transformedResults);
     } catch (err) {
@@ -212,12 +213,16 @@ export default function ResultsPage() {
   const totalAttempts = filteredResults.length;
   const averageScore =
     filteredResults.length > 0
-      ? filteredResults.reduce((sum, r) => sum + parseFloat(String(r.score || 0)), 0) /
-        filteredResults.length
+      ? filteredResults.reduce(
+          (sum, r) => sum + parseFloat(String(r.score || 0)),
+          0,
+        ) / filteredResults.length
       : 0;
   const bestScore =
     filteredResults.length > 0
-      ? Math.max(...filteredResults.map((r) => parseFloat(String(r.score || 0))))
+      ? Math.max(
+          ...filteredResults.map((r) => parseFloat(String(r.score || 0))),
+        )
       : 0;
 
   const formatDate = (date: string) => {

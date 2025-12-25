@@ -98,10 +98,12 @@ function SubjectSelectionScreen({
   onStart: (selectedSubjects: string[]) => void;
   questionCount: number;
 }) {
-  const normalize = (list: (string | import("@/lib/types").SubjectConfig)[] | null | undefined): string[] => {
+  const normalize = (
+    list: (string | import("@/lib/types").SubjectConfig)[] | null | undefined,
+  ): string[] => {
     if (!list || list.length === 0) return [];
-    if (typeof list[0] === 'string') return list as string[];
-    return (list as import("@/lib/types").SubjectConfig[]).map(i => i.id);
+    if (typeof list[0] === "string") return list as string[];
+    return (list as import("@/lib/types").SubjectConfig[]).map((i) => i.id);
   };
 
   const mandatorySubjects = normalize(exam.mandatory_subjects);
@@ -109,7 +111,10 @@ function SubjectSelectionScreen({
   const totalSubjectsToAnswer = exam.total_subjects || 0;
 
   const numMandatory = mandatorySubjects.length;
-  const numToSelectFromOptional = Math.max(0, totalSubjectsToAnswer - numMandatory);
+  const numToSelectFromOptional = Math.max(
+    0,
+    totalSubjectsToAnswer - numMandatory,
+  );
 
   const [selectedOptional, setSelectedOptional] = useState<string[]>([]);
 
@@ -118,7 +123,10 @@ function SubjectSelectionScreen({
       if (prev.includes(subjectId)) {
         return prev.filter((s) => s !== subjectId);
       }
-      if (numToSelectFromOptional > 0 && prev.length < numToSelectFromOptional) {
+      if (
+        numToSelectFromOptional > 0 &&
+        prev.length < numToSelectFromOptional
+      ) {
         return [...prev, subjectId];
       }
       return prev;
@@ -258,22 +266,26 @@ function SubjectSelectionScreen({
           {optionalSubjects.length > 0 && (
             <div>
               <h3 className="font-semibold mb-2 text-sm md:text-base">
-                ঐচ্ছিক বিষয় {numToSelectFromOptional > 0 ? `(যেকোনো ${numToSelectFromOptional}টি)` : '(প্রয়োজন নেই)'}
+                ঐচ্ছিক বিষয়{" "}
+                {numToSelectFromOptional > 0
+                  ? `(যেকোনো ${numToSelectFromOptional}টি)`
+                  : "(প্রয়োজন নেই)"}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 {optionalSubjects.map((sub) => {
                   const isChecked = selectedOptional.includes(sub);
                   const isDisabled =
                     !isChecked &&
-                    selectedOptional.length >= numToSelectFromOptional && numToSelectFromOptional > 0;
+                    selectedOptional.length >= numToSelectFromOptional &&
+                    numToSelectFromOptional > 0;
                   return (
                     <label
                       key={sub}
                       className={`flex items-center space-x-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${
-                        isChecked 
-                          ? "border-primary bg-primary/5 ring-1 ring-primary/10" 
-                          : isDisabled 
-                            ? "opacity-50 cursor-not-allowed border-muted" 
+                        isChecked
+                          ? "border-primary bg-primary/5 ring-1 ring-primary/10"
+                          : isDisabled
+                            ? "opacity-50 cursor-not-allowed border-muted"
                             : "border-muted hover:border-primary/30"
                       }`}
                     >
@@ -352,7 +364,7 @@ export default function TakeExamPage() {
   const questionsPerPage = isMobile
     ? QUESTIONS_PER_PAGE_MOBILE
     : QUESTIONS_PER_PAGE;
-  
+
   // Get unique subjects and filter questions
   const uniqueSubjects = useMemo(() => {
     if (orderedSubjects.length > 0) return orderedSubjects;
@@ -373,146 +385,169 @@ export default function TakeExamPage() {
       return questions;
     }
     // Match logic: Subject ID vs Question Subject
-    // Question.subject usually stores the name "physics" or ID "p"? 
+    // Question.subject usually stores the name "physics" or ID "p"?
     // fetchQuestions usually maps it.
     // Let's assume strict matching for now, or use the subjectsMap to check.
     return questions.filter((q) => {
-        if (q.subject === selectedSubject) return true;
-        // Also check if mapped name matches
-        if (subjectsMap[selectedSubject] === q.subject) return true;
-        // Or reverse
-        const key = Object.keys(subjectsMap).find(k => subjectsMap[k] === q.subject);
-        if (key === selectedSubject) return true;
-        
-        return false;
+      if (q.subject === selectedSubject) return true;
+      // Also check if mapped name matches
+      if (subjectsMap[selectedSubject] === q.subject) return true;
+      // Or reverse
+      const key = Object.keys(subjectsMap).find(
+        (k) => subjectsMap[k] === q.subject,
+      );
+      if (key === selectedSubject) return true;
+
+      return false;
     });
   }, [questions, selectedSubject]);
 
   const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
   const startIndex = currentPageIndex * questionsPerPage;
   const endIndex = startIndex + questionsPerPage;
-    const currentPageQuestions = filteredQuestions.slice(startIndex, endIndex);
-  
-    const handleStartCustomExam = (selectedSubjectIds: string[]) => {
-      if (!exam) return;
-  
-          // Helper to find config for a subject ID
-          const findConfig = (id: string) => {
-              const mandatory = exam.mandatory_subjects as (string | import("@/lib/types").SubjectConfig)[];
-              const optional = exam.optional_subjects as (string | import("@/lib/types").SubjectConfig)[];
-              
-              const m = mandatory?.find(s => (typeof s === 'string' ? s : s.id) === id);
-              if (m) return typeof m === 'string' ? { id: m } : m;
-              
-              const o = optional?.find(s => (typeof s === 'string' ? s : s.id) === id);
-              if (o) return typeof o === 'string' ? { id: o } : o;
-              return null;
-          };
-            let selectedQuestions: Question[] = [];
-      const subjectsOrder: string[] = [];
-  
-      selectedSubjectIds.forEach(subId => {
-          const config = findConfig(subId);
-          // Map ID to subject name for display/filtering
-          // If the backend stores full names in question.subject, we need to map 'p' -> 'Physics'
-          // If we used QuestionSelector with specific IDs, we can match by ID.
-          
-          let subjectQuestions: Question[] = [];
-          
-          if (config && config.question_ids && config.question_ids.length > 0) {
-              // Priority: Use specific question IDs from config
-               const ids = config.question_ids;
-               subjectQuestions = allQuestions.filter(q => q.id && ids.includes(q.id));
-          } else {
-               // Fallback: Filter by subject tag
-               // Try both ID and mapped name
-               const subjectName = subjectsMap[subId] || subId;
-               subjectQuestions = allQuestions.filter(q => q.subject === subId || q.subject === subjectName);
-               
-               // If config has count, limit it?
-               if (config && config.count) {
-                   subjectQuestions = subjectQuestions.slice(0, config.count);
-               }
-          }
-          
-          // Tag them with the subject ID/Name for grouping
-          // We use the mapped name for display if available, or just the ID.
-          // Actually uniqueSubjects uses question.subject. 
-          // We should ensure question.subject aligns with what we want to display.
-          // If question.subject is "Physics" and we selected "p", uniqueSubjects will show "Physics".
-          // But if we want to enforce order, we should know which subject is which.
-          
-                  if (subjectQuestions.length > 0) {
-                      // Determine the display name for this subject section
-                      // We use the mapped name (e.g. "পদার্থবিজ্ঞান") if available, otherwise the ID.
-                      // We do NOT rely on question.subject because it might vary or be inconsistent.
-                      const displayName = subjectsMap[subId] || subId;
-                      
-                      // Override the subject property of the questions to match the section display name.
-                      // This ensures they are correctly filtered and grouped under this tab.
-                      subjectQuestions = subjectQuestions.map(q => ({ ...q, subject: displayName }));
-          
-                      if (!subjectsOrder.includes(displayName)) {
-                          subjectsOrder.push(displayName);
-                      }
-                      selectedQuestions = [...selectedQuestions, ...subjectQuestions];
-                  }
-              });
-          
-              setQuestions(selectedQuestions);
-              setOrderedSubjects(subjectsOrder);
-              if (subjectsOrder.length > 0) {
-                  setSelectedSubject(subjectsOrder[0]);
-              } else {
-                  setSelectedSubject("all");
-              }      
-      setTimeLeft((exam.duration_minutes || 0) * 60);
-      setExamStarted(true);
+  const currentPageQuestions = filteredQuestions.slice(startIndex, endIndex);
+
+  const handleStartCustomExam = (selectedSubjectIds: string[]) => {
+    if (!exam) return;
+
+    // Helper to find config for a subject ID
+    const findConfig = (id: string) => {
+      const mandatory = exam.mandatory_subjects as (
+        | string
+        | import("@/lib/types").SubjectConfig
+      )[];
+      const optional = exam.optional_subjects as (
+        | string
+        | import("@/lib/types").SubjectConfig
+      )[];
+
+      const m = mandatory?.find(
+        (s) => (typeof s === "string" ? s : s.id) === id,
+      );
+      if (m) return typeof m === "string" ? { id: m } : m;
+
+      const o = optional?.find(
+        (s) => (typeof s === "string" ? s : s.id) === id,
+      );
+      if (o) return typeof o === "string" ? { id: o } : o;
+      return null;
     };
-  
-    const handleNextPage = () => {
-      if (currentPageIndex < totalPages - 1) {
-        setCurrentPageIndex(prev => prev + 1);
-        window.scrollTo(0, 0);
+    let selectedQuestions: Question[] = [];
+    const subjectsOrder: string[] = [];
+
+    selectedSubjectIds.forEach((subId) => {
+      const config = findConfig(subId);
+      // Map ID to subject name for display/filtering
+      // If the backend stores full names in question.subject, we need to map 'p' -> 'Physics'
+      // If we used QuestionSelector with specific IDs, we can match by ID.
+
+      let subjectQuestions: Question[] = [];
+
+      if (config && config.question_ids && config.question_ids.length > 0) {
+        // Priority: Use specific question IDs from config
+        const ids = config.question_ids;
+        subjectQuestions = allQuestions.filter(
+          (q) => q.id && ids.includes(q.id),
+        );
       } else {
-        // Check for next subject
-        const currentSubjectIndex = uniqueSubjects.indexOf(selectedSubject);
-        if (currentSubjectIndex !== -1 && currentSubjectIndex < uniqueSubjects.length - 1) {
-           const nextSubject = uniqueSubjects[currentSubjectIndex + 1];
-           setSelectedSubject(nextSubject);
-           setCurrentPageIndex(0);
-           window.scrollTo(0, 0);
-           toast({ 
-               title: "বিষয় পরিবর্তন", 
-               description: `পরবর্তী বিষয়: ${nextSubject}`,
-           });
+        // Fallback: Filter by subject tag
+        // Try both ID and mapped name
+        const subjectName = subjectsMap[subId] || subId;
+        subjectQuestions = allQuestions.filter(
+          (q) => q.subject === subId || q.subject === subjectName,
+        );
+
+        // If config has count, limit it?
+        if (config && config.count) {
+          subjectQuestions = subjectQuestions.slice(0, config.count);
         }
       }
-    };
-  
-    const handlePrevPage = () => {
-       if (currentPageIndex > 0) {
-           setCurrentPageIndex(prev => prev - 1);
-           window.scrollTo(0, 0);
-       } else {
-           // Check for prev subject
-           const currentSubjectIndex = uniqueSubjects.indexOf(selectedSubject);
-           if (currentSubjectIndex > 0) {
-               const prevSubject = uniqueSubjects[currentSubjectIndex - 1];
-               setSelectedSubject(prevSubject);
-               // Go to last page of prev subject?
-               // We need to calculate pages for that subject.
-               // It's dynamic. Let's just go to page 0 for simplicity or calculate it.
-               setCurrentPageIndex(0); 
-               window.scrollTo(0, 0);
-           }
-       }
-    };
-  
-    const isLastPageOfExam = currentPageIndex === totalPages - 1 && uniqueSubjects.indexOf(selectedSubject) === uniqueSubjects.length - 1;
-  
-  
-    const handleSubmitExam = useCallback(async () => {
+
+      // Tag them with the subject ID/Name for grouping
+      // We use the mapped name for display if available, or just the ID.
+      // Actually uniqueSubjects uses question.subject.
+      // We should ensure question.subject aligns with what we want to display.
+      // If question.subject is "Physics" and we selected "p", uniqueSubjects will show "Physics".
+      // But if we want to enforce order, we should know which subject is which.
+
+      if (subjectQuestions.length > 0) {
+        // Determine the display name for this subject section
+        // We use the mapped name (e.g. "পদার্থবিজ্ঞান") if available, otherwise the ID.
+        // We do NOT rely on question.subject because it might vary or be inconsistent.
+        const displayName = subjectsMap[subId] || subId;
+
+        // Override the subject property of the questions to match the section display name.
+        // This ensures they are correctly filtered and grouped under this tab.
+        subjectQuestions = subjectQuestions.map((q) => ({
+          ...q,
+          subject: displayName,
+        }));
+
+        if (!subjectsOrder.includes(displayName)) {
+          subjectsOrder.push(displayName);
+        }
+        selectedQuestions = [...selectedQuestions, ...subjectQuestions];
+      }
+    });
+
+    setQuestions(selectedQuestions);
+    setOrderedSubjects(subjectsOrder);
+    if (subjectsOrder.length > 0) {
+      setSelectedSubject(subjectsOrder[0]);
+    } else {
+      setSelectedSubject("all");
+    }
+    setTimeLeft((exam.duration_minutes || 0) * 60);
+    setExamStarted(true);
+  };
+
+  const handleNextPage = () => {
+    if (currentPageIndex < totalPages - 1) {
+      setCurrentPageIndex((prev) => prev + 1);
+      window.scrollTo(0, 0);
+    } else {
+      // Check for next subject
+      const currentSubjectIndex = uniqueSubjects.indexOf(selectedSubject);
+      if (
+        currentSubjectIndex !== -1 &&
+        currentSubjectIndex < uniqueSubjects.length - 1
+      ) {
+        const nextSubject = uniqueSubjects[currentSubjectIndex + 1];
+        setSelectedSubject(nextSubject);
+        setCurrentPageIndex(0);
+        window.scrollTo(0, 0);
+        toast({
+          title: "বিষয় পরিবর্তন",
+          description: `পরবর্তী বিষয়: ${nextSubject}`,
+        });
+      }
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPageIndex > 0) {
+      setCurrentPageIndex((prev) => prev - 1);
+      window.scrollTo(0, 0);
+    } else {
+      // Check for prev subject
+      const currentSubjectIndex = uniqueSubjects.indexOf(selectedSubject);
+      if (currentSubjectIndex > 0) {
+        const prevSubject = uniqueSubjects[currentSubjectIndex - 1];
+        setSelectedSubject(prevSubject);
+        // Go to last page of prev subject?
+        // We need to calculate pages for that subject.
+        // It's dynamic. Let's just go to page 0 for simplicity or calculate it.
+        setCurrentPageIndex(0);
+        window.scrollTo(0, 0);
+      }
+    }
+  };
+
+  const isLastPageOfExam =
+    currentPageIndex === totalPages - 1 &&
+    uniqueSubjects.indexOf(selectedSubject) === uniqueSubjects.length - 1;
+
+  const handleSubmitExam = useCallback(async () => {
     setIsSubmitting(true);
     let correctAnswers = 0;
     let wrongAnswers = 0;
@@ -521,9 +556,12 @@ export default function TakeExamPage() {
     questions.forEach((q) => {
       const qId = String(q.id);
       const selectedOptIndex = selectedAnswers[qId];
-      const qMarks = (q.question_marks !== null && q.question_marks !== undefined && q.question_marks !== "") 
-        ? parseFloat(String(q.question_marks)) 
-        : (exam?.marks_per_question || 1);
+      const qMarks =
+        q.question_marks !== null &&
+        q.question_marks !== undefined &&
+        q.question_marks !== ""
+          ? parseFloat(String(q.question_marks))
+          : exam?.marks_per_question || 1;
       const qNeg = exam?.negative_marks_per_wrong || 0;
 
       if (selectedOptIndex !== undefined) {
@@ -752,7 +790,9 @@ export default function TakeExamPage() {
           if (typeof q.answer === "number") {
             answerIndex = q.answer;
           } else {
-            const answerString = (q.answer || q.correct || "").toString().trim();
+            const answerString = (q.answer || q.correct || "")
+              .toString()
+              .trim();
             if (/^\d+$/.test(answerString)) {
               const num = parseInt(answerString, 10);
               // Assume legacy 1-based behavior for string numbers "1" -> 0
@@ -775,7 +815,8 @@ export default function TakeExamPage() {
               : [q.option1, q.option2, q.option3, q.option4, q.option5];
 
           const options = rawOptions.filter(
-            (opt: unknown) => opt && typeof opt === "string" && opt.trim() !== "",
+            (opt: unknown) =>
+              opt && typeof opt === "string" && opt.trim() !== "",
           );
 
           return {
@@ -808,9 +849,13 @@ export default function TakeExamPage() {
             const options =
               q.options && Array.isArray(q.options) && q.options.length > 0
                 ? q.options
-                : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
-                    (opt): opt is string => !!opt,
-                  );
+                : [
+                    q.option1,
+                    q.option2,
+                    q.option3,
+                    q.option4,
+                    q.option5,
+                  ].filter((opt): opt is string => !!opt);
 
             return {
               id: String(q.id),
@@ -820,7 +865,9 @@ export default function TakeExamPage() {
               explanation: q.explanation || "",
               type: q.type || null,
               question_image_url: q.question_image_url as string | undefined,
-              explanation_image_url: q.explanation_image_url as string | undefined,
+              explanation_image_url: q.explanation_image_url as
+                | string
+                | undefined,
               question_marks: q.question_marks,
               subject: q.subject,
               paper: q.paper,
@@ -887,7 +934,8 @@ export default function TakeExamPage() {
   const { attemptedCount } = useMemo(
     () => ({
       attemptedCount: Object.keys(selectedAnswers).length,
-      unattemptedCount: filteredQuestions.length - Object.keys(selectedAnswers).length,
+      unattemptedCount:
+        filteredQuestions.length - Object.keys(selectedAnswers).length,
     }),
     [selectedAnswers, filteredQuestions.length],
   );
@@ -1107,7 +1155,7 @@ export default function TakeExamPage() {
                 </Button>
                 {uniqueSubjects.map((subject) => {
                   const subjectQuestionCount = questions.filter(
-                    (q) => q.subject === subject
+                    (q) => q.subject === subject,
                   ).length;
                   return (
                     <Button
@@ -1172,12 +1220,43 @@ export default function TakeExamPage() {
                                 পর্যালোচনা
                               </Badge>
                             )}
-                            {(question.subject || question.paper || question.chapter || question.highlight) && (
+                            {(question.subject ||
+                              question.paper ||
+                              question.chapter ||
+                              question.highlight) && (
                               <div className="flex flex-wrap gap-1">
-                                {question.subject && <Badge variant="outline" className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-600 border-blue-200 font-normal">{question.subject}</Badge>}
-                                {question.paper && <Badge variant="outline" className="text-[10px] h-4 px-1.5 bg-green-50 text-green-600 border-green-200 font-normal">{question.paper}</Badge>}
-                                {question.chapter && <Badge variant="outline" className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-600 border-purple-200 font-normal">{question.chapter}</Badge>}
-                                {question.highlight && <Badge variant="outline" className="text-[10px] h-4 px-1.5 bg-amber-50 text-amber-600 border-amber-200 font-normal">{question.highlight}</Badge>}
+                                {question.subject && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-600 border-blue-200 font-normal"
+                                  >
+                                    {question.subject}
+                                  </Badge>
+                                )}
+                                {question.paper && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-green-50 text-green-600 border-green-200 font-normal"
+                                  >
+                                    {question.paper}
+                                  </Badge>
+                                )}
+                                {question.chapter && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-600 border-purple-200 font-normal"
+                                  >
+                                    {question.chapter}
+                                  </Badge>
+                                )}
+                                {question.highlight && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-amber-50 text-amber-600 border-amber-200 font-normal"
+                                  >
+                                    {question.highlight}
+                                  </Badge>
+                                )}
                               </div>
                             )}
                           </div>
@@ -1186,11 +1265,11 @@ export default function TakeExamPage() {
                           </h3>
                           {question.question_image_url && (
                             <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
-                                <img
-                                  src={question.question_image_url}
-                                  alt="Question"
-                                  className="w-full h-auto object-contain max-h-[300px]"
-                                />
+                              <img
+                                src={question.question_image_url}
+                                alt="Question"
+                                className="w-full h-auto object-contain max-h-[300px]"
+                              />
                             </div>
                           )}
                         </div>
@@ -1236,28 +1315,28 @@ export default function TakeExamPage() {
                               <label
                                 key={optionIndex}
                                 className={cn(
-                                    "group flex items-center space-x-3 p-2.5 md:p-3.5 rounded-xl border-2 transition-all min-h-[56px] cursor-pointer",
-                                    isSelected 
-                                        ? "border-primary bg-primary/5 ring-1 ring-primary/10" 
-                                        : isAnswered 
-                                            ? "border-muted bg-muted/20 opacity-80 cursor-default" 
-                                            : "border-muted hover:border-primary/20 hover:bg-muted/30"
+                                  "group flex items-center space-x-3 p-2.5 md:p-3.5 rounded-xl border-2 transition-all min-h-[56px] cursor-pointer",
+                                  isSelected
+                                    ? "border-primary bg-primary/5 ring-1 ring-primary/10"
+                                    : isAnswered
+                                      ? "border-muted bg-muted/20 opacity-80 cursor-default"
+                                      : "border-muted hover:border-primary/20 hover:bg-muted/30",
                                 )}
                                 onClick={() => {
-                                    if (isAnswered) return;
-                                    handleAnswerSelect(
-                                      String(question.id) || "",
-                                      optionIndex,
-                                    );
+                                  if (isAnswered) return;
+                                  handleAnswerSelect(
+                                    String(question.id) || "",
+                                    optionIndex,
+                                  );
                                 }}
                               >
                                 <div className="flex-shrink-0">
                                   <div
                                     className={cn(
-                                        "w-9 h-9 md:w-10 md:h-10 rounded-full border-2 flex items-center justify-center font-bold text-sm md:text-base transition-all flex-shrink-0",
-                                        isSelected
-                                            ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                                            : "border-muted-foreground/20 bg-background text-muted-foreground group-hover:border-primary/40 group-hover:text-primary"
+                                      "w-9 h-9 md:w-10 md:h-10 rounded-full border-2 flex items-center justify-center font-bold text-sm md:text-base transition-all flex-shrink-0",
+                                      isSelected
+                                        ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                                        : "border-muted-foreground/20 bg-background text-muted-foreground group-hover:border-primary/40 group-hover:text-primary",
                                     )}
                                   >
                                     {letter}
@@ -1272,10 +1351,14 @@ export default function TakeExamPage() {
                                   readOnly
                                   className="hidden"
                                 />
-                                <span className={cn(
+                                <span
+                                  className={cn(
                                     "flex-1 text-sm md:text-base font-semibold leading-snug break-words",
-                                    isSelected ? "text-primary" : "text-foreground/90"
-                                )}>
+                                    isSelected
+                                      ? "text-primary"
+                                      : "text-foreground/90",
+                                  )}
+                                >
                                   <LatexRenderer html={option} />
                                 </span>
                               </label>
@@ -1295,7 +1378,11 @@ export default function TakeExamPage() {
                 <Button
                   variant="outline"
                   onClick={handlePrevPage}
-                  disabled={(currentPageIndex === 0 && uniqueSubjects.indexOf(selectedSubject) === 0) || isSubmitting}
+                  disabled={
+                    (currentPageIndex === 0 &&
+                      uniqueSubjects.indexOf(selectedSubject) === 0) ||
+                    isSubmitting
+                  }
                   className="flex-1 h-10 px-2 text-xs md:text-sm"
                 >
                   <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />

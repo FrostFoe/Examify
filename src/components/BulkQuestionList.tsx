@@ -23,30 +23,47 @@ type Props = {
   onDelete?: (questionId: string) => void;
 };
 
-export default function BulkQuestionList({ questions, examName, onEdit, onDelete }: Props) {
+export default function BulkQuestionList({
+  questions,
+  examName,
+  onEdit,
+  onDelete,
+}: Props) {
   const [mode, setMode] = React.useState<"question" | "solution">("question");
   const [filters, setFilters] = React.useState({
     subject: "all",
     paper: "all",
     chapter: "all",
     highlight: "all",
-    search: ""
+    search: "",
   });
 
   const filteredQuestions = React.useMemo(() => {
     if (!questions) return [];
-    return questions.filter(q => {
-      const matchesSubject = filters.subject === "all" || q.subject === filters.subject;
+    return questions.filter((q) => {
+      const matchesSubject =
+        filters.subject === "all" || q.subject === filters.subject;
       const matchesPaper = filters.paper === "all" || q.paper === filters.paper;
-      const matchesChapter = filters.chapter === "all" || q.chapter === filters.chapter;
-      const matchesHighlight = filters.highlight === "all" || q.highlight === filters.highlight;
-      
+      const matchesChapter =
+        filters.chapter === "all" || q.chapter === filters.chapter;
+      const matchesHighlight =
+        filters.highlight === "all" || q.highlight === filters.highlight;
+
       const searchText = filters.search.toLowerCase();
-      const matchesSearch = !filters.search || 
-        (q.question || q.question_text || "").toLowerCase().includes(searchText) ||
+      const matchesSearch =
+        !filters.search ||
+        (q.question || q.question_text || "")
+          .toLowerCase()
+          .includes(searchText) ||
         (q.explanation || "").toLowerCase().includes(searchText);
 
-      return matchesSubject && matchesPaper && matchesChapter && matchesHighlight && matchesSearch;
+      return (
+        matchesSubject &&
+        matchesPaper &&
+        matchesChapter &&
+        matchesHighlight &&
+        matchesSearch
+      );
     });
   }, [questions, filters]);
 
@@ -61,7 +78,9 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
         );
         const optsCandidate = (q as Record<string, unknown>).options;
         const opts = Array.isArray(optsCandidate)
-          ? (optsCandidate as string[]).filter(o => o && typeof o === 'string' && o.trim() !== "")
+          ? (optsCandidate as string[]).filter(
+              (o) => o && typeof o === "string" && o.trim() !== "",
+            )
           : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
               (o): o is string => Boolean(o),
             );
@@ -74,7 +93,7 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
           '<img class="qimg"',
         );
 
-        const qImgHtml = q.question_image_url 
+        const qImgHtml = q.question_image_url
           ? `<div style='margin-top: 8px; margin-bottom: 8px;'><img src='${q.question_image_url}' style='max-width: 100%; height: auto; border-radius: 4px;' /></div>`
           : "";
 
@@ -90,9 +109,10 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
             ? `<div style='margin-top: 12px; padding: 8px; background-color: #f3f4f6; border-radius: 4px'><strong style='color: #374151'>উত্তর:</strong> <span style='font-weight: bold; color: #059669'>${answer}</span></div>`
             : "";
 
-        const expImgHtml = (printMode === "solution" && q.explanation_image_url)
-          ? `<div style='margin-top: 8px;'><img src='${q.explanation_image_url}' style='max-width: 100%; height: auto; border-radius: 4px;' /></div>`
-          : "";
+        const expImgHtml =
+          printMode === "solution" && q.explanation_image_url
+            ? `<div style='margin-top: 8px;'><img src='${q.explanation_image_url}' style='max-width: 100%; height: auto; border-radius: 4px;' /></div>`
+            : "";
 
         const explanationHtml =
           printMode === "solution" && (explanation || q.explanation_image_url)
@@ -105,9 +125,10 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
         if (q.chapter) metaTags.push(`Chapter: ${q.chapter}`);
         if (q.highlight) metaTags.push(`Highlight: ${q.highlight}`);
 
-        const metaHtml = metaTags.length > 0 
-          ? `<div style='margin-top: 8px; font-size: 11px; color: #6b7280; font-style: italic;'>${metaTags.join(' | ')}</div>`
-          : "";
+        const metaHtml =
+          metaTags.length > 0
+            ? `<div style='margin-top: 8px; font-size: 11px; color: #6b7280; font-style: italic;'>${metaTags.join(" | ")}</div>`
+            : "";
 
         return `
           <div style='page-break-inside: avoid; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb'>
@@ -233,13 +254,13 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
           <Filter className="h-4 w-4" />
           <span>ফিল্টার করুন</span>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           <div className="space-y-1.5">
             <label className="text-xs font-medium">বিষয়</label>
-            <Select 
-              value={filters.subject} 
-              onValueChange={(v) => setFilters(f => ({ ...f, subject: v }))}
+            <Select
+              value={filters.subject}
+              onValueChange={(v) => setFilters((f) => ({ ...f, subject: v }))}
             >
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="বিষয় নির্বাচন" />
@@ -259,9 +280,9 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
 
           <div className="space-y-1.5">
             <label className="text-xs font-medium">পত্র</label>
-            <Select 
-              value={filters.paper} 
-              onValueChange={(v) => setFilters(f => ({ ...f, paper: v }))}
+            <Select
+              value={filters.paper}
+              onValueChange={(v) => setFilters((f) => ({ ...f, paper: v }))}
             >
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="পত্র নির্বাচন" />
@@ -276,9 +297,9 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
 
           <div className="space-y-1.5">
             <label className="text-xs font-medium">অধ্যায়</label>
-            <Select 
-              value={filters.chapter} 
-              onValueChange={(v) => setFilters(f => ({ ...f, chapter: v }))}
+            <Select
+              value={filters.chapter}
+              onValueChange={(v) => setFilters((f) => ({ ...f, chapter: v }))}
             >
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="অধ্যায় নির্বাচন" />
@@ -296,9 +317,9 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
 
           <div className="space-y-1.5">
             <label className="text-xs font-medium">হাইলাইট</label>
-            <Select 
-              value={filters.highlight} 
-              onValueChange={(v) => setFilters(f => ({ ...f, highlight: v }))}
+            <Select
+              value={filters.highlight}
+              onValueChange={(v) => setFilters((f) => ({ ...f, highlight: v }))}
             >
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="হাইলাইট নির্বাচন" />
@@ -319,11 +340,13 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
                 placeholder="খুঁজুন..."
                 className="pl-9 h-9"
                 value={filters.search}
-                onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, search: e.target.value }))
+                }
               />
               {filters.search && (
-                <button 
-                  onClick={() => setFilters(f => ({ ...f, search: "" }))}
+                <button
+                  onClick={() => setFilters((f) => ({ ...f, search: "" }))}
                   className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
@@ -333,18 +356,24 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
           </div>
         </div>
 
-        {(filters.subject !== "all" || filters.paper !== "all" || filters.chapter !== "all" || filters.highlight !== "all" || filters.search) && (
+        {(filters.subject !== "all" ||
+          filters.paper !== "all" ||
+          filters.chapter !== "all" ||
+          filters.highlight !== "all" ||
+          filters.search) && (
           <div className="flex justify-end">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setFilters({
-                subject: "all",
-                paper: "all",
-                chapter: "all",
-                highlight: "all",
-                search: ""
-              })}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                setFilters({
+                  subject: "all",
+                  paper: "all",
+                  chapter: "all",
+                  highlight: "all",
+                  search: "",
+                })
+              }
               className="h-8 text-xs"
             >
               ফিল্টার রিসেট করুন
@@ -396,7 +425,10 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
       >
         {filteredQuestions && filteredQuestions.length > 0 ? (
           filteredQuestions.map((q, idx) => (
-            <div key={q.id || idx} className="border-b pb-6 last:border-b-0 group relative">
+            <div
+              key={q.id || idx}
+              className="border-b pb-6 last:border-b-0 group relative"
+            >
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1">
                   <div className="mb-3">
@@ -404,10 +436,38 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
                       <strong className="text-lg">প্রশ্ন {idx + 1}.</strong>
                       {(q.subject || q.paper || q.chapter || q.highlight) && (
                         <div className="flex flex-wrap gap-1.5">
-                          {q.subject && <Badge variant="outline" className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-200 font-normal">{q.subject}</Badge>}
-                          {q.paper && <Badge variant="outline" className="text-[10px] h-5 bg-green-50 text-green-600 border-green-200 font-normal">{q.paper}</Badge>}
-                          {q.chapter && <Badge variant="outline" className="text-[10px] h-5 bg-purple-50 text-purple-600 border-purple-200 font-normal">{q.chapter}</Badge>}
-                          {q.highlight && <Badge variant="outline" className="text-[10px] h-5 bg-amber-50 text-amber-600 border-amber-200 font-normal">{q.highlight}</Badge>}
+                          {q.subject && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-200 font-normal"
+                            >
+                              {q.subject}
+                            </Badge>
+                          )}
+                          {q.paper && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] h-5 bg-green-50 text-green-600 border-green-200 font-normal"
+                            >
+                              {q.paper}
+                            </Badge>
+                          )}
+                          {q.chapter && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] h-5 bg-purple-50 text-purple-600 border-purple-200 font-normal"
+                            >
+                              {q.chapter}
+                            </Badge>
+                          )}
+                          {q.highlight && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] h-5 bg-amber-50 text-amber-600 border-amber-200 font-normal"
+                            >
+                              {q.highlight}
+                            </Badge>
+                          )}
                         </div>
                       )}
                     </div>
@@ -465,7 +525,9 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
               {(() => {
                 const optsCandidate = (q as Record<string, unknown>).options;
                 const optsArr: string[] = Array.isArray(optsCandidate)
-                  ? (optsCandidate as string[]).filter(o => o && typeof o === 'string' && o.trim() !== "")
+                  ? (optsCandidate as string[]).filter(
+                      (o) => o && typeof o === "string" && o.trim() !== "",
+                    )
                   : [
                       q.option1,
                       q.option2,

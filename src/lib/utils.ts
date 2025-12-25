@@ -17,7 +17,7 @@ export const combineDhakaDateTime = (
   date: Date | undefined,
   hour: string,
   minute: string,
-  period: "AM" | "PM"
+  period: "AM" | "PM",
 ): string | null => {
   if (!date || !hour || !minute || !period) return null;
 
@@ -41,7 +41,7 @@ export const combineDhakaDateTime = (
 // Helper to parse a UTC ISO string back to Dhaka time components
 export const parseDhakaDateTime = (isoString: string) => {
   const date = new Date(isoString);
-  
+
   // Format to parts in Dhaka timezone
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Dhaka",

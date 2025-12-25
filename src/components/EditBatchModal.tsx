@@ -189,11 +189,7 @@ export function EditBatchModal({
               value={isPublic ? "true" : "false"}
             />
             <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? (
-                <CustomLoader minimal />
-              ) : (
-                "কোর্স আপডেট করুন"
-              )}
+              {isSubmitting ? <CustomLoader minimal /> : "কোর্স আপডেট করুন"}
             </Button>
           </form>
         </div>

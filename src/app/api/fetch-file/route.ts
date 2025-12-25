@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";
 
-const BACKEND_API_BASE = "https://db.mnr.world/api";
-const API_KEY =
-  process.env.CSV_API_KEY || process.env.NEXT_PUBLIC_CSV_API_KEY || "";
+const BACKEND_API_BASE = process.env.NEXT_PUBLIC_CSV_API_BASE_URL;
+const API_KEY = process.env.NEXT_PUBLIC_CSV_API_KEY || "";
 
 if (!API_KEY) {
   throw new Error("Missing CSV_API_KEY in environment");
@@ -58,7 +57,7 @@ export async function GET(request: NextRequest) {
     }
 
     const payload = await res.json();
-    return NextResponse.json({ success: true, data: payload });
+    return NextResponse.json(payload);
   } catch (err) {
     console.error("[FETCH-FILE] Error:", err);
     return NextResponse.json(

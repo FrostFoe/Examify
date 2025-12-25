@@ -50,7 +50,7 @@ export type Exam = {
   question_ids?: string[];
   created_at: string;
   questions?: Question[];
-}
+};
 
 export type SubjectConfig = {
   id: string;

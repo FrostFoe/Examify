@@ -1,5 +1,5 @@
 const API_KEY = process.env.NEXT_PUBLIC_CSV_API_KEY || "";
-const BACKEND_URL = "https://db.mnr.world/api";
+const BACKEND_URL = process.env.NEXT_PUBLIC_CSV_API_BASE_URL || "";
 
 export async function apiRequest<T>(
   route: string,
@@ -17,6 +17,8 @@ export async function apiRequest<T>(
         urlParams.set(key, value);
       }
     }
+
+    // Always set route in params
     urlParams.set("route", route);
 
     if (isServer) {
@@ -32,6 +34,8 @@ export async function apiRequest<T>(
     const headers: Record<string, string> = {
       "User-Agent": "Course-MNR-World-Backend/2.0",
     };
+
+    // Only set Content-Type if not FormData
     if (!(body instanceof FormData)) {
       headers["Content-Type"] = "application/json";
     }
@@ -48,38 +52,38 @@ export async function apiRequest<T>(
     const response = await fetch(url, options);
 
     const contentType = response.headers.get("content-type");
-    if (!response.ok) {
-      const text = await response.text();
-      if (contentType && contentType.includes("application/json")) {
-        try {
-          const errorData = JSON.parse(text);
-          return {
-            success: false,
-            message: errorData.message || errorData.error || `Error ${response.status}`,
-          };
-        } catch {
-          // fall through
-        }
-      }
-      return { success: false, message: `Error ${response.status}: ${text}` };
-    }
 
     if (contentType && contentType.includes("application/json")) {
       const result = await response.json();
-      
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: result.message || result.error || `Error ${response.status}`,
+        };
+      }
+
       // If the result is already in the expected format { success, data/message, ... }
-      if (result !== null && typeof result === "object" && !Array.isArray(result) && "success" in result) {
+      if (
+        result !== null &&
+        typeof result === "object" &&
+        !Array.isArray(result) &&
+        "success" in result
+      ) {
         return result;
       }
-      
+
       // Otherwise, wrap it as a successful response
       return {
         success: true,
         data: result as T,
       };
     } else {
-      // Warning: Backend returned 200 but not JSON. This is usually an error in this app's context.
       const text = await response.text();
+      if (!response.ok) {
+        return { success: false, message: `Error ${response.status}: ${text}` };
+      }
+      // Warning: Backend returned 200 but not JSON. This is usually an error in this app's context.
       return {
         success: false,
         message: `Unexpected response format: ${text.substring(0, 100)}...`,

@@ -110,13 +110,16 @@ export default function ExamQuestionsPage() {
           initialQuestion={
             isNew
               ? undefined
-              : {
+              : ({
                   ...editingQuestion,
                   id: editingQuestion.id,
                   file_id: String(
                     editingQuestion.file_id || fileId || "default",
                   ),
-                  question: editingQuestion.question || editingQuestion.question_text || "",
+                  question:
+                    editingQuestion.question ||
+                    editingQuestion.question_text ||
+                    "",
                   question_text:
                     editingQuestion.question ||
                     editingQuestion.question_text ||
@@ -131,7 +134,7 @@ export default function ExamQuestionsPage() {
                     (editingQuestion.explanation_image as string) ||
                     (editingQuestion.explanation_image_url as string) ||
                     undefined,
-                } as Question
+                } as Question)
           }
           onSave={handleSave}
           onCancel={() => setEditingQuestion(null)}

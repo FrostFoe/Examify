@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";
 
-const BACKEND_API_BASE = "https://db.mnr.world/api";
-const API_KEY =
-  process.env.CSV_API_KEY || process.env.NEXT_PUBLIC_CSV_API_KEY || "";
+const BACKEND_API_BASE = process.env.NEXT_PUBLIC_CSV_API_BASE_URL;
+const API_KEY = process.env.NEXT_PUBLIC_CSV_API_KEY || "";
 
 if (!API_KEY) {
   throw new Error(
@@ -44,8 +43,15 @@ interface RawQuestion {
   option5: string;
   answer: string;
   explanation: string;
+  question_image_url?: string;
+  explanation_image_url?: string;
+  subject?: string;
+  paper?: string;
+  chapter?: string;
+  highlight?: string;
   type: string;
   order_index: string;
+  question_marks?: string | number;
   created_at: string;
   [key: string]: unknown;
 }
@@ -64,8 +70,6 @@ export async function GET(request: NextRequest) {
       file_id: fileId || undefined,
       exam_id: examId || undefined,
     });
-
-    // console.log("[FETCH-QUESTIONS] Forwarding to PHP API:", url); // REDACTED SECURITY
 
     const response = await fetch(url, {
       method: "GET",
@@ -101,10 +105,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const raw = await response.json();
+    const payload = await response.json();
+    const raw = payload.data;
+
     if (!Array.isArray(raw)) {
       return NextResponse.json(
-        { success: false, message: "Unexpected API response shape" },
+        {
+          success: false,
+          message: "Unexpected API response shape: data is not an array",
+        },
         { status: 502 },
       );
     }
@@ -125,8 +134,15 @@ export async function GET(request: NextRequest) {
       correct: q.answer, // legacy front-end expects 'correct'
       answer: q.answer,
       explanation: q.explanation || "",
+      question_image_url: q.question_image_url,
+      explanation_image_url: q.explanation_image_url,
+      subject: q.subject,
+      paper: q.paper,
+      chapter: q.chapter,
+      highlight: q.highlight,
       type: q.type,
       order_index: q.order_index,
+      question_marks: q.question_marks,
       created_at: q.created_at,
     }));
 
@@ -155,7 +171,6 @@ export async function POST(request: NextRequest) {
 
     const url = buildBackendUrl({ file_id: file_id || undefined });
 
-    // console.log("[FETCH-QUESTIONS-POST] Fetching from:", url); // REDACTED SECURITY
     const response = await fetch(url, {
       headers: { "User-Agent": "Course-MNR-World-Backend/2.0" },
     });
@@ -184,10 +199,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const raw = await response.json();
+    const payload = await response.json();
+    const raw = payload.data;
+
     if (!Array.isArray(raw)) {
       return NextResponse.json(
-        { success: false, message: "Unexpected API shape" },
+        {
+          success: false,
+          message: "Unexpected API shape: data is not an array",
+        },
         { status: 502 },
       );
     }
@@ -195,13 +215,27 @@ export async function POST(request: NextRequest) {
       id: q.id,
       file_id: q.file_id,
       question: q.question_text || "",
+      question_text: q.question_text || "",
       options: [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
         (o) => o && o.trim() !== "",
       ),
+      option1: q.option1,
+      option2: q.option2,
+      option3: q.option3,
+      option4: q.option4,
+      option5: q.option5,
       correct: q.answer,
+      answer: q.answer,
       explanation: q.explanation || "",
+      question_image_url: q.question_image_url,
+      explanation_image_url: q.explanation_image_url,
+      subject: q.subject,
+      paper: q.paper,
+      chapter: q.chapter,
+      highlight: q.highlight,
       type: q.type,
       order_index: q.order_index,
+      question_marks: q.question_marks,
       created_at: q.created_at,
     }));
     return NextResponse.json({ success: true, questions: transformed });

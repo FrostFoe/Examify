@@ -69,9 +69,14 @@ export default function ExamLeaderboardPage() {
         const examData = examResult.data;
         setExam(examData);
 
-        const resultsResult = await apiRequest<ApiResult[]>("results", "GET", null, {
-          exam_id: exam_id,
-        });
+        const resultsResult = await apiRequest<ApiResult[]>(
+          "results",
+          "GET",
+          null,
+          {
+            exam_id: exam_id,
+          },
+        );
         if (!resultsResult.success || !resultsResult.data)
           throw new Error(resultsResult.message);
 

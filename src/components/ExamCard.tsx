@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Zap,
-  CheckCircle2,
-  Trophy,
-  RotateCw,
-  FileText,
-} from "lucide-react";
+import { Zap, CheckCircle2, Trophy, RotateCw, FileText } from "lucide-react";
 import type { Exam, StudentExam } from "@/lib/types";
 
 interface ExamCardProps {
@@ -115,15 +109,27 @@ export function ExamCard({ exam, result }: ExamCardProps) {
                   <FileText className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                   উত্তরপত্র
                 </Button>
-                <Link href={`/dashboard/exams/${exam.id}/leaderboard`} className="w-full">
-                  <Button variant="outline" size="sm" className="w-full text-[10px] md:text-xs">
+                <Link
+                  href={`/dashboard/exams/${exam.id}/leaderboard`}
+                  className="w-full"
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-[10px] md:text-xs"
+                  >
                     <Trophy className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                     লিডারবোর্ড
                   </Button>
                 </Link>
               </div>
               <div className="w-full">
-                <Button onClick={handleTakeExam} variant="default" size="sm" className="w-full text-[10px] md:text-xs">
+                <Button
+                  onClick={handleTakeExam}
+                  variant="default"
+                  size="sm"
+                  className="w-full text-[10px] md:text-xs"
+                >
                   <RotateCw className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                   আবার দিন
                 </Button>
@@ -142,21 +148,21 @@ export function ExamCard({ exam, result }: ExamCardProps) {
               {notStarted ? "শুরু হয়নি" : "পরীক্ষা দিন"}
               {!notStarted && (
                 <svg
-                    className="w-4 h-4 ms-2 rtl:rotate-180"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    fill="none"
-                    viewBox="0 0 24 24"
+                  className="w-4 h-4 ms-2 rtl:rotate-180"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
                 >
-                    <path
+                  <path
                     stroke="currentColor"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
                     d="M19 12H5m14 0-4 4m4-4-4-4"
-                    />
+                  />
                 </svg>
               )}
             </button>
