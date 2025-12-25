@@ -43,6 +43,9 @@ export interface RawQuestion {
 export async function fetchQuestions(
   fileId?: string | number,
   exam_id?: string,
+  limit?: number,
+  offset?: number,
+  search?: string,
 ): Promise<RawQuestion[]> {
   try {
     const params: Record<string, string> = {};
@@ -51,6 +54,15 @@ export async function fetchQuestions(
     }
     if (exam_id) {
       params.exam_id = exam_id;
+    }
+    if (limit !== undefined) {
+      params.limit = String(limit);
+    }
+    if (offset !== undefined) {
+      params.offset = String(offset);
+    }
+    if (search) {
+      params.search = search;
     }
 
     const result = await apiRequest<RawQuestion[]>(

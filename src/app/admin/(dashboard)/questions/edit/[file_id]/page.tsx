@@ -24,6 +24,7 @@ import LatexRenderer from "@/components/LatexRenderer";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useParams, useRouter } from "next/navigation";
+import { useDebounce } from "use-debounce";
 import type { Question } from "@/lib/types";
 
 interface FileRecord {
@@ -44,6 +45,7 @@ export default function EditFileQuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [, setError] = useState<string | null>(null);
@@ -52,24 +54,30 @@ export default function EditFileQuestionsPage() {
     if (file_id) {
       fetchData();
     }
-  }, [file_id]);
+  }, [file_id, debouncedSearchTerm]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch File Details
-      const filesResult = await apiRequest<FileRecord[]>("files", "GET");
-      if (filesResult.success && Array.isArray(filesResult.data)) {
-        const foundFile = filesResult.data.find((f) => f.id === file_id);
-        setFile(foundFile || null);
+      // Fetch File Details (only on first load or if needed)
+      if (!file) {
+          const filesResult = await apiRequest<FileRecord[]>("files", "GET");
+          if (filesResult.success && Array.isArray(filesResult.data)) {
+            const foundFile = filesResult.data.find((f) => f.id === file_id);
+            setFile(foundFile || null);
+          }
       }
 
-      // Fetch Questions
+      // Fetch Questions with search
+      const params: Record<string, string> = { file_id };
+      if (debouncedSearchTerm) {
+        params.search = debouncedSearchTerm;
+      }
       const questionsResult = await apiRequest<Question[]>(
         "questions",
         "GET",
         null,
-        { file_id },
+        params,
       );
       if (questionsResult.success && Array.isArray(questionsResult.data)) {
         setQuestions(questionsResult.data);
@@ -104,15 +112,7 @@ export default function EditFileQuestionsPage() {
     setEditingQuestion(null);
   };
 
-  const filteredQuestions = questions.filter(
-    (q) =>
-      (q.question_text || q.question || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      String(q.answer || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()),
-  );
+  const filteredQuestions = questions; // Server-side filtered now
 
   if (!admin) {
     return <div className="p-8 text-center">Please log in as admin.</div>;

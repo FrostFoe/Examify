@@ -5,10 +5,16 @@ export { EmptyState } from "./EmptyState";
 export { default as CustomLoader } from "./CustomLoader";
 export { ActionButtons } from "./ActionButtons";
 export { AlertBox } from "./AlertBox";
-import CSVUploadComponent from "./CSVUploadComponent";
-import QuestionEditor from "./QuestionEditor";
+import dynamic from "next/dynamic";
 
-export { CSVUploadComponent, QuestionEditor };
+export const CSVUploadComponent = dynamic(() => import("./CSVUploadComponent"), {
+  ssr: false,
+  loading: () => null,
+});
+export const QuestionEditor = dynamic(() => import("./QuestionEditor"), {
+  ssr: false,
+  loading: () => null,
+});
 
 // Card Components
 export { BatchCard } from "./BatchCard";

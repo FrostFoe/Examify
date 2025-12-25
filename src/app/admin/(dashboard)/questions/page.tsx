@@ -25,6 +25,7 @@ import {
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useDebounce } from "use-debounce";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +50,7 @@ export default function AdminFilesPage() {
   const [files, setFiles] = useState<FileRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   // Rename states
@@ -57,12 +59,16 @@ export default function AdminFilesPage() {
 
   useEffect(() => {
     fetchFiles();
-  }, []);
+  }, [debouncedSearchTerm]);
 
   const fetchFiles = async () => {
     try {
       setLoading(true);
-      const result = await apiRequest<FileRecord[]>("files", "GET");
+      const params: Record<string, string> = {};
+      if (debouncedSearchTerm) {
+        params.search = debouncedSearchTerm;
+      }
+      const result = await apiRequest<FileRecord[]>("files", "GET", null, params);
       if (result.success && result.data) {
         setFiles(result.data);
       } else if (Array.isArray(result)) {
@@ -74,6 +80,8 @@ export default function AdminFilesPage() {
       setLoading(false);
     }
   };
+
+  const filteredFiles = files; // Server-side filtered now
 
   const handleDeleteFile = async (fileId: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -122,11 +130,6 @@ export default function AdminFilesPage() {
     }
   };
 
-  const filteredFiles = files.filter((f) =>
-    (f.display_name || f.original_filename)
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase()),
-  );
 
   if (!admin) {
     return (

@@ -33,7 +33,9 @@ CREATE TABLE IF NOT EXISTS `files` (
   `set_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_bank` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
-  KEY `category_id` (`category_id`)
+  KEY `category_id` (`category_id`),
+  KEY `idx_files_bank` (`is_bank`),
+  KEY `idx_files_uploaded` (`uploaded_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -83,6 +85,8 @@ CREATE TABLE IF NOT EXISTS `api_tokens` (
   `is_active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
+  KEY `idx_tokens_token` (`token`),
+  KEY `idx_tokens_active` (`is_active`),
   CONSTRAINT `api_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -191,6 +195,7 @@ CREATE TABLE IF NOT EXISTS `exams` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `batch_id` (`batch_id`),
+  KEY `file_id` (`file_id`),
   KEY `idx_exams_practice` (`is_practice`),
   KEY `idx_exams_created` (`created_at`),
   CONSTRAINT `exams_ibfk_1` FOREIGN KEY (`batch_id`) REFERENCES `batches` (`id`) ON DELETE CASCADE
@@ -227,6 +232,7 @@ CREATE TABLE IF NOT EXISTS `student_exams` (
   PRIMARY KEY (`id`),
   KEY `exam_id` (`exam_id`),
   KEY `student_id` (`student_id`),
+  KEY `idx_student_exams_score` (`score`),
   KEY `idx_student_exams_submitted` (`submitted_at`),
   UNIQUE KEY `student_exam_unique` (`student_id`,`exam_id`),
   CONSTRAINT `student_exams_ibfk_1` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`) ON DELETE CASCADE,

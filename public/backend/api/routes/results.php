@@ -6,21 +6,28 @@ $exam_id = $_GET['exam_id'] ?? null;
 $student_id = $_GET['student_id'] ?? null;
 $batch_id = $_GET['batch_id'] ?? null;
 
+$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 0;
+$offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+$pagination = "";
+if ($limit > 0) {
+    $pagination = " LIMIT $limit OFFSET $offset";
+}
+
 if ($method === 'GET') {
     if ($exam_id && $student_id) {
         $stmt = $pdo->prepare("SELECT * FROM student_exams WHERE exam_id = ? AND student_id = ?");
         $stmt->execute([$exam_id, $student_id]);
         echo json_encode(['success' => true, 'data' => $stmt->fetch()]);
     } elseif ($exam_id) {
-        $stmt = $pdo->prepare("SELECT se.*, s.name as student_name, s.roll as student_roll FROM student_exams se JOIN students s ON se.student_id = s.uid WHERE se.exam_id = ? ORDER BY se.score DESC");
+        $stmt = $pdo->prepare("SELECT se.*, s.name as student_name, s.roll as student_roll FROM student_exams se JOIN students s ON se.student_id = s.uid WHERE se.exam_id = ? ORDER BY se.score DESC" . $pagination);
         $stmt->execute([$exam_id]);
         echo json_encode(['success' => true, 'data' => $stmt->fetchAll()]);
     } elseif ($student_id) {
-        $stmt = $pdo->prepare("SELECT se.*, e.name as exam_name FROM student_exams se JOIN exams e ON se.exam_id = e.id WHERE se.student_id = ? ORDER BY se.submitted_at DESC");
+        $stmt = $pdo->prepare("SELECT se.*, e.name as exam_name FROM student_exams se JOIN exams e ON se.exam_id = e.id WHERE se.student_id = ? ORDER BY se.submitted_at DESC" . $pagination);
         $stmt->execute([$student_id]);
         echo json_encode(['success' => true, 'data' => $stmt->fetchAll()]);
     } elseif ($batch_id) {
-        $stmt = $pdo->prepare("SELECT se.*, s.name as student_name, s.roll as student_roll FROM student_exams se JOIN students s ON se.student_id = s.uid JOIN exams e ON se.exam_id = e.id WHERE e.batch_id = ?");
+        $stmt = $pdo->prepare("SELECT se.*, s.name as student_name, s.roll as student_roll FROM student_exams se JOIN students s ON se.student_id = s.uid JOIN exams e ON se.exam_id = e.id WHERE e.batch_id = ?" . $pagination);
         $stmt->execute([$batch_id]);
         echo json_encode(['success' => true, 'data' => $stmt->fetchAll()]);
     }
@@ -48,3 +55,4 @@ if ($method === 'GET') {
         echo json_encode(['success' => true]);
     }
 }
+?>
