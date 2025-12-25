@@ -41,7 +41,12 @@ export default function LatexRenderer({ html, className }: LatexRendererProps) {
     <div
       ref={containerRef}
       className={`latex-content ${className || ""}`}
-      style={{ display: "inline-block", width: "100%" }}
+      style={{
+        display: "block",
+        width: "100%",
+        overflowWrap: "break-word",
+        wordWrap: "break-word",
+      }}
     />
   );
 }

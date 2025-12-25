@@ -120,41 +120,53 @@ export default function ExamLeaderboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>র‌্যাঙ্ক</TableHead>
-                <TableHead>নাম</TableHead>
-                <TableHead>রোল</TableHead>
-                <TableHead className="text-right">স্কোর</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {results.length > 0 ? (
-                results.map((result, idx) => (
-                  <TableRow
-                    key={result.id}
-                    className={
-                      result.student.roll === user?.roll ? "bg-primary/10" : ""
-                    }
-                  >
-                    <TableCell className="font-medium">{idx + 1}</TableCell>
-                    <TableCell>{result.student.name}</TableCell>
-                    <TableCell>{result.student.roll}</TableCell>
-                    <TableCell className="text-right font-bold">
-                      {parseFloat(String(result.score)).toFixed(2)}
+          <div className="relative w-full overflow-x-auto scrollbar-hide">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="whitespace-nowrap">র‌্যাঙ্ক</TableHead>
+                  <TableHead className="whitespace-nowrap">নাম</TableHead>
+                  <TableHead className="whitespace-nowrap">রোল</TableHead>
+                  <TableHead className="text-right whitespace-nowrap">
+                    স্কোর
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {results.length > 0 ? (
+                  results.map((result, idx) => (
+                    <TableRow
+                      key={result.id}
+                      className={
+                        result.student.roll === user?.roll
+                          ? "bg-primary/10"
+                          : ""
+                      }
+                    >
+                      <TableCell className="font-medium whitespace-nowrap">
+                        {idx + 1}
+                      </TableCell>
+                      <TableCell className="min-w-[120px]">
+                        {result.student.name}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {result.student.roll}
+                      </TableCell>
+                      <TableCell className="text-right font-bold whitespace-nowrap">
+                        {parseFloat(String(result.score)).toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      এখনো কোনো ফলাফল পাওয়া যায়নি।
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
-                    এখনো কোনো ফলাফল পাওয়া যায়নি।
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

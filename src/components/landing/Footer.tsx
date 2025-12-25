@@ -101,7 +101,7 @@ export function Footer() {
               <div className="flex items-center flex-wrap gap-2">
                 {socialLinks.map(({ href, icon: Icon, label }) => (
                   <a
-                    key={href}
+                    key={label}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 rounded-lg bg-card border border-primary/20 hover:border-primary/40 hover:bg-primary/10 transition-all duration-300 text-muted-foreground hover:text-primary"

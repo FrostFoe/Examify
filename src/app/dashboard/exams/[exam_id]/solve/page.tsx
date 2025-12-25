@@ -163,7 +163,7 @@ export default function SolvePage() {
         q.question_marks !== undefined &&
         q.question_marks !== ""
           ? parseFloat(String(q.question_marks))
-          : exam?.marks_per_question || 1;
+          : parseFloat(String(exam?.marks_per_question || 1));
       const qNeg = parseFloat(String(exam?.negative_marks_per_wrong || 0));
 
       const qId = String(q.id);
@@ -231,7 +231,7 @@ export default function SolvePage() {
     wrongAnswers * parseFloat(String(exam?.negative_marks_per_wrong || 0));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/50 flex items-center justify-center p-2 md:p-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/50 flex flex-col items-center justify-start p-2 md:p-4">
       <div className="w-full max-w-2xl space-y-6">
         <Card className="border-0 shadow-2xl overflow-hidden bg-gradient-to-r from-primary/10 to-primary/5">
           <CardContent className="p-8 text-center space-y-4">
@@ -256,7 +256,7 @@ export default function SolvePage() {
               আপনার মোট স্কোর
             </p>
             <div className="space-y-2">
-              <div className="text-6xl font-black bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <div className="text-4xl md:text-6xl font-black bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 {finalScore.toFixed(2)}
               </div>
             </div>
@@ -266,16 +266,16 @@ export default function SolvePage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="border-muted/20 shadow-sm">
             <CardContent className="p-3 md:p-6 space-y-1 md:space-y-2">
-              <div className="flex items-center gap-2 text-success">
+              <div className="flex items-center gap-1 md:gap-2 text-success">
                 <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                <span className="text-[9px] md:text-xs font-bold uppercase tracking-wider">
                   সঠিক
                 </span>
               </div>
-              <p className="text-xl md:text-3xl font-black text-success">
+              <p className="text-lg md:text-3xl font-black text-success">
                 {correctAnswers}
               </p>
-              <p className="text-[9px] md:text-xs text-muted-foreground font-medium">
+              <p className="text-[8px] md:text-xs text-muted-foreground font-medium truncate">
                 মার্ক: +{marksFromCorrect.toFixed(1)}
               </p>
             </CardContent>
@@ -283,16 +283,16 @@ export default function SolvePage() {
 
           <Card className="border-muted/20 shadow-sm">
             <CardContent className="p-3 md:p-6 space-y-1 md:space-y-2">
-              <div className="flex items-center gap-2 text-destructive">
+              <div className="flex items-center gap-1 md:gap-2 text-destructive">
                 <AlertCircle className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                <span className="text-[9px] md:text-xs font-bold uppercase tracking-wider">
                   ভুল
                 </span>
               </div>
-              <p className="text-xl md:text-3xl font-black text-destructive">
+              <p className="text-lg md:text-3xl font-black text-destructive">
                 {wrongAnswers}
               </p>
-              <p className="text-[9px] md:text-xs text-muted-foreground font-medium">
+              <p className="text-[8px] md:text-xs text-muted-foreground font-medium truncate">
                 পেনাল্টি: -{totalNegativeMarksFromWrong.toFixed(1)}
               </p>
             </CardContent>
@@ -300,16 +300,16 @@ export default function SolvePage() {
 
           <Card className="border-muted/20 shadow-sm">
             <CardContent className="p-3 md:p-6 space-y-1 md:space-y-2">
-              <div className="flex items-center gap-2 text-warning">
+              <div className="flex items-center gap-1 md:gap-2 text-warning">
                 <HelpCircle className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                <span className="text-[9px] md:text-xs font-bold uppercase tracking-wider">
                   স্কিপ
                 </span>
               </div>
-              <p className="text-xl md:text-3xl font-black text-warning">
+              <p className="text-lg md:text-3xl font-black text-warning">
                 {unattempted}
               </p>
-              <p className="text-[9px] md:text-xs text-muted-foreground font-medium">
+              <p className="text-[8px] md:text-xs text-muted-foreground font-medium truncate">
                 মার্ক: 0.0
               </p>
             </CardContent>
@@ -317,16 +317,16 @@ export default function SolvePage() {
 
           <Card className="border-muted/20 shadow-sm">
             <CardContent className="p-3 md:p-6 space-y-1 md:space-y-2">
-              <div className="flex items-center gap-2 text-primary">
+              <div className="flex items-center gap-1 md:gap-2 text-primary">
                 <Zap className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                <span className="text-[9px] md:text-xs font-bold uppercase tracking-wider">
                   নেগেটিভ
                 </span>
               </div>
-              <p className="text-xl md:text-3xl font-black text-primary">
+              <p className="text-lg md:text-3xl font-black text-primary">
                 {negativeMarks.toFixed(1)}
               </p>
-              <p className="text-[9px] md:text-xs text-muted-foreground font-medium">
+              <p className="text-[8px] md:text-xs text-muted-foreground font-medium truncate">
                 প্রতি ভুল {exam?.negative_marks_per_wrong || 0}
               </p>
             </CardContent>
@@ -343,8 +343,7 @@ export default function SolvePage() {
         >
           <BookOpen className="h-4 w-4" />
           <AlertDescription
-            className="text-sm mb-8"
-            style={{ marginBottom: "2rem" }}
+            className="text-sm"
           >
             <strong>ফিডব্যাক:</strong>{" "}
             {finalScore >= questions.length * 0.75
@@ -420,87 +419,87 @@ export default function SolvePage() {
                 >
                   <CardHeader>
                     <div className="flex justify-between items-start gap-4">
-                      <div className="space-y-2">
-                        <Badge
-                          variant={
-                            isCorrect && !isSkipped
-                              ? "default"
-                              : isSkipped
-                                ? "outline"
-                                : "destructive"
-                          }
-                          className={
-                            isCorrect && !isSkipped
-                              ? "bg-success"
-                              : isSkipped
-                                ? "text-warning border-warning"
-                                : ""
-                          }
-                        >
-                          {isCorrect && !isSkipped
-                            ? "সঠিক"
-                            : isSkipped
-                              ? "উত্তর করা হয়নি"
-                              : "ভুল"}
-                        </Badge>
-                        <h3 className="text-lg font-semibold">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <span className="mr-1">
-                              প্রশ্ন {filteredQuestions.indexOf(question) + 1}.
-                            </span>
-                            {(question.subject ||
-                              question.paper ||
-                              question.chapter ||
-                              question.highlight) && (
-                              <div className="flex flex-wrap gap-1">
-                                {question.subject && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-600 border-blue-200 font-normal"
-                                  >
-                                    {question.subject}
-                                  </Badge>
-                                )}
-                                {question.paper && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] h-4 px-1.5 bg-green-50 text-green-600 border-green-200 font-normal"
-                                  >
-                                    {question.paper}
-                                  </Badge>
-                                )}
-                                {question.chapter && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-600 border-purple-200 font-normal"
-                                  >
-                                    {question.chapter}
-                                  </Badge>
-                                )}
-                                {question.highlight && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] h-4 px-1.5 bg-amber-50 text-amber-600 border-amber-200 font-normal"
-                                  >
-                                    {question.highlight}
-                                  </Badge>
+                          <div className="space-y-2 flex-1 min-w-0">
+                            <Badge
+                              variant={
+                                isCorrect && !isSkipped
+                                  ? "default"
+                                  : isSkipped
+                                    ? "outline"
+                                    : "destructive"
+                              }
+                              className={
+                                isCorrect && !isSkipped
+                                  ? "bg-success"
+                                  : isSkipped
+                                    ? "text-warning border-warning"
+                                    : ""
+                              }
+                            >
+                              {isCorrect && !isSkipped
+                                ? "সঠিক"
+                                : isSkipped
+                                  ? "উত্তর করা হয়নি"
+                                  : "ভুল"}
+                            </Badge>
+                            <h3 className="text-lg font-semibold break-words">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <span className="mr-1">
+                                  প্রশ্ন {filteredQuestions.indexOf(question) + 1}.
+                                </span>
+                                {(question.subject ||
+                                  question.paper ||
+                                  question.chapter ||
+                                  question.highlight) && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {question.subject && (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-600 border-blue-200 font-normal"
+                                      >
+                                        {question.subject}
+                                      </Badge>
+                                    )}
+                                    {question.paper && (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[10px] h-4 px-1.5 bg-green-50 text-green-600 border-green-200 font-normal"
+                                      >
+                                        {question.paper}
+                                      </Badge>
+                                    )}
+                                    {question.chapter && (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-600 border-purple-200 font-normal"
+                                      >
+                                        {question.chapter}
+                                      </Badge>
+                                    )}
+                                    {question.highlight && (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[10px] h-4 px-1.5 bg-amber-50 text-amber-600 border-amber-200 font-normal"
+                                      >
+                                        {question.highlight}
+                                      </Badge>
+                                    )}
+                                  </div>
                                 )}
                               </div>
-                            )}
+                              <LatexRenderer html={question.question || ""} />
+                            </h3>
+                            {question.question_image_url &&
+                              typeof question.question_image_url === "string" && (
+                                <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
+                                  <img
+                                    src={question.question_image_url}
+                                    alt="Question"
+                                    className="w-full h-auto object-contain max-h-[300px]"
+                                  />
+                                </div>
+                              )}
                           </div>
-                          <LatexRenderer html={question.question || ""} />
-                        </h3>
-                        {question.question_image_url &&
-                          typeof question.question_image_url === "string" && (
-                            <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
-                              <img
-                                src={question.question_image_url}
-                                alt="Question"
-                                className="w-full h-auto object-contain max-h-[300px]"
-                              />
-                            </div>
-                          )}
-                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -549,7 +548,9 @@ export default function SolvePage() {
                               {bengaliLetters[optIdx] ||
                                 String.fromCharCode(65 + optIdx)}
                             </div>
-                            <LatexRenderer html={option || ""} />
+                            <div className="flex-1 min-w-0">
+                              <LatexRenderer html={option || ""} />
+                            </div>
                             {isRightAnswer && (
                               <CheckCircle2 className="h-4 w-4 text-success ml-auto" />
                             )}
@@ -562,9 +563,11 @@ export default function SolvePage() {
                     </div>
 
                     {question.explanation && (
-                      <div className="mt-4 pb-16 p-4 bg-muted/50 rounded-lg text-sm">
+                      <div className="mt-4 p-4 bg-muted/50 rounded-lg text-sm min-w-0 break-words">
                         <p className="font-semibold mb-1">ব্যাখ্যা:</p>
-                        <LatexRenderer html={question.explanation || ""} />
+                        <div className="flex-1 min-w-0">
+                          <LatexRenderer html={question.explanation || ""} />
+                        </div>
                         {question.explanation_image_url &&
                           typeof question.explanation_image_url ===
                             "string" && (
@@ -594,11 +597,11 @@ export default function SolvePage() {
           )}
         </div>
 
-        <div className="flex gap-3 pt-4 mt-6 pb-4 md:pb-8">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 mt-6 pb-4 md:pb-8">
           <Button
             onClick={() => router.back()}
             variant="outline"
-            className="flex-1 h-12"
+            className="w-full sm:flex-1 h-12"
             size="lg"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -606,7 +609,7 @@ export default function SolvePage() {
           </Button>
           <Button
             onClick={() => router.push("/dashboard")}
-            className="flex-1 h-12"
+            className="w-full sm:flex-1 h-12"
             size="lg"
           >
             <BookOpen className="h-4 w-4 mr-2" />

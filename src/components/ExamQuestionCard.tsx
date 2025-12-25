@@ -101,7 +101,7 @@ export default function ExamQuestionCard({
                     className="hidden"
                   />
 
-                  <span className="flex-1 text-sm md:text-base font-medium break-words">
+                  <span className="flex-1 min-w-0 text-sm md:text-base font-medium break-words">
                     <LatexRenderer html={option} />
                   </span>
                 </label>

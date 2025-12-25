@@ -297,7 +297,7 @@ function SubjectSelectionScreen({
                         className="rounded-md"
                       />
                       <span
-                        className={`text-sm md:text-base font-medium flex-1 ${isDisabled ? "text-muted-foreground" : ""}`}
+                        className={`text-sm md:text-base font-medium flex-1 min-w-0 break-words ${isDisabled ? "text-muted-foreground" : ""}`}
                       >
                         {getSubjectName(sub)}
                       </span>
@@ -561,8 +561,8 @@ export default function TakeExamPage() {
         q.question_marks !== undefined &&
         q.question_marks !== ""
           ? parseFloat(String(q.question_marks))
-          : exam?.marks_per_question || 1;
-      const qNeg = exam?.negative_marks_per_wrong || 0;
+          : parseFloat(String(exam?.marks_per_question || 1));
+      const qNeg = parseFloat(String(exam?.negative_marks_per_wrong || 0));
 
       if (selectedOptIndex !== undefined) {
         if (selectedOptIndex === q.answer) {
@@ -1203,7 +1203,7 @@ export default function TakeExamPage() {
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-2">
                             <Badge variant="secondary">
                               প্রশ্ন {globalIndex + 1}
@@ -1260,7 +1260,7 @@ export default function TakeExamPage() {
                               </div>
                             )}
                           </div>
-                          <h3 className="text-lg font-semibold leading-relaxed">
+                          <h3 className="text-lg font-semibold leading-relaxed break-words">
                             <LatexRenderer html={question.question} />
                           </h3>
                           {question.question_image_url && (
@@ -1353,7 +1353,7 @@ export default function TakeExamPage() {
                                 />
                                 <span
                                   className={cn(
-                                    "flex-1 text-sm md:text-base font-semibold leading-snug break-words",
+                                    "flex-1 min-w-0 text-sm md:text-base font-semibold leading-snug break-words",
                                     isSelected
                                       ? "text-primary"
                                       : "text-foreground/90",
