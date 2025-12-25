@@ -359,12 +359,12 @@ export function BatchDetailsClient({
         title: "ছাত্রছাত্রী সফলভাবে যোগ করা হয়েছে",
         description: `${pendingStudent.name} (রোল: ${pendingStudent.roll}) ব্যাচে যুক্ত হয়েছেন।`,
       });
-      
+
       // Update local state so UI updates immediately
       if (result.data) {
         setEnrolledStudents((prev) => [result.data as User, ...prev]);
       }
-      
+
       setNewStudentRoll("");
       addStudentFormRef.current?.reset();
     } else {

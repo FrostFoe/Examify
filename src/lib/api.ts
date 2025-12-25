@@ -68,7 +68,8 @@ export async function apiRequest<T>(
         return {
           success: false,
           data: null as T,
-          message: result?.error || result?.message || `Error ${response.status}`,
+          message:
+            result?.error || result?.message || `Error ${response.status}`,
         };
       }
 
@@ -108,7 +109,7 @@ export async function apiRequest<T>(
           message: `HTTP ${response.status}: ${text.substring(0, 100)}`,
         };
       }
-      
+
       // If we expected T but got text, wrap it
       return {
         success: true,

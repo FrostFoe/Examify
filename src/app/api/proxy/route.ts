@@ -66,12 +66,18 @@ async function handleRequest(request: NextRequest) {
     } else {
       const text = await response.text();
       return NextResponse.json(
-        { 
-          success: response.ok, 
+        {
+          success: response.ok,
           message: text || `Error ${response.status}`,
-          data: response.ok ? text : null
+          data: response.ok ? text : null,
         },
-        { status: response.ok ? 200 : (response.status === 200 ? 502 : response.status) },
+        {
+          status: response.ok
+            ? 200
+            : response.status === 200
+              ? 502
+              : response.status,
+        },
       );
     }
   } catch (error) {

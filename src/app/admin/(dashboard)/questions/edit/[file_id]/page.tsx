@@ -310,7 +310,7 @@ export default function EditFileQuestionsPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col gap-2 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 md:translate-x-2 md:group-hover:translate-x-0">
+                <div className="flex flex-col gap-2 shrink-0 transition-all duration-300">
                   <Button
                     variant="secondary"
                     size="icon"
