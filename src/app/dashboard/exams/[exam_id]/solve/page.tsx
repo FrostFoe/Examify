@@ -71,52 +71,85 @@ export default function SolvePage() {
       const examData = examResult.data;
       setExam(examData);
 
-      const fetched = await fetchQuestions(examData.file_id, examData.id);
-      if (Array.isArray(fetched) && fetched.length > 0) {
-        const convertedQuestions = fetched.map((q: RawQuestion) => {
+      let finalQuestions: ExtendedQuestion[] = [];
+
+      // Check if questions are already embedded in the exam data (e.g., custom exams)
+      if (examData.questions && examData.questions.length > 0) {
+        finalQuestions = examData.questions.map((q: any) => {
           let answerIndex = -1;
-          const answerString = (q.answer || q.correct || "").toString().trim();
-
-          if (/^\d+$/.test(answerString)) {
-            const num = parseInt(answerString, 10);
-            if (num > 0) {
-              answerIndex = num - 1; // 1-based to 0-based
-            } else {
-              answerIndex = num; // Assume it's already 0-based
+          if (typeof q.answer === "number") {
+            answerIndex = q.answer;
+          } else {
+            const answerString = (q.answer || q.correct || "").toString().trim();
+            if (/^\d+$/.test(answerString)) {
+              const num = parseInt(answerString, 10);
+              // Assume legacy 1-based behavior for string numbers "1" -> 0
+              if (num > 0) {
+                answerIndex = num - 1;
+              } else {
+                answerIndex = num;
+              }
+            } else if (
+              answerString.length === 1 &&
+              /[a-zA-Z]/.test(answerString)
+            ) {
+              answerIndex = answerString.toUpperCase().charCodeAt(0) - 65;
             }
-          } else if (
-            answerString.length === 1 &&
-            /[a-zA-Z]/.test(answerString)
-          ) {
-            answerIndex = answerString.toUpperCase().charCodeAt(0) - 65;
           }
-
-          const options =
-            q.options && Array.isArray(q.options) && q.options.length > 0
-              ? q.options
-              : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
-                  (opt): opt is string => !!opt,
-                );
-
-          return {
-            id: q.id,
-            question: q.question || q.question_text || "",
-            options: options,
-            answer: answerIndex,
-            explanation: q.explanation || "",
-            type: q.type || null,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            question_image_url: (q as any).question_image_url,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            explanation_image_url: (q as any).explanation_image_url,
-            question_marks: q.question_marks,
-            subject: q.subject,
-            paper: q.paper,
-            chapter: q.chapter,
-            highlight: q.highlight,
-          };
+          return { ...q, answer: answerIndex } as ExtendedQuestion;
         });
-        setAllQuestions(convertedQuestions);
+      } else {
+        // Fallback: Fetch questions using file_id (legacy/CSV based exams)
+        const fetched = await fetchQuestions(examData.file_id, examData.id);
+        if (Array.isArray(fetched) && fetched.length > 0) {
+          finalQuestions = fetched.map((q: RawQuestion) => {
+            let answerIndex = -1;
+            const answerString = (q.answer || q.correct || "").toString().trim();
+
+            if (/^\d+$/.test(answerString)) {
+              const num = parseInt(answerString, 10);
+              if (num > 0) {
+                answerIndex = num - 1; // 1-based to 0-based
+              } else {
+                answerIndex = num; // Assume it's already 0-based
+              }
+            } else if (
+              answerString.length === 1 &&
+              /[a-zA-Z]/.test(answerString)
+            ) {
+              answerIndex = answerString.toUpperCase().charCodeAt(0) - 65;
+            }
+
+            const options =
+              q.options && Array.isArray(q.options) && q.options.length > 0
+                ? q.options
+                : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
+                    (opt): opt is string => !!opt,
+                  );
+
+            return {
+              id: q.id,
+              question: q.question || q.question_text || "",
+              options: options,
+              answer: answerIndex,
+              explanation: q.explanation || "",
+              type: q.type || null,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              question_image_url: (q as any).question_image_url,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              explanation_image_url: (q as any).explanation_image_url,
+              question_marks: q.question_marks,
+              subject: q.subject,
+              paper: q.paper,
+              chapter: q.chapter,
+              highlight: q.highlight,
+            };
+          });
+        }
+      }
+
+      if (finalQuestions.length > 0) {
+        setAllQuestions(finalQuestions);
       } else {
         toast({
           title: "প্রশ্ন লোড করতে সমস্যা হয়েছে",
