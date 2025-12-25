@@ -767,12 +767,21 @@ export default function TakeExamPage() {
               answerIndex = answerString.toUpperCase().charCodeAt(0) - 65;
             }
           }
+
+          const rawOptions =
+            q.options && Array.isArray(q.options) && q.options.length > 0
+              ? q.options
+              : [q.option1, q.option2, q.option3, q.option4, q.option5];
+
+          const options = rawOptions.filter(
+            (opt: any) => opt && typeof opt === "string" && opt.trim() !== "",
+          );
+
           return {
             ...q,
+            question: q.question || q.question_text || "",
             answer: answerIndex,
-            options: Array.isArray(q.options)
-              ? q.options
-              : Object.values(q.options || {}),
+            options,
           } as Question;
         });
       } else {

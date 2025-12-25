@@ -131,7 +131,9 @@ export default function EditFileQuestionsPage() {
 
   const filteredQuestions = questions.filter(
     (q) =>
-      q.question_text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (q.question_text || (q as any).question || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       q.answer?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
@@ -292,7 +294,9 @@ export default function EditFileQuestionsPage() {
                     )}
                   </div>
                   <div className="text-base md:text-lg font-medium leading-relaxed text-foreground">
-                    <LatexRenderer html={q.question_text} />
+                    <LatexRenderer
+                      html={q.question_text || (q as any).question || ""}
+                    />
                   </div>
                   {q.question_image_url && (
                     <div className="mt-3 rounded-xl overflow-hidden border max-w-md bg-white">

@@ -61,7 +61,7 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
         );
         const optsCandidate = (q as Record<string, unknown>).options;
         const opts = Array.isArray(optsCandidate)
-          ? (optsCandidate as string[]).map(String)
+          ? (optsCandidate as string[]).filter(o => o && typeof o === 'string' && o.trim() !== "")
           : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
               (o): o is string => Boolean(o),
             );
@@ -465,7 +465,7 @@ export default function BulkQuestionList({ questions, examName, onEdit, onDelete
               {(() => {
                 const optsCandidate = (q as Record<string, unknown>).options;
                 const optsArr: string[] = Array.isArray(optsCandidate)
-                  ? (optsCandidate as string[]).map(String)
+                  ? (optsCandidate as string[]).filter(o => o && typeof o === 'string' && o.trim() !== "")
                   : [
                       q.option1,
                       q.option2,

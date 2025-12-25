@@ -98,18 +98,20 @@ export default function SolvePage() {
             }
           }
 
-          const options =
-              q.options && Array.isArray(q.options) && q.options.length > 0
-                ? q.options
-                : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
-                    (opt: any) => opt && typeof opt === 'string' && opt.trim() !== "",
-                  );
+          const rawOptions =
+            q.options && Array.isArray(q.options) && q.options.length > 0
+              ? q.options
+              : [q.option1, q.option2, q.option3, q.option4, q.option5];
 
-          return { 
-            ...q, 
+          const options = rawOptions.filter(
+            (opt: any) => opt && typeof opt === "string" && opt.trim() !== "",
+          );
+
+          return {
+            ...q,
             question: q.question || q.question_text || "",
             options,
-            answer: answerIndex 
+            answer: answerIndex,
           } as ExtendedQuestion;
         });
       } else {

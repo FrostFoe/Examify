@@ -13,7 +13,7 @@ export default function LatexRenderer({ html, className }: LatexRendererProps) {
 
   useEffect(() => {
     if (containerRef.current) {
-      containerRef.current.innerHTML = html;
+      containerRef.current.innerHTML = html || "";
 
       // Add download protection to all images
       const images = containerRef.current.querySelectorAll("img");
