@@ -12,8 +12,8 @@ export default function LatexRenderer({ html, className }: LatexRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.innerHTML = html || "";
+    if (containerRef.current && html) {
+      containerRef.current.innerHTML = html;
 
       // Add download protection to all images
       const images = containerRef.current.querySelectorAll("img");
@@ -32,6 +32,8 @@ export default function LatexRenderer({ html, className }: LatexRendererProps) {
         ],
         throwOnError: false,
       });
+    } else if (containerRef.current && !html) {
+      containerRef.current.innerHTML = ""; // Clear the container if no html
     }
   }, [html]);
 

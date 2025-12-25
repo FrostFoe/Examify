@@ -83,7 +83,7 @@ export default function SolvePage() {
       let finalQuestions: ExtendedQuestion[] = [];
 
       // Check if questions are already embedded in the exam data (e.g., custom exams)
-      if (examData.questions && examData.questions.length > 0) {
+      if (examData.questions && Array.isArray(examData.questions) && examData.questions.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         finalQuestions = examData.questions.map((q: any) => {
           let answerIndex = -1;
@@ -110,7 +110,9 @@ export default function SolvePage() {
           const rawOptions =
             q.options && Array.isArray(q.options) && q.options.length > 0
               ? q.options
-              : [q.option1, q.option2, q.option3, q.option4, q.option5];
+              : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
+                  (opt: any) => opt && typeof opt === "string" && opt.trim() !== "",
+                );
 
           const options = rawOptions.filter(
             (opt: any) => opt && typeof opt === "string" && opt.trim() !== "",
@@ -118,7 +120,7 @@ export default function SolvePage() {
 
           return {
             ...q,
-            id: String(q.id),
+            id: String(q.id || Math.random().toString(36).substr(2, 9)), // Provide fallback ID if needed
             question: q.question || q.question_text || "",
             options,
             answer: answerIndex,
@@ -503,7 +505,7 @@ export default function SolvePage() {
                         <h3 className="text-lg font-semibold">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <span className="mr-1">
-                              প্রশ্ন {questions.indexOf(question) + 1}.
+                              প্রশ্ন {filteredQuestions.indexOf(question) + 1}.
                             </span>
                             {(question.subject || question.paper || question.chapter || question.highlight) && (
                               <div className="flex flex-wrap gap-1">
@@ -514,9 +516,9 @@ export default function SolvePage() {
                               </div>
                             )}
                           </div>
-                          <LatexRenderer html={question.question} />
+                          <LatexRenderer html={question.question || ""} />
                         </h3>
-                        {question.question_image_url && (
+                        {question.question_image_url && typeof question.question_image_url === 'string' && (
                             <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
                                 <img src={question.question_image_url} alt="Question" className="w-full h-auto object-contain max-h-[300px]" />
                             </div>
@@ -570,7 +572,7 @@ export default function SolvePage() {
                               {bengaliLetters[optIdx] ||
                                 String.fromCharCode(65 + optIdx)}
                             </div>
-                            <LatexRenderer html={option} />
+                            <LatexRenderer html={option || ""} />
                             {isRightAnswer && (
                               <CheckCircle2 className="h-4 w-4 text-success ml-auto" />
                             )}
@@ -585,12 +587,12 @@ export default function SolvePage() {
                     {question.explanation && (
                       <div className="mt-4 pb-16 p-4 bg-muted/50 rounded-lg text-sm">
                         <p className="font-semibold mb-1">ব্যাখ্যা:</p>
-                        <LatexRenderer html={question.explanation} />
-                        {question.explanation_image_url && (
+                        <LatexRenderer html={question.explanation || ""} />
+                        {question.explanation_image_url && typeof question.explanation_image_url === 'string' && (
                             <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
-                                <img 
-                                  src={question.explanation_image_url} 
-                                  alt="Explanation" 
+                                <img
+                                  src={question.explanation_image_url}
+                                  alt="Explanation"
                                   className="w-full h-auto object-contain max-h-[200px]"
                                   onContextMenu={(e) => e.preventDefault()}
                                   onDragStart={(e) => e.preventDefault()}
