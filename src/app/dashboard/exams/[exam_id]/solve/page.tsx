@@ -118,6 +118,7 @@ export default function SolvePage() {
 
           return {
             ...q,
+            id: String(q.id),
             question: q.question || q.question_text || "",
             options,
             answer: answerIndex,
@@ -153,7 +154,7 @@ export default function SolvePage() {
                   );
 
             return {
-              id: q.id,
+              id: String(q.id),
               question: q.question || q.question_text || "",
               options: options,
               answer: answerIndex,
@@ -234,8 +235,9 @@ export default function SolvePage() {
         : (exam?.marks_per_question || 1);
       const qNeg = parseFloat(String(exam?.negative_marks_per_wrong || 0));
 
-      if (q.id && answeredIds.includes(q.id)) {
-        if (loadedUserAnswers[q.id] === q.answer) {
+      const qId = String(q.id);
+      if (qId && answeredIds.includes(qId)) {
+        if (loadedUserAnswers[qId] === q.answer) {
           correct++;
           totalMarksFromCorrect += qMarks;
         } else {
@@ -264,7 +266,8 @@ export default function SolvePage() {
     }
 
     return questions.filter((question) => {
-      const userAnswer = loadedUserAnswers[question.id!];
+      const qId = String(question.id);
+      const userAnswer = loadedUserAnswers[qId];
       const isSkipped = userAnswer === undefined;
       const isCorrect = userAnswer === question.answer;
 
@@ -453,8 +456,9 @@ export default function SolvePage() {
 
           {filteredQuestions.length > 0 ? (
             filteredQuestions.map((question) => {
+              const qId = String(question.id);
               const userAnswer = loadedUserAnswers
-                ? loadedUserAnswers[question.id!]
+                ? loadedUserAnswers[qId]
                 : undefined;
               const correctAnswer = question.answer;
               const isCorrect = userAnswer === correctAnswer;
@@ -462,7 +466,7 @@ export default function SolvePage() {
 
               return (
                 <Card
-                  key={question.id}
+                  key={qId}
                   className={`mb-4 ${
                     isCorrect && !isSkipped
                       ? "bg-success/5 border-l-4 border-success"

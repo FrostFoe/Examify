@@ -518,7 +518,8 @@ export default function TakeExamPage() {
     let totalScore = 0;
 
     questions.forEach((q) => {
-      const selectedOptIndex = selectedAnswers[q.id!];
+      const qId = String(q.id);
+      const selectedOptIndex = selectedAnswers[qId];
       const qMarks = (q.question_marks !== null && q.question_marks !== undefined && q.question_marks !== "") 
         ? parseFloat(String(q.question_marks)) 
         : (exam?.marks_per_question || 1);
@@ -779,6 +780,7 @@ export default function TakeExamPage() {
 
           return {
             ...q,
+            id: String(q.id),
             question: q.question || q.question_text || "",
             answer: answerIndex,
             options,
@@ -811,7 +813,7 @@ export default function TakeExamPage() {
                   );
 
             return {
-              id: q.id,
+              id: String(q.id),
               question: q.question || q.question_text || "",
               options: options,
               answer: answerIndex,
@@ -1250,7 +1252,7 @@ export default function TakeExamPage() {
                                 onClick={() => {
                                     if (isAnswered) return;
                                     handleAnswerSelect(
-                                      question.id || "",
+                                      String(question.id) || "",
                                       optionIndex,
                                     );
                                 }}
