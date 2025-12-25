@@ -37,31 +37,22 @@ async function handleRequest(request: NextRequest) {
     };
 
     let body: BodyInit | null = null;
+    const method = request.method;
 
-    if (
-      request.method === "POST" ||
-      request.method === "PUT" ||
-      request.method === "DELETE"
-    ) {
+    if (method === "POST" || method === "PUT" || method === "DELETE") {
       if (
         incomingContentType &&
         incomingContentType.includes("multipart/form-data")
       ) {
-        // Forward multipart request
-        // We do NOT set Content-Type header explicitly here so fetch can set the boundary
-        // BUT we need to pass the FormData.
-        // Reading as formData() and passing it to fetch works in recent Node/Edge.
-        const formData = await request.formData();
-        body = formData;
+        body = await request.formData();
       } else {
-        // Default to JSON handling
         headers["Content-Type"] = "application/json";
         body = await request.text();
       }
     }
 
     const options: RequestInit = {
-      method: request.method,
+      method,
       headers,
       body,
     };
@@ -75,8 +66,12 @@ async function handleRequest(request: NextRequest) {
     } else {
       const text = await response.text();
       return NextResponse.json(
-        { success: false, message: text || `Error ${response.status}` },
-        { status: response.status === 200 ? 502 : response.status },
+        { 
+          success: response.ok, 
+          message: text || `Error ${response.status}`,
+          data: response.ok ? text : null
+        },
+        { status: response.ok ? 200 : (response.status === 200 ? 502 : response.status) },
       );
     }
   } catch (error) {

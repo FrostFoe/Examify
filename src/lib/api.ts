@@ -1,12 +1,19 @@
+import { ApiResponse } from "./types";
+
 const API_KEY = process.env.NEXT_PUBLIC_CSV_API_KEY || "";
 const BACKEND_URL = process.env.NEXT_PUBLIC_CSV_API_BASE_URL || "";
+const USER_AGENT = "Course-MNR-World-Backend/2.0";
 
+/**
+ * Robust API request utility for frontend-backend communication.
+ * Standardizes the response format to { success, data, message }.
+ */
 export async function apiRequest<T>(
   route: string,
   method: string = "GET",
   body: unknown = null,
   params: Record<string, string | undefined> = {},
-): Promise<{ success: boolean; data?: T; message?: string }> {
+): Promise<ApiResponse<T>> {
   try {
     const isServer = typeof window === "undefined";
 
@@ -22,20 +29,21 @@ export async function apiRequest<T>(
     urlParams.set("route", route);
 
     if (isServer) {
+      // Server-side: call backend directly
       urlParams.set("token", API_KEY);
       const baseUrl = BACKEND_URL.endsWith("/")
         ? BACKEND_URL.slice(0, -1)
         : BACKEND_URL;
       url = `${baseUrl}/index.php?${urlParams.toString()}`;
     } else {
+      // Client-side: call via proxy to hide API key (if proxy is configured correctly)
       url = `/api/proxy?${urlParams.toString()}`;
     }
 
     const headers: Record<string, string> = {
-      "User-Agent": "Course-MNR-World-Backend/2.0",
+      "User-Agent": USER_AGENT,
     };
 
-    // Only set Content-Type if not FormData
     if (!(body instanceof FormData)) {
       headers["Content-Type"] = "application/json";
     }
@@ -50,49 +58,68 @@ export async function apiRequest<T>(
     }
 
     const response = await fetch(url, options);
-
     const contentType = response.headers.get("content-type");
 
     if (contentType && contentType.includes("application/json")) {
       const result = await response.json();
 
-      if (!response.ok) {
+      // Handle failure cases (HTTP error or explicit success: false)
+      if (!response.ok || (result && result.success === false)) {
         return {
           success: false,
-          message: result.message || result.error || `Error ${response.status}`,
+          data: null as T,
+          message: result?.error || result?.message || `Error ${response.status}`,
         };
       }
 
-      // If the result is already in the expected format { success, data/message, ... }
-      if (
-        result !== null &&
-        typeof result === "object" &&
-        !Array.isArray(result) &&
-        "success" in result
-      ) {
-        return result;
+      // Consistent unwrapping logic
+      let payload: T;
+      if (result && typeof result === "object" && !Array.isArray(result)) {
+        if ("data" in result) {
+          // Standard wrapper: { success: true, data: [...] }
+          payload = result.data as T;
+        } else if ("success" in result) {
+          // Direct response with success flag: { success: true, id: 123, ... }
+          // We remove 'success' and 'message' from the payload to keep it clean
+          const { success: _s, message: _m, ...rest } = result;
+          // If there are other fields, use them, otherwise use the whole object
+          payload = (Object.keys(rest).length > 0 ? rest : result) as T;
+        } else {
+          // Plain object
+          payload = result as T;
+        }
+      } else {
+        // Primitive or array
+        payload = result as T;
       }
 
-      // Otherwise, wrap it as a successful response
       return {
         success: true,
-        data: result as T,
+        data: payload,
+        message: result?.message,
       };
     } else {
+      // Non-JSON response
       const text = await response.text();
       if (!response.ok) {
-        return { success: false, message: `Error ${response.status}: ${text}` };
+        return {
+          success: false,
+          data: null as T,
+          message: `HTTP ${response.status}: ${text.substring(0, 100)}`,
+        };
       }
-      // Warning: Backend returned 200 but not JSON. This is usually an error in this app's context.
+      
+      // If we expected T but got text, wrap it
       return {
-        success: false,
-        message: `Unexpected response format: ${text.substring(0, 100)}...`,
+        success: true,
+        data: text as unknown as T,
       };
     }
   } catch (error) {
     console.error("apiRequest error:", error);
     return {
       success: false,
+      data: null as T,
       message: error instanceof Error ? error.message : "Network error",
     };
   }

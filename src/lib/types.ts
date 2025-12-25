@@ -106,3 +106,9 @@ export type ServerActionResponse<T = unknown> = {
   message?: string;
   data?: T | T[] | null;
 };
+
+export type ApiResponse<T> = {
+  success: boolean;
+  data: T;
+  message?: string;
+};
