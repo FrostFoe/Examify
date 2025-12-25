@@ -13,7 +13,7 @@ import {
 import type { Exam, SubjectConfig } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { updateExam } from "@/lib/actions";
-import { CustomLoader } from "@/components";
+import { CSVUploadComponent, CustomLoader } from "@/components";
 import {
   Select,
   SelectContent,
@@ -26,6 +26,7 @@ import { Label } from "./ui/label";
 import QuestionSelector from "./QuestionSelector";
 import { ListChecks } from "lucide-react";
 import { combineDhakaDateTime, parseDhakaDateTime } from "@/lib/utils";
+import { fetchQuestions } from "@/lib/fetchQuestions";
 
 const subjects = [
   { id: "p", name: "পদার্থবিজ্ঞান" },
@@ -93,6 +94,7 @@ export function EditExamModal({
   const [shuffle, setShuffle] = useState(false);
   const [isCustomExam, setIsCustomExam] = useState(false);
   const [useQuestionBank, setUseQuestionBank] = useState(false);
+  const [availableSubjects, setAvailableSubjects] = useState(subjects);
 
   // New state for Subject Configs
   const [mandatorySubjects, setMandatorySubjects] = useState<SubjectConfig[]>(
@@ -126,12 +128,23 @@ export function EditExamModal({
       setIsCustomExam(!!exam.total_subjects && exam.total_subjects > 0);
       setUseQuestionBank(!!(exam.question_ids && exam.question_ids.length > 0));
 
-      setMandatorySubjects(
-        normalizeSubjects(exam.mandatory_subjects, "mandatory"),
-      );
-      setOptionalSubjects(
-        normalizeSubjects(exam.optional_subjects, "optional"),
-      );
+      const mSubs = normalizeSubjects(exam.mandatory_subjects, "mandatory");
+      const oSubs = normalizeSubjects(exam.optional_subjects, "optional");
+
+      setMandatorySubjects(mSubs);
+      setOptionalSubjects(oSubs);
+
+      // Populate available subjects from existing config if not in the default list
+      const existingSubjects = [...mSubs, ...oSubs];
+      setAvailableSubjects((prev) => {
+        const combined = [...prev];
+        existingSubjects.forEach((s) => {
+          if (!combined.find((item) => item.id === s.id)) {
+            combined.push({ id: s.id, name: s.name || `Subject ${s.id}` });
+          }
+        });
+        return combined;
+      });
 
       setSelectedQuestionIds(exam.question_ids || []);
 
@@ -175,22 +188,41 @@ export function EditExamModal({
     type: "mandatory" | "optional",
     checked: boolean,
   ) => {
+    const subject = availableSubjects.find((s) => s.id === subjectId);
     if (type === "mandatory") {
+      if (checked) {
+        setOptionalSubjects((prev) => prev.filter((s) => s.id !== subjectId));
+      }
       setMandatorySubjects((prev) => {
         if (checked) {
           return [
             ...prev,
-            { id: subjectId, count: 0, question_ids: [], type: "mandatory" },
+            {
+              id: subjectId,
+              name: subject?.name || `Subject ${subjectId}`,
+              count: 0,
+              question_ids: [],
+              type: "mandatory",
+            },
           ];
         }
         return prev.filter((s) => s.id !== subjectId);
       });
     } else {
+      if (checked) {
+        setMandatorySubjects((prev) => prev.filter((s) => s.id !== subjectId));
+      }
       setOptionalSubjects((prev) => {
         if (checked) {
           return [
             ...prev,
-            { id: subjectId, count: 0, question_ids: [], type: "optional" },
+            {
+              id: subjectId,
+              name: subject?.name || `Subject ${subjectId}`,
+              count: 0,
+              question_ids: [],
+              type: "optional",
+            },
           ];
         }
         return prev.filter((s) => s.id !== subjectId);
@@ -546,6 +578,71 @@ export function EditExamModal({
                       />
                     </div>
                   )}
+
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium mb-2">
+                      অথবা CSV থেকে প্রশ্ন আপলোড করুন
+                    </h3>
+                    <CSVUploadComponent
+                      isBank={false}
+                      onUploadSuccess={async (result) => {
+                        const fid = (result.file_id as string) || "";
+                        if (formRef.current) {
+                          const fileIdInput = formRef.current.querySelector(
+                            'input[name="file_id"]',
+                          ) as HTMLInputElement;
+                          if (fileIdInput) fileIdInput.value = fid;
+                        }
+
+                        // Auto-group by sections if CSV has them
+                        try {
+                          const qs = await fetchQuestions(fid);
+                          if (qs && qs.length > 0) {
+                            const sectionMap = new Map<string, string[]>();
+                            qs.forEach((q) => {
+                              const section = String(
+                                q.subject || q.type || "1",
+                              );
+                              if (!sectionMap.has(section)) {
+                                sectionMap.set(section, []);
+                              }
+                              if (q.id)
+                                sectionMap.get(section)?.push(String(q.id));
+                            });
+
+                            if (sectionMap.size > 0) {
+                              const newSubjects = Array.from(
+                                sectionMap.keys(),
+                              ).map((s) => ({
+                                id: s,
+                                name: `Section ${s}`,
+                              }));
+                              setAvailableSubjects(newSubjects);
+                              setIsCustomExam(true);
+
+                              const configs: SubjectConfig[] = Array.from(
+                                sectionMap.entries(),
+                              ).map(([s, ids]) => ({
+                                id: s,
+                                name: `Section ${s}`,
+                                count: ids.length,
+                                question_ids: ids,
+                                type: "mandatory",
+                              }));
+                              setMandatorySubjects(configs);
+                              setOptionalSubjects([]);
+                              toast({
+                                title: "CSV Grouping Successful",
+                                description: `Detected ${sectionMap.size} sections.`,
+                              });
+                            }
+                          }
+                        } catch (err) {
+                          console.error("Error auto-grouping:", err);
+                        }
+                      }}
+                    />
+                  </div>
                 </>
               )}
 
@@ -596,11 +693,28 @@ export function EditExamModal({
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-base font-bold">
-                      দাগানো বাধ্যতামূলক (Mandatory)
-                    </Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-base font-bold">
+                        দাগানো বাধ্যতামূলক (Mandatory)
+                      </Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-7"
+                        onClick={() => {
+                          const newId = `custom_${Date.now()}`;
+                          setAvailableSubjects((prev) => [
+                            ...prev,
+                            { id: newId, name: "নতুন বিষয়" },
+                          ]);
+                        }}
+                      >
+                        নতুন বিষয় যোগ করুন
+                      </Button>
+                    </div>
                     <div className="space-y-3">
-                      {subjects.map((subject) => {
+                      {availableSubjects.map((subject) => {
                         const isSelected = mandatorySubjects.some(
                           (s) => s.id === subject.id,
                         );
@@ -626,12 +740,33 @@ export function EditExamModal({
                                   )
                                 }
                               />
-                              <Label
-                                htmlFor={`mandatory-edit-${subject.id}`}
-                                className="font-semibold text-sm"
-                              >
-                                {subject.name}
-                              </Label>
+                              <Input
+                                className="h-8 font-semibold text-sm border-none bg-transparent focus-visible:ring-0 p-0"
+                                value={
+                                  config?.name ||
+                                  availableSubjects.find(
+                                    (s) => s.id === subject.id,
+                                  )?.name
+                                }
+                                onChange={(e) => {
+                                  const newName = e.target.value;
+                                  setAvailableSubjects((prev) =>
+                                    prev.map((s) =>
+                                      s.id === subject.id
+                                        ? { ...s, name: newName }
+                                        : s,
+                                    ),
+                                  );
+                                  if (config) {
+                                    updateSubjectConfig(
+                                      subject.id,
+                                      "mandatory",
+                                      "name",
+                                      newName,
+                                    );
+                                  }
+                                }}
+                              />
                             </div>
 
                             {isSelected && config && (
@@ -686,7 +821,7 @@ export function EditExamModal({
                       অন্যান্য বিষয় (Optional)
                     </Label>
                     <div className="space-y-3">
-                      {subjects.map((subject) => {
+                      {availableSubjects.map((subject) => {
                         const isSelected = optionalSubjects.some(
                           (s) => s.id === subject.id,
                         );
@@ -712,12 +847,33 @@ export function EditExamModal({
                                   )
                                 }
                               />
-                              <Label
-                                htmlFor={`optional-edit-${subject.id}`}
-                                className="font-semibold text-sm"
-                              >
-                                {subject.name}
-                              </Label>
+                              <Input
+                                className="h-8 font-semibold text-sm border-none bg-transparent focus-visible:ring-0 p-0"
+                                value={
+                                  config?.name ||
+                                  availableSubjects.find(
+                                    (s) => s.id === subject.id,
+                                  )?.name
+                                }
+                                onChange={(e) => {
+                                  const newName = e.target.value;
+                                  setAvailableSubjects((prev) =>
+                                    prev.map((s) =>
+                                      s.id === subject.id
+                                        ? { ...s, name: newName }
+                                        : s,
+                                    ),
+                                  );
+                                  if (config) {
+                                    updateSubjectConfig(
+                                      subject.id,
+                                      "optional",
+                                      "name",
+                                      newName,
+                                    );
+                                  }
+                                }}
+                              />
                             </div>
 
                             {isSelected && config && (
@@ -786,7 +942,7 @@ export function EditExamModal({
           <DialogHeader className="p-4 border-b shrink-0">
             <DialogTitle>
               {activeSubjectSelection &&
-                subjects.find((s) => s.id === activeSubjectSelection.id)
+                availableSubjects.find((s) => s.id === activeSubjectSelection.id)
                   ?.name}{" "}
               - প্রশ্ন নির্বাচন
             </DialogTitle>

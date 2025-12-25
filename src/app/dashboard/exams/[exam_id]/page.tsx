@@ -98,16 +98,8 @@ function SubjectSelectionScreen({
   onStart: (selectedSubjects: string[]) => void;
   questionCount: number;
 }) {
-  const normalize = (
-    list: (string | import("@/lib/types").SubjectConfig)[] | null | undefined,
-  ): string[] => {
-    if (!list || list.length === 0) return [];
-    if (typeof list[0] === "string") return list as string[];
-    return (list as import("@/lib/types").SubjectConfig[]).map((i) => i.id);
-  };
-
-  const mandatorySubjects = normalize(exam.mandatory_subjects);
-  const optionalSubjects = normalize(exam.optional_subjects);
+  const mandatorySubjects = (exam.mandatory_subjects as SubjectConfig[]) || [];
+  const optionalSubjects = (exam.optional_subjects as SubjectConfig[]) || [];
   const totalSubjectsToAnswer = exam.total_subjects || 0;
 
   const numMandatory = mandatorySubjects.length;
@@ -138,7 +130,10 @@ function SubjectSelectionScreen({
 
   const handleStartClick = () => {
     if (canStart) {
-      onStart([...mandatorySubjects, ...selectedOptional]);
+      onStart([
+        ...mandatorySubjects.map((s) => (typeof s === "string" ? s : s.id)),
+        ...selectedOptional,
+      ]);
     }
   };
 
@@ -168,6 +163,11 @@ function SubjectSelectionScreen({
     "endDate",
   ]);
   const isPractice = exam?.is_practice;
+
+  const getSubjectDisplayName = (s: string | SubjectConfig) => {
+    if (typeof s === "string") return getSubjectName(s);
+    return s.name || getSubjectName(s.id);
+  };
 
   return (
     <div className="container mx-auto p-4 flex items-center justify-center min-h-screen">
@@ -255,8 +255,11 @@ function SubjectSelectionScreen({
               <h3 className="font-semibold mb-2">বাধ্যতামূলক বিষয়</h3>
               <div className="flex flex-wrap gap-2">
                 {mandatorySubjects.map((sub) => (
-                  <Badge key={sub} variant="secondary">
-                    {getSubjectName(sub)}
+                  <Badge
+                    key={typeof sub === "string" ? sub : sub.id}
+                    variant="secondary"
+                  >
+                    {getSubjectDisplayName(sub)}
                   </Badge>
                 ))}
               </div>
@@ -273,14 +276,15 @@ function SubjectSelectionScreen({
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 {optionalSubjects.map((sub) => {
-                  const isChecked = selectedOptional.includes(sub);
+                  const subId = typeof sub === "string" ? sub : sub.id;
+                  const isChecked = selectedOptional.includes(subId);
                   const isDisabled =
                     !isChecked &&
                     selectedOptional.length >= numToSelectFromOptional &&
                     numToSelectFromOptional > 0;
                   return (
                     <label
-                      key={sub}
+                      key={subId}
                       className={`flex items-center space-x-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${
                         isChecked
                           ? "border-primary bg-primary/5 ring-1 ring-primary/10"
@@ -290,16 +294,16 @@ function SubjectSelectionScreen({
                       }`}
                     >
                       <Checkbox
-                        id={sub}
+                        id={subId}
                         checked={isChecked}
-                        onCheckedChange={() => handleOptionalSelect(sub)}
+                        onCheckedChange={() => handleOptionalSelect(subId)}
                         disabled={isDisabled}
                         className="rounded-md"
                       />
                       <span
                         className={`text-sm md:text-base font-medium flex-1 min-w-0 break-words ${isDisabled ? "text-muted-foreground" : ""}`}
                       >
-                        {getSubjectName(sub)}
+                        {getSubjectDisplayName(sub)}
                       </span>
                     </label>
                   );
@@ -474,7 +478,7 @@ export default function TakeExamPage() {
         // Determine the display name for this subject section
         // We use the mapped name (e.g. "পদার্থবিজ্ঞান") if available, otherwise the ID.
         // We do NOT rely on question.subject because it might vary or be inconsistent.
-        const displayName = subjectsMap[subId] || subId;
+        const displayName = config.name || subjectsMap[subId] || subId;
 
         // Override the subject property of the questions to match the section display name.
         // This ensures they are correctly filtered and grouped under this tab.

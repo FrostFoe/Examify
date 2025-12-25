@@ -49,6 +49,7 @@ import { PlusCircle, ListChecks } from "lucide-react";
 import { EditExamModal } from "@/components/EditExamModal";
 import { CSVUploadComponent, CustomLoader } from "@/components";
 import QuestionSelector from "@/components/QuestionSelector";
+import { fetchQuestions } from "@/lib/fetchQuestions";
 import {
   createExam,
   deleteExam,
@@ -134,6 +135,7 @@ export function BatchDetailsClient({
   const [useQuestionBank, setUseQuestionBank] = useState(false);
   const [fileId, setFileId] = useState("");
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
+  const [availableSubjects, setAvailableSubjects] = useState(subjects);
 
   // Creation Form Subject Configs
   const [mandatorySubjectConfigs, setMandatorySubjectConfigs] = useState<
@@ -201,22 +203,45 @@ export function BatchDetailsClient({
     type: "mandatory" | "optional",
     checked: boolean,
   ) => {
+    const subject = availableSubjects.find((s) => s.id === subjectId);
     if (type === "mandatory") {
+      if (checked) {
+        setOptionalSubjectConfigs((prev) =>
+          prev.filter((s) => s.id !== subjectId),
+        );
+      }
       setMandatorySubjectConfigs((prev) => {
         if (checked) {
           return [
             ...prev,
-            { id: subjectId, count: 0, question_ids: [], type: "mandatory" },
+            {
+              id: subjectId,
+              name: subject?.name || `Subject ${subjectId}`,
+              count: 0,
+              question_ids: [],
+              type: "mandatory",
+            },
           ];
         }
         return prev.filter((s) => s.id !== subjectId);
       });
     } else {
+      if (checked) {
+        setMandatorySubjectConfigs((prev) =>
+          prev.filter((s) => s.id !== subjectId),
+        );
+      }
       setOptionalSubjectConfigs((prev) => {
         if (checked) {
           return [
             ...prev,
-            { id: subjectId, count: 0, question_ids: [], type: "optional" },
+            {
+              id: subjectId,
+              name: subject?.name || `Subject ${subjectId}`,
+              count: 0,
+              question_ids: [],
+              type: "optional",
+            },
           ];
         }
         return prev.filter((s) => s.id !== subjectId);
@@ -758,8 +783,59 @@ export function BatchDetailsClient({
                           </h3>
                           <CSVUploadComponent
                             isBank={false}
-                            onUploadSuccess={(result) => {
-                              setFileId((result.file_id as string) || "");
+                            onUploadSuccess={async (result) => {
+                              const fid = (result.file_id as string) || "";
+                              setFileId(fid);
+
+                              // Auto-group by sections if CSV has them
+                              try {
+                                const qs = await fetchQuestions(fid);
+                                if (qs && qs.length > 0) {
+                                  const sectionMap = new Map<
+                                    string,
+                                    string[]
+                                  >();
+                                  qs.forEach((q) => {
+                                    const section = String(
+                                      q.subject || q.type || "1",
+                                    );
+                                    if (!sectionMap.has(section)) {
+                                      sectionMap.set(section, []);
+                                    }
+                                    if (q.id)
+                                      sectionMap.get(section)?.push(String(q.id));
+                                  });
+
+                                  if (sectionMap.size > 0) {
+                                    const newSubjects = Array.from(
+                                      sectionMap.keys(),
+                                    ).map((s) => ({
+                                      id: s,
+                                      name: `Section ${s}`,
+                                    }));
+                                    setAvailableSubjects(newSubjects);
+                                    setIsCustomExam(true);
+
+                                    const configs: SubjectConfig[] = Array.from(
+                                      sectionMap.entries(),
+                                    ).map(([s, ids]) => ({
+                                      id: s,
+                                      name: `Section ${s}`,
+                                      count: ids.length,
+                                      question_ids: ids,
+                                      type: "mandatory",
+                                    }));
+                                    setMandatorySubjectConfigs(configs);
+                                    setOptionalSubjectConfigs([]);
+                                    toast({
+                                      title: "CSV Grouping Successful",
+                                      description: `Detected ${sectionMap.size} sections.`,
+                                    });
+                                  }
+                                }
+                              } catch (err) {
+                                console.error("Error auto-grouping:", err);
+                              }
                             }}
                           />
                         </div>
@@ -808,11 +884,28 @@ export function BatchDetailsClient({
                       </div>
 
                       <div className="space-y-4">
-                        <Label className="text-base font-bold">
-                          দাগানো বাধ্যতামূলক (Mandatory)
-                        </Label>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-base font-bold">
+                            দাগানো বাধ্যতামূলক (Mandatory)
+                          </Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs h-7"
+                            onClick={() => {
+                              const newId = `custom_${Date.now()}`;
+                              setAvailableSubjects((prev) => [
+                                ...prev,
+                                { id: newId, name: "নতুন বিষয়" },
+                              ]);
+                            }}
+                          >
+                            নতুন বিষয় যোগ করুন
+                          </Button>
+                        </div>
                         <div className="space-y-3">
-                          {subjects.map((subject) => {
+                          {availableSubjects.map((subject) => {
                             const isSelected = mandatorySubjectConfigs.some(
                               (s) => s.id === subject.id,
                             );
@@ -838,12 +931,33 @@ export function BatchDetailsClient({
                                       )
                                     }
                                   />
-                                  <Label
-                                    htmlFor={`mandatory-batch-${subject.id}`}
-                                    className="font-semibold text-sm"
-                                  >
-                                    {subject.name}
-                                  </Label>
+                                  <Input
+                                    className="h-8 font-semibold text-sm border-none bg-transparent focus-visible:ring-0 p-0"
+                                    value={
+                                      config?.name ||
+                                      availableSubjects.find(
+                                        (s) => s.id === subject.id,
+                                      )?.name
+                                    }
+                                    onChange={(e) => {
+                                      const newName = e.target.value;
+                                      setAvailableSubjects((prev) =>
+                                        prev.map((s) =>
+                                          s.id === subject.id
+                                            ? { ...s, name: newName }
+                                            : s,
+                                        ),
+                                      );
+                                      if (config) {
+                                        updateSubjectConfig(
+                                          subject.id,
+                                          "mandatory",
+                                          "name",
+                                          newName,
+                                        );
+                                      }
+                                    }}
+                                  />
                                 </div>
 
                                 {isSelected && config && (
@@ -898,7 +1012,7 @@ export function BatchDetailsClient({
                           অন্যান্য বিষয় (Optional)
                         </Label>
                         <div className="space-y-3">
-                          {subjects.map((subject) => {
+                          {availableSubjects.map((subject) => {
                             const isSelected = optionalSubjectConfigs.some(
                               (s) => s.id === subject.id,
                             );
@@ -924,12 +1038,33 @@ export function BatchDetailsClient({
                                       )
                                     }
                                   />
-                                  <Label
-                                    htmlFor={`optional-batch-${subject.id}`}
-                                    className="font-semibold text-sm"
-                                  >
-                                    {subject.name}
-                                  </Label>
+                                  <Input
+                                    className="h-8 font-semibold text-sm border-none bg-transparent focus-visible:ring-0 p-0"
+                                    value={
+                                      config?.name ||
+                                      availableSubjects.find(
+                                        (s) => s.id === subject.id,
+                                      )?.name
+                                    }
+                                    onChange={(e) => {
+                                      const newName = e.target.value;
+                                      setAvailableSubjects((prev) =>
+                                        prev.map((s) =>
+                                          s.id === subject.id
+                                            ? { ...s, name: newName }
+                                            : s,
+                                        ),
+                                      );
+                                      if (config) {
+                                        updateSubjectConfig(
+                                          subject.id,
+                                          "optional",
+                                          "name",
+                                          newName,
+                                        );
+                                      }
+                                    }}
+                                  />
                                 </div>
 
                                 {isSelected && config && (
@@ -1136,7 +1271,7 @@ export function BatchDetailsClient({
           <DialogHeader className="p-4 border-b shrink-0">
             <DialogTitle>
               {activeSubjectSelection &&
-                subjects.find((s) => s.id === activeSubjectSelection.id)
+                availableSubjects.find((s) => s.id === activeSubjectSelection.id)
                   ?.name}{" "}
               - প্রশ্ন নির্বাচন
             </DialogTitle>
