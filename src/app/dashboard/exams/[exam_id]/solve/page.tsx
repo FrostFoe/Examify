@@ -75,6 +75,7 @@ export default function SolvePage() {
 
       // Check if questions are already embedded in the exam data (e.g., custom exams)
       if (examData.questions && examData.questions.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         finalQuestions = examData.questions.map((q: any) => {
           let answerIndex = -1;
           if (typeof q.answer === "number") {

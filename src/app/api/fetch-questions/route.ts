@@ -21,7 +21,7 @@ function buildBackendUrl(params: Record<string, string | undefined>) {
   let u = `${baseUrl}/index.php?route=questions`;
 
   // Add known params in a deterministic order
-  const order = ["id", "file_id"];
+  const order = ["id", "file_id", "exam_id"];
   for (const k of order) {
     const v = params[k];
     if (v) u += `&${k}=${encodeURIComponent(v)}`;
@@ -54,12 +54,16 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const fileId = searchParams.get("file_id");
+    const examId = searchParams.get("exam_id");
 
     console.log(
-      `[FETCH-QUESTIONS] Request received. file_id: ${fileId || "N/A"}`,
+      `[FETCH-QUESTIONS] Request received. file_id: ${fileId || "N/A"}, exam_id: ${examId || "N/A"}`,
     );
 
-    const url = buildBackendUrl({ file_id: fileId || undefined });
+    const url = buildBackendUrl({
+      file_id: fileId || undefined,
+      exam_id: examId || undefined,
+    });
 
     // console.log("[FETCH-QUESTIONS] Forwarding to PHP API:", url); // REDACTED SECURITY
 

@@ -741,55 +741,95 @@ export default function TakeExamPage() {
       const examData = examResult.data;
       setExam(examData);
 
-      const fetched = await fetchQuestions(examData.file_id, examData.id);
+      let finalQuestions: Question[] = [];
 
-      if (Array.isArray(fetched) && fetched.length > 0) {
-        const convertedQuestions = fetched.map((q: RawQuestion) => {
+      // Check if questions are already embedded in the exam data (e.g., custom exams)
+      if (examData.questions && examData.questions.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        finalQuestions = examData.questions.map((q: any) => {
           let answerIndex = -1;
-          const answerString = (q.answer || q.correct || "A").toString().trim();
-
-          const answerNum = parseInt(answerString, 10);
-          if (!isNaN(answerNum)) {
-            // It's a number-like string (e.g., "1", "2")
-            // The API provides 1-based index, so convert to 0-based
-            answerIndex = answerNum - 1;
+          if (typeof q.answer === "number") {
+            answerIndex = q.answer;
           } else {
-            // It's a letter (e.g., "A", "B")
-            answerIndex = answerString.toUpperCase().charCodeAt(0) - 65;
+            const answerString = (q.answer || q.correct || "").toString().trim();
+            if (/^\d+$/.test(answerString)) {
+              const num = parseInt(answerString, 10);
+              // Assume legacy 1-based behavior for string numbers "1" -> 0
+              if (num > 0) {
+                answerIndex = num - 1;
+              } else {
+                answerIndex = num;
+              }
+            } else if (
+              answerString.length === 1 &&
+              /[a-zA-Z]/.test(answerString)
+            ) {
+              answerIndex = answerString.toUpperCase().charCodeAt(0) - 65;
+            }
           }
-          const options =
-            q.options && Array.isArray(q.options) && q.options.length > 0
-              ? q.options
-              : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
-                  (opt): opt is string => !!opt,
-                );
-
           return {
-            id: q.id,
-            question: q.question || q.question_text || "",
-            options: options,
+            ...q,
             answer: answerIndex,
-            explanation: q.explanation || "",
-            type: q.type || null,
-            question_image_url: (q as Record<string, unknown>)
-              .question_image_url,
-            explanation_image_url: (q as Record<string, unknown>)
-              .explanation_image_url,
-            question_marks: q.question_marks,
-            subject: q.subject,
-            paper: q.paper,
-            chapter: q.chapter,
-            highlight: q.highlight,
-          };
+            options: Array.isArray(q.options)
+              ? q.options
+              : Object.values(q.options || {}),
+          } as Question;
         });
+      } else {
+        const fetched = await fetchQuestions(examData.file_id, examData.id);
 
-        const finalQuestions = examData.shuffle_questions
-          ? shuffleArray(convertedQuestions)
-          : convertedQuestions;
-        setAllQuestions(finalQuestions);
+        if (Array.isArray(fetched) && fetched.length > 0) {
+          finalQuestions = fetched.map((q: RawQuestion) => {
+            let answerIndex = -1;
+            const answerString = (q.answer || q.correct || "A")
+              .toString()
+              .trim();
+
+            const answerNum = parseInt(answerString, 10);
+            if (!isNaN(answerNum)) {
+              // It's a number-like string (e.g., "1", "2")
+              // The API provides 1-based index, so convert to 0-based
+              answerIndex = answerNum - 1;
+            } else {
+              // It's a letter (e.g., "A", "B")
+              answerIndex = answerString.toUpperCase().charCodeAt(0) - 65;
+            }
+            const options =
+              q.options && Array.isArray(q.options) && q.options.length > 0
+                ? q.options
+                : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
+                    (opt): opt is string => !!opt,
+                  );
+
+            return {
+              id: q.id,
+              question: q.question || q.question_text || "",
+              options: options,
+              answer: answerIndex,
+              explanation: q.explanation || "",
+              type: q.type || null,
+              question_image_url: (q as Record<string, unknown>)
+                .question_image_url,
+              explanation_image_url: (q as Record<string, unknown>)
+                .explanation_image_url,
+              question_marks: q.question_marks,
+              subject: q.subject,
+              paper: q.paper,
+              chapter: q.chapter,
+              highlight: q.highlight,
+            };
+          });
+        }
+      }
+
+      if (finalQuestions.length > 0) {
+        const questionsToSet = examData.shuffle_questions
+          ? shuffleArray(finalQuestions)
+          : finalQuestions;
+        setAllQuestions(questionsToSet);
 
         if (!examData.total_subjects) {
-          setQuestions(finalQuestions);
+          setQuestions(questionsToSet);
         }
       } else {
         toast({
