@@ -94,6 +94,11 @@ export async function fetchQuestions(
     // Transform the data
     const transformed: RawQuestion[] = rawData.map(normalizeQuestion);
 
+    // Client-side filtering as a safety net because backend might be returning too much
+    if (fileId) {
+      return transformed.filter((q) => String(q.file_id) === String(fileId));
+    }
+
     return transformed;
   } catch (error) {
     if (error instanceof Error) throw error;

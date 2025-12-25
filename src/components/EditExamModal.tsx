@@ -596,7 +596,7 @@ export function EditExamModal({
 
                         // Auto-group by sections if CSV has them
                         try {
-                          const qs = await fetchQuestions(fid);
+                          const qs = await fetchQuestions(fid, undefined, 5000);
                           if (qs && qs.length > 0) {
                             const sectionMap = new Map<string, string[]>();
                             qs.forEach((q) => {
