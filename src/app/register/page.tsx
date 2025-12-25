@@ -1,10 +1,10 @@
 "use client";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components";
 import { GraduationCap } from "lucide-react";
 import Link from "next/link";

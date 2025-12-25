@@ -24,6 +24,7 @@ import LatexRenderer from "@/components/LatexRenderer";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useParams, useRouter } from "next/navigation";
+import type { Question } from "@/lib/types";
 
 interface FileRecord {
   id: string;
@@ -31,22 +32,6 @@ interface FileRecord {
   display_name: string;
   uploaded_at: string;
   total_questions: number;
-}
-
-interface Question {
-  id: string;
-  file_id: string;
-  question_text: string;
-  option1: string;
-  option2: string;
-  option3: string;
-  option4: string;
-  option5?: string;
-  answer: string;
-  explanation?: string;
-  type: string;
-  question_image_url?: string;
-  explanation_image_url?: string;
 }
 
 export default function EditFileQuestionsPage() {
@@ -131,10 +116,10 @@ export default function EditFileQuestionsPage() {
 
   const filteredQuestions = questions.filter(
     (q) =>
-      (q.question_text || (q as any).question || "")
+      (q.question_text || q.question || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      q.answer?.toLowerCase().includes(searchTerm.toLowerCase()),
+      String(q.answer || "").toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   if (!admin) {
@@ -295,7 +280,7 @@ export default function EditFileQuestionsPage() {
                   </div>
                   <div className="text-base md:text-lg font-medium leading-relaxed text-foreground">
                     <LatexRenderer
-                      html={q.question_text || (q as any).question || ""}
+                      html={q.question_text || q.question || ""}
                     />
                   </div>
                   {q.question_image_url && (
@@ -324,7 +309,7 @@ export default function EditFileQuestionsPage() {
                     variant="destructive"
                     size="icon"
                     className="h-9 w-9 rounded-full shadow-sm"
-                    onClick={() => handleDeleteQuestion(q.id)}
+                    onClick={() => q.id && handleDeleteQuestion(q.id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

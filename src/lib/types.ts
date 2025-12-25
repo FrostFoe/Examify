@@ -65,7 +65,13 @@ export type Question = {
   exam_id?: string;
   file_id?: string;
   question: string;
+  question_text?: string;
   options: string[] | Record<string, string>;
+  option1?: string;
+  option2?: string;
+  option3?: string;
+  option4?: string;
+  option5?: string;
   answer: number | string;
   correct?: string;
   explanation?: string | null;
@@ -75,6 +81,8 @@ export type Question = {
   highlight?: string | null;
   type?: string | null;
   order_index?: number;
+  question_image?: string;
+  explanation_image?: string;
   question_image_url?: string;
   explanation_image_url?: string;
   question_marks?: number | string;

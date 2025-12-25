@@ -6,14 +6,11 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertBox, CustomLoader } from "@/components";
-import { Upload, FileSpreadsheet } from "lucide-react";
+import { Upload } from "lucide-react";
 
 interface CSVUploadComponentProps {
   onUploadSuccess?: (result: Record<string, unknown>) => void;

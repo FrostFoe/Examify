@@ -12,21 +12,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import LatexRenderer from "@/components/LatexRenderer";
 import { Badge } from "@/components/ui/badge";
-
-export type QuestionLike = {
-  id?: string;
-  question?: string;
-  question_text?: string;
-  options?: string[];
-  answer?: number | string;
-  explanation?: string;
-  [key: string]: unknown;
-};
+import type { Question } from "@/lib/types";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  questions: QuestionLike[] | null;
+  questions: Question[] | null;
 }
 export default function BulkQuestionViewer({
   open,

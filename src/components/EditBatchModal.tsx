@@ -18,8 +18,6 @@ import { useToast } from "@/hooks/use-toast";
 import { updateBatch } from "@/lib/actions";
 import { CustomLoader } from "@/components";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
-
 interface EditBatchModalProps {
   batch: Batch | null;
   isOpen: boolean;

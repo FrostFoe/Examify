@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { apiRequest } from "@/lib/api";
-import { fetchQuestions, type RawQuestion } from "@/lib/fetchQuestions";
+import { fetchQuestions, normalizeQuestion, type RawQuestion } from "@/lib/fetchQuestions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,11 +24,6 @@ import {
 
 export const runtime = "edge";
 
-interface ExtendedQuestion extends Question {
-  question_image_url?: string;
-  explanation_image_url?: string;
-}
-
 export default function SolvePage() {
   const params = useParams();
   const router = useRouter();
@@ -38,8 +33,8 @@ export default function SolvePage() {
   const { toast } = useToast();
 
   const [exam, setExam] = useState<Exam | null>(null);
-  const [allQuestions, setAllQuestions] = useState<ExtendedQuestion[]>([]);
-  const [questions, setQuestions] = useState<ExtendedQuestion[]>([]);
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadedUserAnswers, setLoadedUserAnswers] = useState<{
     [key: string]: number;
@@ -53,15 +48,6 @@ export default function SolvePage() {
       fetchExamAndAnswers();
     }
   }, [exam_id, user, searchParams]);
-
-  useEffect(() => {
-    if (questions.length > 0) {
-      console.log("SolvePage: Questions loaded", questions.length, questions[0]);
-    }
-    if (loadedUserAnswers) {
-      console.log("SolvePage: User answers loaded", loadedUserAnswers);
-    }
-  }, [questions, loadedUserAnswers]);
 
   const fetchExamAndAnswers = async () => {
     setLoading(true);
@@ -80,98 +66,30 @@ export default function SolvePage() {
       const examData = examResult.data;
       setExam(examData);
 
-      let finalQuestions: ExtendedQuestion[] = [];
+      let finalQuestions: Question[] = [];
 
       // Check if questions are already embedded in the exam data (e.g., custom exams)
       if (examData.questions && Array.isArray(examData.questions) && examData.questions.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         finalQuestions = examData.questions.map((q: any) => {
-          let answerIndex = -1;
-          if (typeof q.answer === "number") {
-            answerIndex = q.answer;
-          } else {
-            const answerString = (q.answer || q.correct || "").toString().trim();
-            if (/^\d+$/.test(answerString)) {
-              const num = parseInt(answerString, 10);
-              // Assume legacy 1-based behavior for string numbers "1" -> 0
-              if (num > 0) {
-                answerIndex = num - 1;
-              } else {
-                answerIndex = num;
-              }
-            } else if (
-              answerString.length === 1 &&
-              /[a-zA-Z]/.test(answerString)
-            ) {
-              answerIndex = answerString.toUpperCase().charCodeAt(0) - 65;
-            }
-          }
-
-          const rawOptions =
-            q.options && Array.isArray(q.options) && q.options.length > 0
-              ? q.options
-              : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
-                  (opt: any) => opt && typeof opt === "string" && opt.trim() !== "",
-                );
-
-          const options = rawOptions.filter(
-            (opt: any) => opt && typeof opt === "string" && opt.trim() !== "",
-          );
-
+          const normalized = normalizeQuestion(q);
           return {
-            ...q,
-            id: String(q.id || Math.random().toString(36).substr(2, 9)), // Provide fallback ID if needed
-            question: q.question || q.question_text || "",
-            options,
-            answer: answerIndex,
-          } as ExtendedQuestion;
+            ...normalized,
+            // Ensure compatibility with Question
+            answer: typeof normalized.answer === 'number' ? normalized.answer : -1, 
+            options: normalized.options || [],
+          } as unknown as Question;
         });
       } else {
         // Fallback: Fetch questions using file_id (legacy/CSV based exams)
         const fetched = await fetchQuestions(examData.file_id, examData.id);
         if (Array.isArray(fetched) && fetched.length > 0) {
           finalQuestions = fetched.map((q: RawQuestion) => {
-            let answerIndex = -1;
-            const answerString = (q.answer || q.correct || "").toString().trim();
-
-            if (/^\d+$/.test(answerString)) {
-              const num = parseInt(answerString, 10);
-              if (num > 0) {
-                answerIndex = num - 1; // 1-based to 0-based
-              } else {
-                answerIndex = num; // Assume it's already 0-based
-              }
-            } else if (
-              answerString.length === 1 &&
-              /[a-zA-Z]/.test(answerString)
-            ) {
-              answerIndex = answerString.toUpperCase().charCodeAt(0) - 65;
-            }
-
-            const options =
-              q.options && Array.isArray(q.options) && q.options.length > 0
-                ? q.options
-                : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
-                    (opt): opt is string => !!opt,
-                  );
-
-            return {
-              id: String(q.id),
-              question: q.question || q.question_text || "",
-              options: options,
-              answer: answerIndex,
-              explanation: q.explanation || "",
-              type: q.type || null,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              question_image_url: (q as any).question_image_url,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              explanation_image_url: (q as any).explanation_image_url,
-              question_marks: q.question_marks,
-              subject: q.subject,
-              paper: q.paper,
-              chapter: q.chapter,
-              highlight: q.highlight,
-            };
+             return {
+                ...q,
+                answer: typeof q.answer === 'number' ? q.answer : -1,
+                options: q.options || [],
+             } as unknown as Question;
           });
         }
       }

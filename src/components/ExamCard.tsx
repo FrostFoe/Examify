@@ -8,7 +8,6 @@ import {
   Trophy,
   RotateCw,
   FileText,
-  Settings,
 } from "lucide-react";
 import type { Exam, StudentExam } from "@/lib/types";
 

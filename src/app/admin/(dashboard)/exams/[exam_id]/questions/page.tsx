@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import BulkQuestionList from "@/components/BulkQuestionList";
 import { fetchQuestions, type RawQuestion } from "@/lib/fetchQuestions";
-import { Exam } from "@/lib/types";
+import { Exam, Question } from "@/lib/types";
 import { apiRequest } from "@/lib/api";
 import { CustomLoader, PageHeader, QuestionEditor } from "@/components";
 import { Button } from "@/components/ui/button";
@@ -111,30 +111,27 @@ export default function ExamQuestionsPage() {
             isNew
               ? undefined
               : {
+                  ...editingQuestion,
                   id: editingQuestion.id,
                   file_id: String(
                     editingQuestion.file_id || fileId || "default",
                   ),
+                  question: editingQuestion.question || editingQuestion.question_text || "",
                   question_text:
                     editingQuestion.question ||
                     editingQuestion.question_text ||
                     "",
-                  option1: editingQuestion.option1 || "",
-                  option2: editingQuestion.option2 || "",
-                  option3: editingQuestion.option3 || "",
-                  option4: editingQuestion.option4 || "",
-                  option5: editingQuestion.option5 || "",
+                  options: editingQuestion.options || [],
                   answer: String(editingQuestion.answer || ""),
-                  explanation: editingQuestion.explanation || "",
                   question_image:
-                    editingQuestion.question_image_url ||
-                    editingQuestion.question_image ||
+                    (editingQuestion.question_image as string) ||
+                    (editingQuestion.question_image_url as string) ||
                     undefined,
                   explanation_image:
-                    editingQuestion.explanation_image_url ||
-                    editingQuestion.explanation_image ||
+                    (editingQuestion.explanation_image as string) ||
+                    (editingQuestion.explanation_image_url as string) ||
                     undefined,
-                }
+                } as Question
           }
           onSave={handleSave}
           onCancel={() => setEditingQuestion(null)}

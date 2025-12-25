@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { AlertBox, CustomLoader } from "@/components";
-import { Plus, Trash2, Upload, X, ImageIcon } from "lucide-react";
+import { Plus, ImageIcon, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -16,26 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface Question {
-  id?: string;
-  file_id: string;
-  exam_id?: string;
-  question_text: string;
-  option1: string;
-  option2: string;
-  option3: string;
-  option4: string;
-  option5?: string;
-  answer: string;
-  explanation?: string;
-  subject?: string;
-  paper?: string;
-  chapter?: string;
-  highlight?: string;
-  question_image?: string;
-  explanation_image?: string;
-}
+import type { Question } from "@/lib/types";
 
 interface QuestionEditorProps {
   file_id: string;
@@ -55,7 +36,9 @@ export default function QuestionEditor({
   const [formData, setFormData] = useState<Question>({
     file_id: file_id,
     exam_id: exam_id,
-    question_text: initialQuestion?.question_text || (initialQuestion as any)?.question || "",
+    question: initialQuestion?.question || initialQuestion?.question_text || "",
+    question_text: initialQuestion?.question_text || initialQuestion?.question || "",
+    options: initialQuestion?.options || [],
     option1: initialQuestion?.option1 || "",
     option2: initialQuestion?.option2 || "",
     option3: initialQuestion?.option3 || "",
@@ -67,8 +50,8 @@ export default function QuestionEditor({
     paper: initialQuestion?.paper || "",
     chapter: initialQuestion?.chapter || "",
     highlight: initialQuestion?.highlight || "",
-    question_image: initialQuestion?.question_image || (initialQuestion as any)?.question_image_url || undefined,
-    explanation_image: initialQuestion?.explanation_image || (initialQuestion as any)?.explanation_image_url || undefined,
+    question_image: initialQuestion?.question_image || undefined,
+    explanation_image: initialQuestion?.explanation_image || undefined,
   });
 
   const [loading, setLoading] = useState(false);
@@ -84,14 +67,14 @@ export default function QuestionEditor({
   };
 
   const handleOptionChange = (index: number, value: string) => {
-    const optionNames = ["option1", "option2", "option3", "option4", "option5"];
+    const optionNames: (keyof Question)[] = ["option1", "option2", "option3", "option4", "option5"];
     setFormData((prev) => ({ ...prev, [optionNames[index]]: value }));
   };
 
   const addOption = () => {
-    const optionNames = ["option1", "option2", "option3", "option4", "option5"];
+    const optionNames: (keyof Question)[] = ["option1", "option2", "option3", "option4", "option5"];
     for (let i = 0; i < optionNames.length; i++) {
-      if (!formData[optionNames[i] as keyof Question]) {
+      if (!formData[optionNames[i]]) {
         setFormData((prev) => ({ ...prev, [optionNames[i]]: "" }));
         break;
       }
@@ -99,9 +82,9 @@ export default function QuestionEditor({
   };
 
   const removeLastOption = () => {
-    const optionNames = ["option5", "option4", "option3", "option2", "option1"];
+    const optionNames: (keyof Question)[] = ["option5", "option4", "option3", "option2", "option1"];
     for (let i = 0; i < optionNames.length; i++) {
-      const optionName = optionNames[i] as keyof Question;
+      const optionName = optionNames[i];
       if (formData[optionName] && formData[optionName] !== "") {
         setFormData((prev) => ({ ...prev, [optionName]: "" }));
         break;
@@ -169,11 +152,11 @@ export default function QuestionEditor({
       }
 
       if (!result.success) {
-         throw new Error(result.message || result.error || "Failed to save question");
+         throw new Error(result.message || "Failed to save question");
       }
 
       // Use the returned data if available, otherwise fallback to formData
-      const savedQuestion = result.data || (result as any).question || formData;
+      const savedQuestion = (result.data as Question) || formData;
       onSave(savedQuestion);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to save question");
@@ -198,7 +181,7 @@ export default function QuestionEditor({
             <Textarea
               id="question_text"
               name="question_text"
-              value={formData.question_text}
+              value={formData.question_text || ""}
               onChange={handleChange}
               required
               className="min-h-[100px] rounded-xl"
@@ -210,10 +193,10 @@ export default function QuestionEditor({
             <Label className="font-bold">অপশনসমূহ (Options)</Label>
             <div className="grid grid-cols-1 gap-3">
                 {[0, 1, 2, 3, 4].map((index) => {
-                const optionNames = ["option1", "option2", "option3", "option4", "option5"];
+                const optionNames: (keyof Question)[] = ["option1", "option2", "option3", "option4", "option5"];
                 const optionName = optionNames[index];
 
-                if (!formData[optionName as keyof Question] && index > 3) return null;
+                if (!formData[optionName] && index > 3) return null;
 
                 return (
                     <div key={index} className="flex items-center gap-2 group">
@@ -222,7 +205,7 @@ export default function QuestionEditor({
                     </span>
                     <Input
                         name={optionName}
-                        value={formData[optionName as keyof Question] || ""}
+                        value={(formData[optionName] as string) || ""}
                         onChange={(e) => handleOptionChange(index, e.target.value)}
                         placeholder={`Option ${index + 1}`}
                         className="rounded-xl"

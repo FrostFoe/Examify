@@ -421,7 +421,8 @@ export default function TakeExamPage() {
           
           if (config && config.question_ids && config.question_ids.length > 0) {
               // Priority: Use specific question IDs from config
-               subjectQuestions = allQuestions.filter(q => config.question_ids.includes(q.id));
+               const ids = config.question_ids;
+               subjectQuestions = allQuestions.filter(q => q.id && ids.includes(q.id));
           } else {
                // Fallback: Filter by subject tag
                // Try both ID and mapped name
@@ -746,8 +747,7 @@ export default function TakeExamPage() {
 
       // Check if questions are already embedded in the exam data (e.g., custom exams)
       if (examData.questions && examData.questions.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        finalQuestions = examData.questions.map((q: any) => {
+        finalQuestions = examData.questions.map((q: Question) => {
           let answerIndex = -1;
           if (typeof q.answer === "number") {
             answerIndex = q.answer;
@@ -775,7 +775,7 @@ export default function TakeExamPage() {
               : [q.option1, q.option2, q.option3, q.option4, q.option5];
 
           const options = rawOptions.filter(
-            (opt: any) => opt && typeof opt === "string" && opt.trim() !== "",
+            (opt: unknown) => opt && typeof opt === "string" && opt.trim() !== "",
           );
 
           return {
@@ -819,10 +819,8 @@ export default function TakeExamPage() {
               answer: answerIndex,
               explanation: q.explanation || "",
               type: q.type || null,
-              question_image_url: (q as Record<string, unknown>)
-                .question_image_url,
-              explanation_image_url: (q as Record<string, unknown>)
-                .explanation_image_url,
+              question_image_url: q.question_image_url as string | undefined,
+              explanation_image_url: q.explanation_image_url as string | undefined,
               question_marks: q.question_marks,
               subject: q.subject,
               paper: q.paper,
@@ -1186,14 +1184,10 @@ export default function TakeExamPage() {
                           <h3 className="text-lg font-semibold leading-relaxed">
                             <LatexRenderer html={question.question} />
                           </h3>
-                          {((question as Record<string, unknown>)
-                            .question_image_url as string | undefined) && (
+                          {question.question_image_url && (
                             <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
                                 <img
-                                  src={
-                                    (question as Record<string, unknown>)
-                                      .question_image_url as string
-                                  }
+                                  src={question.question_image_url}
                                   alt="Question"
                                   className="w-full h-auto object-contain max-h-[300px]"
                                 />

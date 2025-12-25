@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, FormEvent, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,52 +14,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useToast } from "@/hooks/use-toast";
-import { AdminExamCard, CSVUploadComponent } from "@/components";
+import { AdminExamCard } from "@/components";
 import CustomLoader from "@/components/CustomLoader";
 import type { Exam, Batch } from "@/lib/types";
-import { ChevronDown, PlusCircle } from "lucide-react";
-import { createExam } from "@/lib/actions";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { cn, combineDhakaDateTime, getCurrentDhakaTime } from "@/lib/utils";
-import QuestionSelector from "@/components/QuestionSelector";
-
-const subjects = [
-  { id: "p", name: "পদার্থবিজ্ঞান" },
-  { id: "c", name: "রসায়ন" },
-  { id: "m", name: "উচ্চতর গণিত" },
-  { id: "b", name: "জীববিজ্ঞান" },
-  { id: "bm", name: "জীববিজ্ঞান + উচ্চতর গণিত" },
-  { id: "bn", name: "বাংলা" },
-  { id: "e", name: "ইংরেজী" },
-  { id: "i", name: "আইসিটি" },
-  { id: "gk", name: "জিকে" },
-  { id: "iq", name: "আইকিউ" },
-];
-
-const bengaliToEnglishNumber = (str: string) => {
-  const bengaliNumerals = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
-  let newStr = str;
-  for (let i = 0; i < 10; i++) {
-    newStr = newStr.replace(new RegExp(bengaliNumerals[i], "g"), i.toString());
-  }
-  return newStr;
-};
-
-const hours12 = Array.from({ length: 12 }, (_, i) =>
-  (i + 1).toString().padStart(2, "0"),
-);
-const minutes = Array.from({ length: 60 }, (_, i) =>
-  i.toString().padStart(2, "0"),
-);
+import { ChevronDown } from "lucide-react";
 
 export function ExamsClient({
   initialExams,
