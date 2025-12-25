@@ -97,7 +97,20 @@ export default function SolvePage() {
               answerIndex = answerString.toUpperCase().charCodeAt(0) - 65;
             }
           }
-          return { ...q, answer: answerIndex } as ExtendedQuestion;
+
+          const options =
+              q.options && Array.isArray(q.options) && q.options.length > 0
+                ? q.options
+                : [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
+                    (opt: any) => opt && typeof opt === 'string' && opt.trim() !== "",
+                  );
+
+          return { 
+            ...q, 
+            question: q.question || q.question_text || "",
+            options,
+            answer: answerIndex 
+          } as ExtendedQuestion;
         });
       } else {
         // Fallback: Fetch questions using file_id (legacy/CSV based exams)

@@ -89,8 +89,8 @@ export async function fetchQuestions(
     const transformed: RawQuestion[] = rawData.map((q: any) => ({
       id: q.id,
       file_id: q.file_id,
-      question: q.question_text || "",
-      question_text: q.question_text || "",
+      question: q.question_text || q.question || "",
+      question_text: q.question_text || q.question || "",
        
        
       options: [q.option1, q.option2, q.option3, q.option4, q.option5].filter(
