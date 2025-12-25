@@ -344,9 +344,7 @@ export default function SolvePage() {
           }`}
         >
           <BookOpen className="h-4 w-4" />
-          <AlertDescription
-            className="text-sm"
-          >
+          <AlertDescription className="text-sm">
             <strong>ফিডব্যাক:</strong>{" "}
             {finalScore >= questions.length * 0.75
               ? " চমৎকার! আপনি খুব ভালো করেছেন। এই মানের পরীক্ষা চালিয়ে যান।"
@@ -421,87 +419,87 @@ export default function SolvePage() {
                 >
                   <CardHeader>
                     <div className="flex justify-between items-start gap-4">
-                          <div className="space-y-2 flex-1 min-w-0">
-                            <Badge
-                              variant={
-                                isCorrect && !isSkipped
-                                  ? "default"
-                                  : isSkipped
-                                    ? "outline"
-                                    : "destructive"
-                              }
-                              className={
-                                isCorrect && !isSkipped
-                                  ? "bg-success"
-                                  : isSkipped
-                                    ? "text-warning border-warning"
-                                    : ""
-                              }
-                            >
-                              {isCorrect && !isSkipped
-                                ? "সঠিক"
-                                : isSkipped
-                                  ? "উত্তর করা হয়নি"
-                                  : "ভুল"}
-                            </Badge>
-                            <h3 className="text-lg font-semibold break-words">
-                              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <span className="mr-1">
-                                  প্রশ্ন {filteredQuestions.indexOf(question) + 1}.
-                                </span>
-                                {(question.subject ||
-                                  question.paper ||
-                                  question.chapter ||
-                                  question.highlight) && (
-                                  <div className="flex flex-wrap gap-1">
-                                    {question.subject && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-600 border-blue-200 font-normal"
-                                      >
-                                        {question.subject}
-                                      </Badge>
-                                    )}
-                                    {question.paper && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-[10px] h-4 px-1.5 bg-green-50 text-green-600 border-green-200 font-normal"
-                                      >
-                                        {question.paper}
-                                      </Badge>
-                                    )}
-                                    {question.chapter && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-600 border-purple-200 font-normal"
-                                      >
-                                        {question.chapter}
-                                      </Badge>
-                                    )}
-                                    {question.highlight && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-[10px] h-4 px-1.5 bg-amber-50 text-amber-600 border-amber-200 font-normal"
-                                      >
-                                        {question.highlight}
-                                      </Badge>
-                                    )}
-                                  </div>
+                      <div className="space-y-2 flex-1 min-w-0">
+                        <Badge
+                          variant={
+                            isCorrect && !isSkipped
+                              ? "default"
+                              : isSkipped
+                                ? "outline"
+                                : "destructive"
+                          }
+                          className={
+                            isCorrect && !isSkipped
+                              ? "bg-success"
+                              : isSkipped
+                                ? "text-warning border-warning"
+                                : ""
+                          }
+                        >
+                          {isCorrect && !isSkipped
+                            ? "সঠিক"
+                            : isSkipped
+                              ? "উত্তর করা হয়নি"
+                              : "ভুল"}
+                        </Badge>
+                        <h3 className="text-lg font-semibold break-words">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="mr-1">
+                              প্রশ্ন {filteredQuestions.indexOf(question) + 1}.
+                            </span>
+                            {(question.subject ||
+                              question.paper ||
+                              question.chapter ||
+                              question.highlight) && (
+                              <div className="flex flex-wrap gap-1">
+                                {question.subject && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-600 border-blue-200 font-normal"
+                                  >
+                                    {question.subject}
+                                  </Badge>
+                                )}
+                                {question.paper && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-green-50 text-green-600 border-green-200 font-normal"
+                                  >
+                                    {question.paper}
+                                  </Badge>
+                                )}
+                                {question.chapter && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-600 border-purple-200 font-normal"
+                                  >
+                                    {question.chapter}
+                                  </Badge>
+                                )}
+                                {question.highlight && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] h-4 px-1.5 bg-amber-50 text-amber-600 border-amber-200 font-normal"
+                                  >
+                                    {question.highlight}
+                                  </Badge>
                                 )}
                               </div>
-                              <LatexRenderer html={question.question || ""} />
-                            </h3>
-                            {question.question_image_url &&
-                              typeof question.question_image_url === "string" && (
-                                <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
-                                  <img
-                                    src={question.question_image_url}
-                                    alt="Question"
-                                    className="w-full h-auto object-contain max-h-[300px]"
-                                  />
-                                </div>
-                              )}
+                            )}
                           </div>
+                          <LatexRenderer html={question.question || ""} />
+                        </h3>
+                        {question.question_image_url &&
+                          typeof question.question_image_url === "string" && (
+                            <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
+                              <img
+                                src={question.question_image_url}
+                                alt="Question"
+                                className="w-full h-auto object-contain max-h-[300px]"
+                              />
+                            </div>
+                          )}
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">

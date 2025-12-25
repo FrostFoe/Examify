@@ -250,14 +250,8 @@ export function EditExamModal({
       );
 
       // Serialize subject configs
-      formData.set(
-        "mandatory_subjects",
-        JSON.stringify(mandatorySubjects),
-      );
-      formData.set(
-        "optional_subjects",
-        JSON.stringify(optionalSubjects),
-      );
+      formData.set("mandatory_subjects", JSON.stringify(mandatorySubjects));
+      formData.set("optional_subjects", JSON.stringify(optionalSubjects));
     } else {
       // Fallback to simple string array if not custom exam (legacy support)
       formData.set(
@@ -270,10 +264,7 @@ export function EditExamModal({
       );
     }
 
-    formData.set(
-      "question_ids",
-      JSON.stringify(Array.from(allQuestionIds)),
-    );
+    formData.set("question_ids", JSON.stringify(Array.from(allQuestionIds)));
 
     const result = await updateExam(formData);
     if (result.success) {
@@ -303,11 +294,7 @@ export function EditExamModal({
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto">
-            <form
-              ref={formRef}
-              onSubmit={handleSubmit}
-              className="space-y-4"
-            >
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="exam-name-edit">পরীক্ষার নাম</Label>
                 <Input

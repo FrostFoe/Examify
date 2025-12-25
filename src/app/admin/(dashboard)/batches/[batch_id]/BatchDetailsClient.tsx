@@ -417,16 +417,10 @@ export function BatchDetailsClient({
         "mandatory_subjects",
         JSON.stringify(mandatorySubjectConfigs),
       );
-      formData.set(
-        "optional_subjects",
-        JSON.stringify(optionalSubjectConfigs),
-      );
+      formData.set("optional_subjects", JSON.stringify(optionalSubjectConfigs));
     }
 
-    formData.set(
-      "question_ids",
-      JSON.stringify(Array.from(allQuestionIds)),
-    );
+    formData.set("question_ids", JSON.stringify(Array.from(allQuestionIds)));
 
     const result = await createExam(formData);
     if (result.success) {
