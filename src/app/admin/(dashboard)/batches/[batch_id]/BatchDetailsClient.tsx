@@ -379,6 +379,77 @@ export function BatchDetailsClient({
     setIsSubmittingStudent(false);
   };
 
+  const handleSubmitExam = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmittingExam(true);
+    const formData = new FormData(e.currentTarget);
+    if (batch_id) {
+      formData.append("batch_id", batch_id);
+    }
+    const startAtISO = combineDhakaDateTime(
+      startDate,
+      startHour,
+      startMinute,
+      startPeriod,
+    );
+    const endAtISO = combineDhakaDateTime(
+      endDate,
+      endHour,
+      endMinute,
+      endPeriod,
+    );
+    if (startAtISO) formData.set("start_at", startAtISO);
+    if (endAtISO) formData.set("end_at", endAtISO);
+
+    // Aggregate all question IDs
+    const allQuestionIds = new Set<string>(selectedQuestionIds);
+
+    if (isCustomExam) {
+      mandatorySubjectConfigs.forEach((s) =>
+        s.question_ids?.forEach((qid) => allQuestionIds.add(qid)),
+      );
+      optionalSubjectConfigs.forEach((s) =>
+        s.question_ids?.forEach((qid) => allQuestionIds.add(qid)),
+      );
+
+      // Serialize subject configs
+      formData.set(
+        "mandatory_subjects",
+        JSON.stringify(mandatorySubjectConfigs),
+      );
+      formData.set(
+        "optional_subjects",
+        JSON.stringify(optionalSubjectConfigs),
+      );
+    }
+
+    formData.set(
+      "question_ids",
+      JSON.stringify(Array.from(allQuestionIds)),
+    );
+
+    const result = await createExam(formData);
+    if (result.success) {
+      toast({ title: "পরীক্ষা সফলভাবে যোগ করা হয়েছে" });
+      addExamFormRef.current?.reset();
+      setSelectedQuestionIds([]);
+      setMandatorySubjectConfigs([]);
+      setOptionalSubjectConfigs([]);
+      setIsAddExamOpen(false);
+      // Update exams list immediately
+      if (result.data) {
+        setExams((prev) => [result.data as Exam, ...prev]);
+      }
+    } else {
+      toast({
+        title: "পরীক্ষা যোগ করতে সমস্যা হয়েছে",
+        description: result.message,
+        variant: "destructive",
+      });
+    }
+    setIsSubmittingExam(false);
+  };
+
   if (!batch) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -451,78 +522,7 @@ export function BatchDetailsClient({
               <CollapsibleContent className="py-4">
                 <form
                   ref={addExamFormRef}
-                  action={async (formData) => {
-                    setIsSubmittingExam(true);
-                    if (batch_id) {
-                      formData.append("batch_id", batch_id);
-                    }
-                    const startAtISO = combineDhakaDateTime(
-                      startDate,
-                      startHour,
-                      startMinute,
-                      startPeriod,
-                    );
-                    const endAtISO = combineDhakaDateTime(
-                      endDate,
-                      endHour,
-                      endMinute,
-                      endPeriod,
-                    );
-                    if (startAtISO) formData.set("start_at", startAtISO);
-                    if (endAtISO) formData.set("end_at", endAtISO);
-
-                    // Aggregate all question IDs
-                    const allQuestionIds = new Set<string>(selectedQuestionIds);
-
-                    if (isCustomExam) {
-                      mandatorySubjectConfigs.forEach((s) =>
-                        s.question_ids?.forEach((qid) =>
-                          allQuestionIds.add(qid),
-                        ),
-                      );
-                      optionalSubjectConfigs.forEach((s) =>
-                        s.question_ids?.forEach((qid) =>
-                          allQuestionIds.add(qid),
-                        ),
-                      );
-
-                      // Serialize subject configs
-                      formData.set(
-                        "mandatory_subjects",
-                        JSON.stringify(mandatorySubjectConfigs),
-                      );
-                      formData.set(
-                        "optional_subjects",
-                        JSON.stringify(optionalSubjectConfigs),
-                      );
-                    }
-
-                    formData.set(
-                      "question_ids",
-                      JSON.stringify(Array.from(allQuestionIds)),
-                    );
-
-                    const result = await createExam(formData);
-                    if (result.success) {
-                      toast({ title: "পরীক্ষা সফলভাবে যোগ করা হয়েছে" });
-                      addExamFormRef.current?.reset();
-                      setSelectedQuestionIds([]);
-                      setMandatorySubjectConfigs([]);
-                      setOptionalSubjectConfigs([]);
-                      setIsAddExamOpen(false);
-                      // Update exams list immediately
-                      if (result.data) {
-                        setExams((prev) => [result.data as Exam, ...prev]);
-                      }
-                    } else {
-                      toast({
-                        title: "পরীক্ষা যোগ করতে সমস্যা হয়েছে",
-                        description: result.message,
-                        variant: "destructive",
-                      });
-                    }
-                    setIsSubmittingExam(false);
-                  }}
+                  onSubmit={handleSubmitExam}
                   className="space-y-4 p-4 border rounded-md"
                 >
                   <div className="flex flex-col md:flex-row md:items-center gap-3">

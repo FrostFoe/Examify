@@ -85,6 +85,34 @@ export function EditBatchModal({
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    if (batch?.id) {
+      formData.append("id", batch.id);
+    }
+    if (imageBase64) {
+      formData.set("icon_url", imageBase64);
+    }
+
+    const result = await updateBatch(formData);
+    if (result.success) {
+      toast({ title: "ব্যাচ সফলভাবে আপডেট করা হয়েছে!" });
+      if (onSuccess) {
+        await onSuccess();
+      }
+      onClose();
+    } else {
+      toast({
+        title: "ব্যাচ আপডেট করতে সমস্যা হয়েছে",
+        description: result.message,
+        variant: "destructive",
+      });
+    }
+    setIsSubmitting(false);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-h-[90vh] w-[95vw] rounded-2xl md:max-w-lg p-4 md:p-6 overflow-y-auto flex flex-col">
@@ -95,31 +123,7 @@ export function EditBatchModal({
         <div className="flex-1 overflow-y-auto">
           <form
             ref={formRef}
-            action={async (formData) => {
-              setIsSubmitting(true);
-              if (batch?.id) {
-                formData.append("id", batch.id);
-              }
-              if (imageBase64) {
-                formData.set("icon_url", imageBase64);
-              }
-
-              const result = await updateBatch(formData);
-              if (result.success) {
-                toast({ title: "ব্যাচ সফলভাবে আপডেট করা হয়েছে!" });
-                if (onSuccess) {
-                  await onSuccess();
-                }
-                onClose();
-              } else {
-                toast({
-                  title: "ব্যাচ আপডেট করতে সমস্যা হয়েছে",
-                  description: result.message,
-                  variant: "destructive",
-                });
-              }
-              setIsSubmitting(false);
-            }}
+            onSubmit={handleSubmit}
             className="space-y-4 pt-2 pb-1"
           >
             <div className="space-y-2">

@@ -138,9 +138,34 @@ export default function StudentBatchExamsPage() {
     };
   }, [exams]);
 
-  if (authLoading || loading || isAuthorized === null) {
-    return <CustomLoader />;
-  }
+  useEffect(() => {
+    if (loading || exams.length === 0) return;
+
+    if (!user?.uid) {
+      const anonymousResults: Record<string, StudentExam> = {};
+      exams.forEach((exam) => {
+        const storageKey = `exam_answers_anonymous_${exam.id}`;
+        const savedData = localStorage.getItem(storageKey);
+        if (savedData) {
+          try {
+            const parsedData = JSON.parse(savedData);
+            anonymousResults[exam.id] = {
+              exam_id: exam.id,
+              student_id: "anonymous",
+              score: parsedData.score,
+              correct_answers: parsedData.correct_answers,
+              wrong_answers: parsedData.wrong_answers,
+              unattempted: parsedData.unattempted,
+              submitted_at: parsedData.submitted_at,
+            };
+          } catch (e) {
+            console.error("Failed to parse saved anonymous answers", e);
+          }
+        }
+      });
+      setExamResults((prev) => ({ ...prev, ...anonymousResults }));
+    }
+  }, [exams, user, loading]);
 
   if (!isAuthorized) {
     return (

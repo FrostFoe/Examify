@@ -575,7 +575,7 @@ export default function TakeExamPage() {
       }
     });
 
-    if (user && exam_id) {
+    if (user?.uid && exam_id) {
       try {
         const result = await apiRequest(
           "results",
@@ -608,13 +608,25 @@ export default function TakeExamPage() {
           variant: "destructive",
         });
       }
+    } else {
+      toast({
+        title: "পরীক্ষা সম্পন্ন হয়েছে",
+        description: "যেহেতু আপনি লগইন করেননি, আপনার স্কোর সেভ করা হয়নি। তবে আপনি সমাধান দেখতে পারবেন।",
+      });
     }
 
-    if (exam_id && user) {
-      const storageKey = `exam_answers_${user.uid}_${exam_id}`;
+    if (exam_id) {
+      const storageKey = user?.uid
+        ? `exam_answers_${user.uid}_${exam_id}`
+        : `exam_answers_anonymous_${exam_id}`;
 
       const dataToStore = {
         answers: selectedAnswers,
+        score: totalScore,
+        correct_answers: correctAnswers,
+        wrong_answers: wrongAnswers,
+        unattempted: questions.length - Object.keys(selectedAnswers).length,
+        submitted_at: new Date().toISOString(),
       };
 
       localStorage.setItem(storageKey, JSON.stringify(dataToStore));
@@ -718,13 +730,11 @@ export default function TakeExamPage() {
           return;
         }
 
-        if (!user?.uid) {
-          setIsAuthorized(false);
-          return;
-        }
-
+        // If exam doesn't have a batch, it's considered accessible if logged in
+        // or we might want to allow it anonymously too if it's a general exam.
+        // For now, if no batch, require login.
         if (!exam.batch_id) {
-          setIsAuthorized(true);
+          setIsAuthorized(!!user?.uid);
           return;
         }
 
@@ -738,6 +748,12 @@ export default function TakeExamPage() {
           batchResult.data.is_public
         ) {
           setIsAuthorized(true);
+          return;
+        }
+
+        // If not public, require login and enrollment
+        if (!user?.uid) {
+          setIsAuthorized(false);
           return;
         }
 

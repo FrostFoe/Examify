@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";
 
-const BACKEND_API_BASE = process.env.NEXT_PUBLIC_CSV_API_BASE_URL;
+const BACKEND_API_BASE = process.env.NEXT_PUBLIC_CSV_API_BASE_URL || "";
 const API_KEY = process.env.NEXT_PUBLIC_CSV_API_KEY || "";
 
 if (!API_KEY) {

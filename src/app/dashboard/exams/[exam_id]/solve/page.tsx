@@ -78,7 +78,7 @@ export default function SolvePage() {
         Array.isArray(examData.questions) &&
         examData.questions.length > 0
       ) {
-        finalQuestions = examData.questions.map((q: RawQuestion) => {
+        finalQuestions = (examData.questions as any[]).map((q: RawQuestion) => {
           const normalized = normalizeQuestion(q);
           return {
             ...normalized,
@@ -111,8 +111,10 @@ export default function SolvePage() {
         });
       }
 
-      if (exam_id && user?.uid) {
-        const storageKey = `exam_answers_${user.uid}_${exam_id}`;
+      if (exam_id) {
+        const storageKey = user?.uid
+          ? `exam_answers_${user.uid}_${exam_id}`
+          : `exam_answers_anonymous_${exam_id}`;
 
         const savedData = localStorage.getItem(storageKey);
         if (savedData) {

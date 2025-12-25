@@ -211,6 +211,87 @@ export function EditExamModal({
     else setOptionalSubjects(updater);
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    if (exam?.id) {
+      formData.append("id", exam.id);
+    }
+    if (exam?.batch_id) {
+      formData.append("batch_id", exam.batch_id);
+    }
+
+    const startAtISO = combineDhakaDateTime(
+      startDate,
+      startHour,
+      startMinute,
+      startPeriod,
+    );
+    const endAtISO = combineDhakaDateTime(
+      endDate,
+      endHour,
+      endMinute,
+      endPeriod,
+    );
+
+    if (startAtISO) formData.set("start_at", startAtISO);
+    if (endAtISO) formData.set("end_at", endAtISO);
+
+    // Aggregate all question IDs
+    const allQuestionIds = new Set<string>(selectedQuestionIds);
+
+    if (isCustomExam) {
+      mandatorySubjects.forEach((s) =>
+        s.question_ids?.forEach((qid) => allQuestionIds.add(qid)),
+      );
+      optionalSubjects.forEach((s) =>
+        s.question_ids?.forEach((qid) => allQuestionIds.add(qid)),
+      );
+
+      // Serialize subject configs
+      formData.set(
+        "mandatory_subjects",
+        JSON.stringify(mandatorySubjects),
+      );
+      formData.set(
+        "optional_subjects",
+        JSON.stringify(optionalSubjects),
+      );
+    } else {
+      // Fallback to simple string array if not custom exam (legacy support)
+      formData.set(
+        "mandatory_subjects",
+        JSON.stringify(mandatorySubjects.map((s) => s.id)),
+      );
+      formData.set(
+        "optional_subjects",
+        JSON.stringify(optionalSubjects.map((s) => s.id)),
+      );
+    }
+
+    formData.set(
+      "question_ids",
+      JSON.stringify(Array.from(allQuestionIds)),
+    );
+
+    const result = await updateExam(formData);
+    if (result.success) {
+      toast({ title: "পরীক্ষা সফলভাবে আপডেট করা হয়েছে!" });
+      if (onSuccess && result.data) {
+        onSuccess(result.data as Exam);
+      }
+      onClose();
+    } else {
+      toast({
+        title: "পরীক্ষা আপডেট করতে সমস্যা হয়েছে",
+        description: result.message,
+        variant: "destructive",
+      });
+    }
+    setIsSubmitting(false);
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -224,84 +305,7 @@ export function EditExamModal({
           <div className="flex-1 overflow-y-auto">
             <form
               ref={formRef}
-              action={async (formData) => {
-                setIsSubmitting(true);
-                if (exam?.id) {
-                  formData.append("id", exam.id);
-                }
-                if (exam?.batch_id) {
-                  formData.append("batch_id", exam.batch_id);
-                }
-
-                const startAtISO = combineDhakaDateTime(
-                  startDate,
-                  startHour,
-                  startMinute,
-                  startPeriod,
-                );
-                const endAtISO = combineDhakaDateTime(
-                  endDate,
-                  endHour,
-                  endMinute,
-                  endPeriod,
-                );
-
-                if (startAtISO) formData.set("start_at", startAtISO);
-                if (endAtISO) formData.set("end_at", endAtISO);
-
-                // Aggregate all question IDs
-                const allQuestionIds = new Set<string>(selectedQuestionIds);
-
-                if (isCustomExam) {
-                  mandatorySubjects.forEach((s) =>
-                    s.question_ids?.forEach((qid) => allQuestionIds.add(qid)),
-                  );
-                  optionalSubjects.forEach((s) =>
-                    s.question_ids?.forEach((qid) => allQuestionIds.add(qid)),
-                  );
-
-                  // Serialize subject configs
-                  formData.set(
-                    "mandatory_subjects",
-                    JSON.stringify(mandatorySubjects),
-                  );
-                  formData.set(
-                    "optional_subjects",
-                    JSON.stringify(optionalSubjects),
-                  );
-                } else {
-                  // Fallback to simple string array if not custom exam (legacy support)
-                  formData.set(
-                    "mandatory_subjects",
-                    JSON.stringify(mandatorySubjects.map((s) => s.id)),
-                  );
-                  formData.set(
-                    "optional_subjects",
-                    JSON.stringify(optionalSubjects.map((s) => s.id)),
-                  );
-                }
-
-                formData.set(
-                  "question_ids",
-                  JSON.stringify(Array.from(allQuestionIds)),
-                );
-
-                const result = await updateExam(formData);
-                if (result.success) {
-                  toast({ title: "পরীক্ষা সফলভাবে আপডেট করা হয়েছে!" });
-                  if (onSuccess && result.data) {
-                    onSuccess(result.data as Exam);
-                  }
-                  onClose();
-                } else {
-                  toast({
-                    title: "পরীক্ষা আপডেট করতে সমস্যা হয়েছে",
-                    description: result.message,
-                    variant: "destructive",
-                  });
-                }
-                setIsSubmitting(false);
-              }}
+              onSubmit={handleSubmit}
               className="space-y-4"
             >
               <div className="space-y-2">

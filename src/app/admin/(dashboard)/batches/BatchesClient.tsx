@@ -141,6 +141,35 @@ export function BatchesClient({
     setPendingBatchToDelete(null);
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    formData.set("status", status);
+    if (isPublic) formData.set("is_public", "true");
+    if (imageBase64) formData.set("icon_url", imageBase64);
+
+    const result = await createBatch(formData);
+    if (result.success) {
+      toast({
+        title: "ব্যাচ সফলভাবে যোগ করা হয়েছে",
+      });
+      formRef.current?.reset();
+      setIsPublic(false);
+      setStatus("live");
+      clearImage();
+      // Refetch batches to show new batch immediately
+      await refetchBatches();
+    } else {
+      toast({
+        title: "ব্যাচ যোগ করতে সমস্যা হয়েছে",
+        description: result.message,
+        variant: "destructive",
+      });
+    }
+    setIsSubmitting(false);
+  };
+
   return (
     <div className="container mx-auto p-2 md:p-4 space-y-6">
       <Card>
@@ -153,32 +182,7 @@ export function BatchesClient({
         <CardContent className="p-3 md:p-6">
           <form
             ref={formRef}
-            action={async (formData) => {
-              setIsSubmitting(true);
-              formData.set("status", status);
-              if (isPublic) formData.set("is_public", "true");
-              if (imageBase64) formData.set("icon_url", imageBase64);
-
-              const result = await createBatch(formData);
-              if (result.success) {
-                toast({
-                  title: "ব্যাচ সফলভাবে যোগ করা হয়েছে",
-                });
-                formRef.current?.reset();
-                setIsPublic(false);
-                setStatus("live");
-                clearImage();
-                // Refetch batches to show new batch immediately
-                await refetchBatches();
-              } else {
-                toast({
-                  title: "ব্যাচ যোগ করতে সমস্যা হয়েছে",
-                  description: result.message,
-                  variant: "destructive",
-                });
-              }
-              setIsSubmitting(false);
-            }}
+            onSubmit={handleSubmit}
             className="space-y-4 mb-8 border p-4 rounded-xl bg-muted/5"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

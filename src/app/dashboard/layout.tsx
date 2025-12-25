@@ -31,17 +31,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
+  const isPublicPath =
+    pathname?.match(/^\/dashboard\/exams\/[^/]+/) ||
+    pathname?.match(/^\/dashboard\/batches\/[^/]+/);
+
   const isExamPage = pathname?.match(/^\/dashboard\/exams\/[^/]+$/);
 
   useEffect(() => {
     if (loading) return;
 
-    if (!user) {
+    if (!user && !isPublicPath) {
       router.push(`/login?redirect=${pathname}`);
     }
-  }, [user, loading, router, pathname]);
+  }, [user, loading, router, pathname, isPublicPath]);
 
-  if (loading || !user) {
+  if (loading || (!user && !isPublicPath)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <CustomLoader />
@@ -60,8 +64,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <DashboardSidebar
         items={sidebarNavItems}
         userInfo={{
-          name: user?.name || "User",
-          role: user?.roll ? `রোল: ${user.roll}` : "Student",
+          name: user?.name || "Guest User",
+          role: user?.roll ? `রোল: ${user.roll}` : user ? "Student" : "Guest",
         }}
         onLogout={handleLogout}
         panelType="student"
@@ -97,12 +101,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </Avatar>
             <div className="text-right">
               <p className="text-sm font-medium">
-                {user?.name && user.name.length > 11
-                  ? `${user.name.slice(0, 11)}...`
-                  : user?.name || "User"}
+                {user?.name
+                  ? user.name.length > 11
+                    ? `${user.name.slice(0, 11)}...`
+                    : user.name
+                  : "Guest"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {user?.roll ? `রোল: ${user.roll}` : "Student"}
+                {user?.roll ? `রোল: ${user.roll}` : user ? "Student" : "Guest"}
               </p>
             </div>
           </div>
