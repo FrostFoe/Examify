@@ -26,7 +26,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import type { Exam, Question } from "@/lib/types";
+import type { Exam, Question, SubjectConfig, Batch, User } from "@/lib/types";
 import {
   QUESTIONS_PER_PAGE,
   QUESTIONS_PER_PAGE_MOBILE,
@@ -49,7 +49,6 @@ import {
   ListChecks,
   HelpCircle,
 } from "lucide-react";
-import type { Batch, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const runtime = "edge";
@@ -416,14 +415,8 @@ export default function TakeExamPage() {
 
     // Helper to find config for a subject ID
     const findConfig = (id: string) => {
-      const mandatory = exam.mandatory_subjects as (
-        | string
-        | import("@/lib/types").SubjectConfig
-      )[];
-      const optional = exam.optional_subjects as (
-        | string
-        | import("@/lib/types").SubjectConfig
-      )[];
+      const mandatory = exam.mandatory_subjects as (string | SubjectConfig)[];
+      const optional = exam.optional_subjects as (string | SubjectConfig)[];
 
       const m = mandatory?.find(
         (s) => (typeof s === "string" ? s : s.id) === id,
@@ -478,7 +471,7 @@ export default function TakeExamPage() {
         // Determine the display name for this subject section
         // We use the mapped name (e.g. "পদার্থবিজ্ঞান") if available, otherwise the ID.
         // We do NOT rely on question.subject because it might vary or be inconsistent.
-        const displayName = config.name || subjectsMap[subId] || subId;
+        const displayName = config?.name || subjectsMap[subId] || subId;
 
         // Override the subject property of the questions to match the section display name.
         // This ensures they are correctly filtered and grouped under this tab.
