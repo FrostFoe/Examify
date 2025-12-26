@@ -44,6 +44,8 @@ export default function LatexRenderer({ html, className }: LatexRendererProps) {
       style={{
         display: "block",
         width: "100%",
+        overflowX: "auto",
+        overflowY: "hidden",
         overflowWrap: "break-word",
         wordWrap: "break-word",
       }}

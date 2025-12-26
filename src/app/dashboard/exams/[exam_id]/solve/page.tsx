@@ -523,7 +523,7 @@ export default function SolvePage() {
                         ];
 
                         let optionClass =
-                          "p-3 rounded-lg border flex items-center gap-3 ";
+                          "p-3 rounded-lg border flex items-start gap-3 max-w-full ";
                         if (isRightAnswer) {
                           optionClass +=
                             "bg-success/20 border-success text-success-foreground font-medium";
@@ -537,7 +537,7 @@ export default function SolvePage() {
                         return (
                           <div key={optIdx} className={optionClass}>
                             <div
-                              className={`w-6 h-6 rounded-full border flex items-center justify-center text-sm ${
+                              className={`w-6 h-6 rounded-full border flex items-center justify-center text-sm flex-shrink-0 mt-0.5 ${
                                 isRightAnswer
                                   ? "border-success bg-success text-white"
                                   : isSelected
@@ -548,14 +548,14 @@ export default function SolvePage() {
                               {bengaliLetters[optIdx] ||
                                 String.fromCharCode(65 + optIdx)}
                             </div>
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0 whitespace-normal pt-0.5">
                               <LatexRenderer html={option || ""} />
                             </div>
                             {isRightAnswer && (
-                              <CheckCircle2 className="h-4 w-4 text-success ml-auto" />
+                              <CheckCircle2 className="h-4 w-4 text-success ml-auto mt-1 flex-shrink-0" />
                             )}
                             {isSelected && !isRightAnswer && (
-                              <AlertCircle className="h-4 w-4 text-destructive ml-auto" />
+                              <AlertCircle className="h-4 w-4 text-destructive ml-auto mt-1 flex-shrink-0" />
                             )}
                           </div>
                         );

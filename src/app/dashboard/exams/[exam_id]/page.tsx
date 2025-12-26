@@ -272,10 +272,10 @@ function SubjectSelectionScreen({
   };
 
   return (
-    <div className="container mx-auto p-4 flex items-center justify-center min-h-screen">
-      <Card className="w-full max-w-2xl">
+    <div className="container mx-auto px-4 py-6 flex items-center justify-center min-h-screen">
+      <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
+          <CardTitle className="text-xl sm:text-2xl font-bold text-center">
             {exam.name}
           </CardTitle>
           <CardDescription className="text-center">
@@ -1416,14 +1416,14 @@ export default function TakeExamPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/50">
-      <div className="container mx-auto p-2 md:p-4 md:pb-8">
-        <div>
-          <div className="sticky top-0 z-10 py-4 bg-background/95 backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 flex-1">
-                <BookOpen className="h-5 w-5" />
-                <div className="hidden sm:block">
-                  <h2 className="font-semibold">{exam?.name}</h2>
+      <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl">
+        <div className="flex flex-col items-center">
+          <div className="sticky top-0 z-10 py-4 bg-background/95 backdrop-blur w-full max-w-4xl">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+              <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                <BookOpen className="h-5 w-5 flex-shrink-0" />
+                <div className="text-center sm:text-left min-w-0 flex-1">
+                  <h2 className="font-semibold truncate">{exam?.name}</h2>
                   <p className="text-xs text-muted-foreground">
                     পৃষ্ঠা {currentPageIndex + 1} / {totalPages}
                   </p>
@@ -1431,8 +1431,8 @@ export default function TakeExamPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary" />
-                <span className="text-xs md:text-sm font-semibold">
+                <Zap className="h-4 w-4 text-primary flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-semibold min-w-0">
                   {attemptedCount}/{filteredQuestions.length}
                 </span>
               </div>
@@ -1444,7 +1444,7 @@ export default function TakeExamPage() {
 
             {/* Subject Tabs */}
             {examStarted && uniqueSubjects.length > 0 && (
-              <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+              <div className="mt-4 flex flex-wrap justify-center sm:justify-start gap-2">
                 <Button
                   variant={selectedSubject === "all" ? "default" : "outline"}
                   size="sm"
@@ -1481,7 +1481,7 @@ export default function TakeExamPage() {
             )}
           </div>
 
-          <Tabs defaultValue="questions" className="w-full">
+          <Tabs defaultValue="questions" className="w-full max-w-4xl">
             <TabsList className="grid w-full grid-cols-1 mb-6">
               <TabsTrigger
                 value="questions"
@@ -1502,12 +1502,12 @@ export default function TakeExamPage() {
                   <Card
                     key={question.id}
                     id={`question-${question.id}`}
-                    className="overflow-hidden"
+                    className="overflow-hidden w-full max-w-4xl mx-auto"
                   >
                     <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
                             <Badge variant="secondary">
                               প্রশ্ন {globalIndex + 1}
                             </Badge>
@@ -1563,7 +1563,7 @@ export default function TakeExamPage() {
                               </div>
                             )}
                           </div>
-                          <h3 className="text-lg font-semibold leading-relaxed break-words">
+                          <h3 className="text-base sm:text-lg font-semibold leading-relaxed break-words">
                             <LatexRenderer html={question.question} />
                           </h3>
                           {question.question_image_url && (
@@ -1587,7 +1587,7 @@ export default function TakeExamPage() {
                       </div>
                     </CardHeader>
 
-                    <CardContent className="space-y-4 p-3">
+                    <CardContent className="space-y-4 p-3 sm:p-4">
                       <div className="space-y-3">
                         <div className="space-y-3">
                           {(Array.isArray(question.options)
@@ -1676,7 +1676,7 @@ export default function TakeExamPage() {
 
               <footer
                 id="exam-navigation"
-                className="flex items-center justify-between gap-2 pt-4 mt-6"
+                className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-2 pt-4 mt-6 w-full max-w-4xl mx-auto"
               >
                 <Button
                   variant="outline"
@@ -1687,13 +1687,13 @@ export default function TakeExamPage() {
                         uniqueSubjects.indexOf(selectedSubject) === 0)) ||
                     isSubmitting
                   }
-                  className="flex-1 h-10 px-2 text-xs md:text-sm"
+                  className="flex-1 h-10 px-2 text-xs sm:text-sm"
                 >
-                  <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                  <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   পূর্ববর্তী
                 </Button>
 
-                <div className="text-xs font-bold text-muted-foreground whitespace-nowrap px-2">
+                <div className="text-xs sm:text-sm font-bold text-muted-foreground whitespace-nowrap px-2 py-1">
                   {currentPageIndex + 1} / {totalPages}
                 </div>
 
@@ -1701,23 +1701,23 @@ export default function TakeExamPage() {
                   <Button
                     onClick={handleNextPage}
                     disabled={isSubmitting}
-                    className="flex-1 h-10 px-2 text-xs md:text-sm"
+                    className="flex-1 h-10 px-2 text-xs sm:text-sm"
                   >
                     পরবর্তী
-                    <ArrowRight className="h-3 w-3 md:h-4 md:w-4 ml-1 md:ml-2" />
+                    <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
                   </Button>
                 ) : (
                   <Button
                     onClick={() => setShowSubmitDialog(true)}
                     disabled={isSubmitting}
-                    className="flex-1 h-10 px-2 text-xs md:text-sm shadow-lg shadow-primary/20"
+                    className="flex-1 h-10 px-2 text-xs sm:text-sm shadow-lg shadow-primary/20"
                   >
                     {isSubmitting ? (
                       <CustomLoader minimal />
                     ) : (
                       <>
                         জমা দিন
-                        <Send className="h-3 w-3 md:h-4 md:w-4 ml-1 md:ml-2" />
+                        <Send className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
                       </>
                     )}
                   </Button>
