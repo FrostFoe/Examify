@@ -150,7 +150,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6 p-2 md:p-4">
+    <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl space-y-6">
       <PageHeader
         title="প্রোফাইল"
         description="আপনার ব্যক্তিগত তথ্য এবং আসন্ন পরীক্ষা"

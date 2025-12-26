@@ -97,7 +97,7 @@ export default function ExamsPage() {
   }
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
+    <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl space-y-6">
       <PageHeader
         title="পরীক্ষাসমূহ"
         description="আপনার ব্যাচের এবং পাবলিক পরীক্ষাগুলোর তালিকা।"
@@ -121,7 +121,7 @@ export default function ExamsPage() {
 
         <TabsContent value="live" className="mt-6">
           {liveExams.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {liveExams.map((exam) => (
                 <ExamCard key={exam.id} exam={exam} result={results[exam.id]} />
               ))}
@@ -137,7 +137,7 @@ export default function ExamsPage() {
 
         <TabsContent value="practice" className="mt-6">
           {practiceExams.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {practiceExams.map((exam) => (
                 <ExamCard key={exam.id} exam={exam} result={results[exam.id]} />
               ))}
@@ -153,7 +153,7 @@ export default function ExamsPage() {
 
         <TabsContent value="upcoming" className="mt-6">
           {upcomingExams.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {upcomingExams.map((exam) => (
                 <ExamCard key={exam.id} exam={exam} result={results[exam.id]} />
               ))}

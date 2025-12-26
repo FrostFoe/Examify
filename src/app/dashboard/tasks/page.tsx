@@ -171,7 +171,7 @@ export default function DailyTaskPage() {
   const task2Status = getCountdownStatus(21, 22);
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto pb-20 animate-in fade-in duration-500">
+    <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl space-y-8 pb-20 animate-in fade-in duration-500">
       <PageHeader
         title="দৈনিক টাস্ক এবং উপস্থিতি"
         description={`আজকের তারিখ: ${new Date().toLocaleDateString("bn-BD")} | সময়: ${formatTime(serverTime)}`}
@@ -244,7 +244,7 @@ export default function DailyTaskPage() {
             </CardHeader>
             <CardContent className="space-y-8 pt-8">
               {/* Task Fields with Floating Layout */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div className="space-y-3 group">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="task_1" className="text-sm font-bold text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -283,7 +283,7 @@ export default function DailyTaskPage() {
               </div>
 
               {/* Dynamic Inputs with Modern Styling */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-white/5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-4 border-t border-white/5">
                 <div className="space-y-4">
                   <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> পরীক্ষার লিংক (Exam Links)

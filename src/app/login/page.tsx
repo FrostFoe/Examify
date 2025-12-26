@@ -107,17 +107,6 @@ function LoginPageContent() {
                 নিবন্ধন করুন
               </Link>
             </p>
-            <p className="mt-4 text-center text-[10px] text-muted-foreground/60">
-              Made with <span className="text-destructive mx-0.5">❤</span> by{" "}
-              <a
-                href="https://shop.frostfoe.me"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono hover:text-primary transition-colors"
-              >
-                &lt;/ FrostFoe &gt;
-              </a>
-            </p>
           </CardFooter>
         </form>
       </Card>

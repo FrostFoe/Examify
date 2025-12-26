@@ -172,7 +172,7 @@ export default function StudentBatchExamsPage() {
 
   if (!isAuthorized) {
     return (
-      <div className="container mx-auto p-4 text-center">
+      <div className="container mx-auto px-4 py-6 text-center">
         <Card className="max-w-md mx-auto">
           <CardHeader>
             <CardTitle>অনুমতি নেই</CardTitle>
@@ -189,7 +189,7 @@ export default function StudentBatchExamsPage() {
   }
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
+    <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl space-y-6">
       <PageHeader
         title={`পরীক্ষাসমূহ - ${batch?.name}`}
         description="এই ব্যাচের অন্তর্ভুক্ত পরীক্ষাসমূহ।"
@@ -212,7 +212,7 @@ export default function StudentBatchExamsPage() {
           </TabsList>
           <TabsContent value="live" className="mt-6">
             {liveExams.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {liveExams.map((exam) => (
                   <ExamCard
                     key={exam.id}
@@ -231,7 +231,7 @@ export default function StudentBatchExamsPage() {
           </TabsContent>
           <TabsContent value="practice" className="mt-6">
             {practiceExams.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {practiceExams.map((exam) => (
                   <ExamCard
                     key={exam.id}
@@ -250,7 +250,7 @@ export default function StudentBatchExamsPage() {
           </TabsContent>
           <TabsContent value="upcoming" className="mt-6">
             {upcomingExams.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {upcomingExams.map((exam) => (
                   <ExamCard
                     key={exam.id}

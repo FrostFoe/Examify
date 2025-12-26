@@ -233,8 +233,8 @@ export default function SolvePage() {
     wrongAnswers * parseFloat(String(exam?.negative_marks_per_wrong || 0));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/50 flex flex-col items-center justify-start p-2 md:p-4">
-      <div className="w-full max-w-2xl space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/50 flex flex-col items-center justify-start px-2 sm:px-4 md:px-6 py-4">
+      <div className="w-full max-w-4xl space-y-6">
         <Card className="border-0 shadow-2xl overflow-hidden bg-gradient-to-r from-primary/10 to-primary/5">
           <CardContent className="p-8 text-center space-y-4">
             <div className="flex justify-center">
@@ -265,7 +265,7 @@ export default function SolvePage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <Card className="border-muted/20 shadow-sm">
             <CardContent className="p-3 md:p-6 space-y-1 md:space-y-2">
               <div className="flex items-center gap-1 md:gap-2 text-success">

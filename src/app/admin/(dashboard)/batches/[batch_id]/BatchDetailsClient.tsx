@@ -46,7 +46,7 @@ import { useToast } from "@/hooks/use-toast";
 import ConfirmPasswordDialog from "@/components/ConfirmPasswordDialog";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import type { Batch, Exam, User, SubjectConfig } from "@/lib/types";
-import { PlusCircle, ListChecks, ArrowUp, ArrowDown, Trash2, Plus } from "lucide-react";
+import { PlusCircle, ListChecks, ArrowUp, ArrowDown, Trash2, Plus, Copy } from "lucide-react";
 import { EditExamModal } from "@/components/EditExamModal";
 import { CSVUploadComponent, CustomLoader } from "@/components";
 import QuestionSelector from "@/components/QuestionSelector";
@@ -1193,6 +1193,18 @@ export function BatchDetailsClient({
                     <TableRow key={exam.id}>
                       <TableCell className="font-medium">{exam.name}</TableCell>
                       <TableCell className="flex flex-wrap items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const link = `${window.location.origin}/dashboard/exams/${exam.id}`;
+                            navigator.clipboard.writeText(link);
+                            toast({ title: "লিংক কপি করা হয়েছে" });
+                          }}
+                          title="Copy Link"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
                         <Link href={`/admin/exams/${exam.id}/questions`}>
                           <Button variant="outline" size="sm">
                             প্রশ্ন

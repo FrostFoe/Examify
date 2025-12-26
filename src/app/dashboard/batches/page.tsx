@@ -61,7 +61,7 @@ export default function StudentBatchesPage() {
   }
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
+    <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl space-y-6">
       <PageHeader
         title="সকল ব্যাচ"
         description="আপনার ভর্তি হওয়া এবং পাবলিক ব্যাচগুলোর তালিকা।"
@@ -80,7 +80,7 @@ export default function StudentBatchesPage() {
         </TabsList>
         <TabsContent value="my-batches" className="mt-6">
           {enrolledBatches.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {enrolledBatches.map((batch) => (
                 <StudentBatchCard key={batch.id} batch={batch} />
               ))}
@@ -95,7 +95,7 @@ export default function StudentBatchesPage() {
         </TabsContent>
         <TabsContent value="public-batches" className="mt-6">
           {publicBatches.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {publicBatches.map((batch) => (
                 <StudentBatchCard key={batch.id} batch={batch} />
               ))}

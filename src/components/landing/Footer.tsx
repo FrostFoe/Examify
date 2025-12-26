@@ -170,22 +170,6 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">
               &copy; {new Date().getFullYear()} Examify. সকল অধিকার সংরক্ষিত।
             </p>
-
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-muted-foreground">
-                Made with
-                <span className="text-primary mx-1">❤</span>
-                by
-                <a
-                  href="https://shop.frostfoe.me"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono ml-1.5 hover:text-primary transition-colors font-medium"
-                >
-                  &lt;/ FrostFoe &gt;
-                </a>
-              </span>
-            </div>
           </div>
         </div>
       </div>

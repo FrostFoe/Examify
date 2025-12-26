@@ -238,7 +238,7 @@ export default function ResultsPage() {
 
   if (authLoading) {
     return (
-      <div className="container mx-auto p-2 md:p-4">
+      <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl">
         <PageHeader title="ফলাফল" description="" />
         <Card>
           <CardContent className="py-8 flex items-center justify-center">
@@ -251,7 +251,7 @@ export default function ResultsPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto p-2 md:p-4 space-y-6">
+      <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl space-y-6">
         <PageHeader title="ফলাফল" description="" />
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -263,7 +263,7 @@ export default function ResultsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-2 md:p-4">
+      <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl">
         <PageHeader title="ফলাফল" description="" />
         <Card>
           <CardContent className="py-8 flex items-center justify-center">
@@ -276,7 +276,7 @@ export default function ResultsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto p-2 md:p-4 space-y-6">
+      <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl space-y-6">
         <PageHeader title="ফলাফল" description="" />
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -288,7 +288,7 @@ export default function ResultsPage() {
 
   if (results.length === 0) {
     return (
-      <div className="container mx-auto p-2 md:p-4 space-y-6">
+      <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl space-y-6">
         <PageHeader
           title="ফলাফল"
           description="আপনার পরীক্ষার ফলাফল এবং পরিসংখ্যান"
@@ -303,7 +303,7 @@ export default function ResultsPage() {
   }
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
+    <div className="container mx-auto px-2 sm:px-4 md:px-6 py-4 max-w-6xl space-y-6">
       <PageHeader
         title="ফলাফল"
         description="আপনার পরীক্ষার ফলাফল এবং পরিসংখ্যান"
@@ -326,7 +326,7 @@ export default function ResultsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2 text-center">
@@ -467,7 +467,7 @@ export default function ResultsPage() {
                     />
 
                     {/* Statistics */}
-                    <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">সঠিক</p>
                         <p className="text-lg font-bold text-green-600">
