@@ -82,7 +82,9 @@ export async function apiRequest<T>(
         } else if ("success" in result) {
           // Direct response with success flag: { success: true, id: 123, ... }
           // We remove 'success' and 'message' from the payload to keep it clean
-          const { success: _s, message: _m, ...rest } = result;
+          const rest = { ...(result as Record<string, unknown>) };
+          delete rest.success;
+          delete rest.message;
           // If there are other fields, use them, otherwise use the whole object
           payload = (Object.keys(rest).length > 0 ? rest : result) as T;
         } else {

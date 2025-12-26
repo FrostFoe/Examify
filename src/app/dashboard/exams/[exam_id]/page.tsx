@@ -127,7 +127,7 @@ function GuestIdentificationScreen({
           variant: "destructive",
         });
       }
-    } catch (err) {
+    } catch {
       toast({
         title: "ত্রুটি",
         description: "সার্ভারের সাথে যোগাযোগ করা যাচ্ছে না",

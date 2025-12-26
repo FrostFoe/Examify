@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>টাস্ক এবং অ্যাটেন্ডেন্স ড্যাশবোর্ড</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* বেসিক স্টাইল */
+        body { font-family: 'Arial', sans-serif; background-color: #1a1a1a; color: #fff; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #333; }
+        .section-box { background-color: #333; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); margin-bottom: 30px; }
+        .section-box h2 { color: #007bff; margin-top: 0; border-bottom: 2px solid #444; padding-bottom: 10px; }
+
+        /* লগইন স্ট্যাটাস বক্স */
+        .status-header { display: flex; justify-content: space-between; align-items: center; }
+        .status-info p { margin: 5px 0; font-size: 0.9em; }
+        .status-info strong { color: #4CAF50; }
+        .user-id-display { font-size: 0.8em; color: #ccc; background-color: #444; padding: 5px 10px; border-radius: 5px; word-break: break-all; margin-top: 10px;}
+
+        /* ফর্ম স্টাইল */
+        .task-form label { display: block; margin-top: 15px; font-weight: bold; color: #ccc; }
+        .task-form textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #555; border-radius: 5px; background-color: #222; color: white; box-sizing: border-box; min-height: 100px; resize: vertical; }
+        .task-form textarea:disabled { background-color: #444; color: #888; cursor: not-allowed; border-color: #333; }
+        
+        /* ডায়নামিক ইনপুট স্টাইল (Exam Links & Marks) */
+        .dynamic-field-wrapper { margin-top: 15px; }
+        .dynamic-input-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .dynamic-input-row input { flex-grow: 1; padding: 10px; border: 1px solid #555; border-radius: 5px; background-color: #222; color: white; }
+        .add-more-btn { background-color: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 0.9em; margin-top: 5px; display: inline-block; }
+        .add-more-btn:hover { background-color: #0056b3; }
+        .remove-row-btn { background-color: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+
+        /* অ্যাটেন্ডেন্স সেকশন */
+        .attendance-section { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 20px; padding: 15px; border: 1px solid #555; border-radius: 8px; }
+        .attendance-section p { margin-bottom: 10px; color: #aaa; }
+        #attendanceBtn {
+            padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;
+            font-weight: bold; transition: background-color 0.3s;
+        }
+        #attendanceBtn:hover:not(:disabled) { background-color: #0056b3; }
+        #attendanceBtn:disabled { background-color: #555; cursor: not-allowed; opacity: 0.6; }
+
+        /* বাটন স্টাইল */
+        #saveBtn {
+            background-color: #4CAF50; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer;
+            width: 100%; font-size: 1.1em; margin-top: 20px; transition: background-color 0.3s;
+        }
+        #saveBtn:hover { background-color: #45a049; }
+        .logout-btn { background-color: #f44336; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-weight: bold; transition: background-color 0.3s; }
+        .logout-btn:hover { background-color: #d32f2f; }
+
+        /* বার্তা ডিসপ্লে */
+        #responseMessage { padding: 15px; margin-top: 20px; border-radius: 5px; text-align: center; display: none; font-weight: bold; }
+        #responseMessage.success { background-color: #4CAF50; color: white; }
+        #responseMessage.error { background-color: #f44336; color: white; }
+
+        /* মডাল স্টাইল (আগের মতোই রাখা হয়েছে) */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+        .modal-content { background-color: #1a1a1a; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 400px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); color: white; }
+        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .auth-form input[type="text"], .auth-form input[type="password"] { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #333; border-radius: 5px; background-color: #333; color: white; box-sizing: border-box; }
+        .auth-form button { background-color: #007bff; color: white; padding: 12px 20px; margin: 8px 0; border: none; cursor: pointer; width: 100%; border-radius: 5px; }
+        #authMessage { margin-bottom: 15px; padding: 10px; border-radius: 5px; display: none; text-align: center; }
+        #authMessage.success { background-color: #4CAF50; }
+        #authMessage.error { background-color: #f44336; }
+        .remember-me-container { display: flex; align-items: center; margin: 10px 0; }
+        .remember-me-container input[type="checkbox"] { width: auto; margin-right: 10px; transform: scale(1.2); }
+
+        /* টাইমার স্টাইল */
+        .countdown-timer { font-size: 0.9em; margin-left: 10px; font-weight: normal; }
+        .timer-waiting { color: #FF9800; font-family: monospace; }
+        .timer-active { color: #4CAF50; font-weight: bold; animation: blink 2s infinite; }
+        .timer-ended { color: #f44336; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>দৈনিক টাস্ক এবং উপস্থিতি ড্যাশবোর্ড</h1>
+            <p>সময়: <strong style="color: yellow;" id="liveClock">2025-12-26 02:20:27 PM</strong> (ঢাকা সময়)</p>
+        </div>
+
+                    <div class="section-box logged-in">
+                <div class="status-header">
+                    <div class="status-info">
+                        <h2>স্বাগতম, Testt!</h2>
+                        <p>লগইন স্ট্যাটাস: <strong>সক্রিয়</strong></p>
+                                                    <p style="color: #64B5F6;">আজকের ডেটা এখনো সেভ হয়নি।</p>
+                                                <p class="user-id-display">ইউজার ID: 2680</p>
+                    </div>
+                    <a href="?action=logout" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> লগআউট
+                    </a>
+                </div>
+            </div>
+
+            <div class="section-box">
+                <h2>দৈনিক অগ্রগতি ও উপস্থিতি</h2>
+                <div id="responseMessage"></div>
+                <form id="taskForm" class="task-form">
+                    <input type="hidden" name="action" value="save_task">
+
+                    <div class="attendance-section">
+                        <h3>উপস্থিতি (Attendance) <span id="attendance_timer" class="countdown-timer"></span></h3>
+                        <p>
+                                                            <strong style="color: #FF9800;">নোট: অ্যাটেন্ডেন্সের সাজেস্টেড টাইম (সকাল ৪:০০ - ৭:৫৯), তবে আপনি যেকোনো সময় দিতে পারেন।</strong>
+                                                    </p>
+                        <p>আজকের স্ট্যাটাস: <span id="currentAttendanceStatus" style="font-weight: bold; color: #FFEB3B;">উপস্থিতি দিতে পারেন (সাজেস্টেড টাইম: ৪টা-৮টা)</span></p>
+
+                        <button type="button" id="attendanceBtn" data-attendance="Yes" >
+                            <i class="fas fa-check"></i> উপস্থিতি 'Yes'
+                        </button>
+                    </div>
+
+                    <label for="task_1">টাস্ক ১ (Task 1) - <small>সাজেস্টেড টাইম: দুপুর ১২টা - ১টা</small>
+                        <span id="task1_timer" class="countdown-timer"></span>
+                    </label>
+                    <textarea name="task_1" id="task_1" placeholder="যেকোনো সময় আপডেট করতে পারেন। তবে সাজেস্টেড টাইম হলো দুপুর ১২টা থেকে ১টা।"></textarea>
+
+                    <label for="task_2">টাস্ক ২ (Task 2) - <small>সাজেস্টেড টাইম: রাত ৯টা - ১০টা</small>
+                        <span id="task2_timer" class="countdown-timer"></span>
+                    </label>
+                    <textarea name="task_2" id="task_2" placeholder="যেকোনো সময় আপডেট করতে পারেন। তবে সাজেস্টেড টাইম হলো রাত ৯টা থেকে ১০টা।"></textarea>
+
+                    <div class="dynamic-field-wrapper">
+                        <label>Exam Links (একের অধিক লিংক যুক্ত করতে পারেন)</label>
+                        <div id="exam_links_container">
+                            <div class="dynamic-input-row">
+                                        <input type="url" name="exam_links[]" placeholder="Exam link এখানে দিন">
+                                      </div>                        </div>
+                        <button type="button" class="add-more-btn" id="add_exam_link"><i class="fas fa-plus"></i> Add Another Exam Link</button>
+                    </div>
+
+                    <div class="dynamic-field-wrapper">
+                        <label>Exam Marks (একের অধিক মার্কস যুক্ত করতে পারেন)</label>
+                        <div id="exam_marks_container">
+                            <div class="dynamic-input-row">
+                                        <input type="number" step="0.01" name="exam_marks[]" placeholder="Exam mark এখানে দিন">
+                                      </div>                        </div>
+                        <button type="button" class="add-more-btn" id="add_exam_mark"><i class="fas fa-plus"></i> Add Another Exam Mark</button>
+                    </div>
+
+                    <button type="submit" id="saveBtn"><i class="fas fa-save"></i> ডেটা সেভ / আপডেট করুন</button>
+                </form>
+            </div>
+
+            </div>
+
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>লগইন করুন</h2>
+            <div id="authMessage"></div>
+            <form id="loginForm" class="auth-form">
+                <input type="hidden" name="action" value="login">
+                <label for="user_login"><b>ইউজারনেম</b></label>
+                <input type="text" placeholder="ইউজারনেম দিন" name="user_login" required>
+
+                <label for="user_password"><b>পাসওয়ার্ড</b></label>
+                <input type="password" placeholder="পাসওয়ার্ড দিন" name="user_password" required>
+
+                <div class="remember-me-container">
+                    <input type="checkbox" id="remember_me" name="remember_me" checked>
+                    <label for="remember_me">আমাকে মনে রাখুন (৩০ দিন)</label>
+                </div>
+
+                <button type="submit"><i class="fas fa-sign-in-alt"></i> লগইন</button>
+                <a href="#" class="toggle-link" style="display: block; text-align: center; margin-top: 10px; color: #64B5F6;">রেজিস্ট্রেশন করতে চান?</a>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            const modal = $("#authModal");
+            const btn = $("#openLoginModal");
+            const span = $(".close-btn");
+            const authMessage = $("#authMessage");
+            const responseMessage = $("#responseMessage");
+
+            // --- টাইম কাউন্টডাউন এবং রিয়েল টাইম ক্লক লজিক ---
+            
+            // PHP থেকে সার্ভার টাইম নেওয়া (Unix Timestamp in seconds)
+            let serverTimestamp = 1766737227; 
+            
+            function updateClock() {
+                serverTimestamp++; // প্রতি সেকেন্ডে টাইম বাড়ানো
+                const date = new Date(serverTimestamp * 1000);
+                
+                // ঘড়ি আপডেট করা (হেডার)
+                let hours = date.getHours();
+                const minutes = "0" + date.getMinutes();
+                const seconds = "0" + date.getSeconds();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; 
+                const formattedTime = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2) + " " +  hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2) + ' ' + ampm;
+                
+                $("#liveClock").text(formattedTime);
+
+                // --- কাউন্টডাউন চেকার (শুধুমাত্র ভিজ্যুয়াল গাইডলাইনের জন্য) ---
+                const currentHour = date.getHours();
+                
+                // ১. অ্যাটেন্ডেন্স (04:00 AM - 07:59 AM)
+                updateCountdown("#attendance_timer", date, 4, 8); 
+
+                // ২. টাস্ক ১ (12:00 PM - 12:59 PM)
+                updateCountdown("#task1_timer", date, 12, 13); 
+
+                // ৩. টাস্ক ২ (09:00 PM - 09:59 PM) -> 21 to 22
+                updateCountdown("#task2_timer", date, 21, 22); 
+            }
+
+            function updateCountdown(selector, currentDate, startHour, endHour) {
+                const currentHour = currentDate.getHours();
+                const element = $(selector);
+
+                if (currentHour < startHour) {
+                    // সময় হওয়ার আগে: কাউন্টডাউন দেখাও
+                    const targetDate = new Date(currentDate.getTime());
+                    targetDate.setHours(startHour, 0, 0, 0);
+                    
+                    const diffMs = targetDate - currentDate;
+                    const diffHrs = Math.floor((diffMs % 86400000) / 3600000);
+                    const diffMins = Math.floor(((diffMs % 86400000) % 3600000) / 60000);
+                    const diffSecs = Math.floor((((diffMs % 86400000) % 3600000) % 60000) / 1000);
+                    
+                    element.html(`<i class="fas fa-hourglass-half"></i> ভালো সময় শুরু হতে বাকি: ${diffHrs}ঘণ্টা ${diffMins}মিনিট ${diffSecs}সেকেন্ড`).removeClass('timer-active timer-ended').addClass('timer-waiting');
+                    
+                } else if (currentHour >= startHour && currentHour < endHour) {
+                    // সময়ের মধ্যে: একটিভ দেখাও
+                    element.html(`<i class="fas fa-circle"></i> এখন সেরা সময়`).removeClass('timer-waiting timer-ended').addClass('timer-active');
+                } else {
+                    // সময় শেষ
+                    element.html(`<i class="fas fa-info-circle"></i> সেরা সময় শেষ (তবে সাবমিট করতে পারেন)`).removeClass('timer-waiting timer-active').addClass('timer-ended');
+                }
+            }
+
+            // প্রতি সেকেন্ডে আপডেট কল করা
+            setInterval(updateClock, 1000);
+            updateClock(); // ইনিশিয়াল কল
+
+            // --- মডাল হ্যান্ডলিং লজিক ---
+
+            // যদি লগইন না করা থাকে, তবে স্বয়ংক্রিয়ভাবে মডাল ওপেন করো
+            
+            // ম্যানুয়াল বাটন ক্লিক করে মডাল ওপেন
+            if (btn.length) {
+                btn.on('click', function() {
+                    modal.css('display', 'flex');
+                });
+            }
+
+            // বন্ধ বাটন ক্লিক করে মডাল বন্ধ
+            span.on('click', function() {
+                modal.css('display', 'none');
+            });
+
+            // মডালের বাইরে ক্লিক করে বন্ধ
+            $(window).on('click', function(event) {
+                if (event.target === modal[0]) {
+                    modal.css('display', 'none');
+                }
+            });
+
+            // AJAX মেসেজ ডিসপ্লে ফাংশন
+            function showMessage(element, message, isSuccess) {
+                element.text(message).removeClass("success error").addClass(isSuccess ? "success" : "error").fadeIn();
+                setTimeout(function() {
+                    element.fadeOut();
+                }, 4000);
+            }
+
+            // --- ডায়নামিক ফিল্ড যুক্ত করার লজিক (Exam Links & Marks) ---
+            
+            // Add Link
+            $("#add_exam_link").click(function() {
+                const newField = `
+                    <div class="dynamic-input-row">
+                        <input type="url" name="exam_links[]" placeholder="Exam link এখানে দিন">
+                        <button type="button" class="remove-row-btn"><i class="fas fa-trash"></i></button>
+                    </div>`;
+                $("#exam_links_container").append(newField);
+            });
+
+            // Add Mark
+            $("#add_exam_mark").click(function() {
+                const newField = `
+                    <div class="dynamic-input-row">
+                        <input type="number" step="0.01" name="exam_marks[]" placeholder="Exam mark এখানে দিন">
+                        <button type="button" class="remove-row-btn"><i class="fas fa-trash"></i></button>
+                    </div>`;
+                $("#exam_marks_container").append(newField);
+            });
+
+            // Remove Button Logic (Dynamically created elements need event delegation)
+            $(document).on('click', '.remove-row-btn', function() {
+                $(this).closest('.dynamic-input-row').remove();
+            });
+
+
+            // --- লগইন সাবমিট হ্যান্ডলার ---
+            $("#loginForm").submit(function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                $.ajax({
+                    type: "POST",
+                    url: window.location.href, // বর্তমান পেজে AJAX পোস্ট
+                    data: $form.serialize(),
+                    dataType: "json",
+                    success: function(response) {
+                        showMessage(authMessage, response.message, response.success);
+                        if (response.success) {
+                            // সফল লগইন এর পর মডাল বন্ধ এবং পেজ রিফ্রেশ
+                            setTimeout(function() {
+                                modal.hide();
+                                window.location.reload();
+                            }, 1500);
+                        }
+                    },
+                    error: function() {
+                        showMessage(authMessage, "একটি সার্ভার ত্রুটি ঘটেছে।", false);
+                    }
+                });
+            });
+
+            // --- টাস্ক এবং অ্যাটেন্ডেন্স সাবমিট হ্যান্ডলার ---
+            function submitTaskData(attendanceValue = null) {
+                const $form = $("#taskForm");
+                const formData = $form.serializeArray();
+
+                // অ্যাটেন্ডেন্স ডেটা যুক্ত করা
+                if (attendanceValue !== null) {
+                    formData.push({name: 'attendance', value: attendanceValue});
+                } else if ($('#currentAttendanceStatus').data('current-attendance') === 'Yes') {
+                    // যদি ইউজার অ্যাটেন্ডেন্স বাটন ক্লিক না করে কিন্তু আগে থেকেই 'Yes' থাকে, তবে সেটা সেভ করতে পাঠানো
+                    formData.push({name: 'attendance', value: 'Yes'});
+                }
+
+
+                $.ajax({
+                    type: "POST",
+                    url: window.location.href,
+                    data: $.param(formData),
+                    dataType: "json",
+                    success: function(response) {
+                        showMessage(responseMessage, response.message, response.success);
+
+                        if (response.success && response.attendance === 'Yes') {
+                             // অ্যাটেন্ডেন্স সফল হলে স্ট্যাটাস এবং বাটন আপডেট
+                            $("#currentAttendanceStatus").text('✅ উপস্থিত').css('color', '#4CAF50').data('current-attendance', 'Yes');
+                            $("#attendanceBtn").prop('disabled', true);
+                        } else if (response.success && response.attendance !== 'Yes') {
+                            // টাস্ক সেভ হলেও অ্যাটেন্ডেন্স না হলে স্ট্যাটাস আপডেট
+                            if ($("#currentAttendanceStatus").text().indexOf('উপস্থিত') === -1) {
+                                $("#currentAttendanceStatus").text('উপস্থিতি হয়নি').css('color', '#FFEB3B');
+                            }
+                        }
+                    },
+                    error: function() {
+                        showMessage(responseMessage, "ডেটা সেভ করার সময় একটি সার্ভার ত্রুটি ঘটেছে।", false);
+                    }
+                });
+            }
+
+            // সাধারণ সেভ বাটন
+            $("#taskForm").submit(function(e) {
+                e.preventDefault();
+                submitTaskData(null); // অ্যাটেন্ডেন্স মান ছাড়া সেভ করো
+            });
+
+            // অ্যাটেন্ডেন্স বাটন ক্লিক হ্যান্ডলার
+            $("#attendanceBtn").on('click', function() {
+                // বাটনটি ডিসেবল না থাকলে
+                if (!$(this).is(':disabled')) {
+                    submitTaskData($(this).data('attendance')); // 'Yes' মান দিয়ে সেভ করো
+                }
+            });
+
+            // বর্তমান অ্যাটেন্ডেন্স স্ট্যাটাস ডাটা অ্যাট্রিবিউটে সংরক্ষণ
+                            $("#currentAttendanceStatus").data('current-attendance', 'No');
+            
+        });
+    </script>
+</body>
+</html>

@@ -112,3 +112,21 @@ export type ApiResponse<T> = {
   data: T;
   message?: string;
 };
+
+export type ReportDay = {
+  date: string;
+  attendance: "Yes" | "No" | "-";
+  task_1: string | null;
+  task_2: string | null;
+  exams: string[];
+  marks: string[];
+  progress: number;
+};
+
+export type StudentReport = {
+  uid: string;
+  name: string;
+  roll: string;
+  days: Record<string, ReportDay>;
+};
+

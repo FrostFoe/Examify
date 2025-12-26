@@ -78,7 +78,7 @@ export default function SolvePage() {
         Array.isArray(examData.questions) &&
         examData.questions.length > 0
       ) {
-        finalQuestions = (examData.questions as any[]).map((q: RawQuestion) => {
+        finalQuestions = (examData.questions as RawQuestion[]).map((q: RawQuestion) => {
           const normalized = normalizeQuestion(q);
           return {
             ...normalized,

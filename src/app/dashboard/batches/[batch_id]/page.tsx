@@ -14,7 +14,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import type { Batch, Exam, StudentExam, User } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { PageHeader, CustomLoader, EmptyState } from "@/components";
+import {
+  PageHeader,
+  EmptyState,
+} from "@/components";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, CalendarClock, Zap } from "lucide-react";
 

@@ -286,6 +286,29 @@ VALUES (@demo_batch_id, 'Demo Admission Batch', 'This is a sample admission batc
 
 
 
+-- Student Tasks and Attendance (Added Dec 26, 2025)
+
+CREATE TABLE IF NOT EXISTS student_tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_uid VARCHAR(255) NOT NULL,
+    task_1 TEXT,
+    task_2 TEXT,
+    exam_links JSON,
+    exam_marks JSON,
+    task_date DATE NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY student_day (student_uid, task_date)
+);
+
+CREATE TABLE IF NOT EXISTS student_attendance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_uid VARCHAR(255) NOT NULL,
+    status ENUM('Yes', 'No') DEFAULT 'No',
+    attendance_date DATE NOT NULL,
+    UNIQUE KEY student_day (student_uid, attendance_date)
+);
+
+
 -- Seed Student (Enrolled in Demo Batch)
 
 
@@ -299,4 +322,6 @@ VALUES (UUID(), 'Test Student', '1000', '1000', JSON_ARRAY(@demo_batch_id), NOW(
 
 
 COMMIT;
+
+
 

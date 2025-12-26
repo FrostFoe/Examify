@@ -9,6 +9,7 @@ import {
   FileText,
   Users,
   Home,
+  CheckSquare,
 } from "lucide-react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { CustomLoader } from "@/components";
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 
 const sidebarNavItems = [
   { title: "ড্যাশবোর্ড", href: "/dashboard", icon: LayoutDashboard },
+  { title: "দৈনিক টাস্ক", href: "/dashboard/tasks", icon: CheckSquare },
   { title: "সকল ব্যাচ", href: "/dashboard/batches", icon: Users },
   { title: "পরীক্ষাসমূহ", href: "/dashboard/exams", icon: FileText },
   { title: "ফলাফল", href: "/dashboard/results", icon: BarChart },
