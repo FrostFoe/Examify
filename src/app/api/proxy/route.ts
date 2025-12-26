@@ -59,25 +59,33 @@ async function handleRequest(request: NextRequest) {
 
     const response = await fetch(url, options);
     const contentType = response.headers.get("content-type");
+    const responseText = await response.text();
 
     if (contentType && contentType.includes("application/json")) {
-      const data = await response.json();
-      return NextResponse.json(data, { status: response.status });
+      try {
+        const data = JSON.parse(responseText);
+        return NextResponse.json(data, { status: response.status });
+      } catch (e) {
+        console.error("[API-PROXY] JSON Parse Error. Raw response:", responseText);
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Backend returned invalid JSON",
+            error: responseText,
+          },
+          { status: 500 }
+        );
+      }
     } else {
-      const text = await response.text();
       return NextResponse.json(
         {
           success: response.ok,
-          message: text || `Error ${response.status}`,
-          data: response.ok ? text : null,
+          message: responseText || `Error ${response.status}`,
+          data: response.ok ? responseText : null,
         },
         {
-          status: response.ok
-            ? 200
-            : response.status === 200
-              ? 502
-              : response.status,
-        },
+          status: response.ok ? 200 : (response.status === 200 ? 502 : response.status),
+        }
       );
     }
   } catch (error) {

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle,
   Clock,
@@ -170,195 +171,205 @@ export default function DailyTaskPage() {
   const task2Status = getCountdownStatus(21, 22);
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-10">
+    <div className="space-y-8 max-w-4xl mx-auto pb-20 animate-in fade-in duration-500">
       <PageHeader
         title="দৈনিক টাস্ক এবং উপস্থিতি"
         description={`আজকের তারিখ: ${new Date().toLocaleDateString("bn-BD")} | সময়: ${formatTime(serverTime)}`}
       />
 
-      <div className="grid gap-6">
-        {/* Attendance Card */}
-        <Card className="border-primary/20 bg-card/50 backdrop-blur-sm">
+      <div className="grid gap-8">
+        {/* Attendance Card - Premium Styled */}
+        <Card className="border-primary/10 bg-card/40 backdrop-blur-md shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-primary" />
+            <CardTitle className="flex items-center gap-3 text-2xl font-bold tracking-tight">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <CheckCircle className="h-6 w-6" />
+              </div>
               উপস্থিতি (Attendance)
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground/80">
               সাজেস্টেড টাইম: সকাল ৪:০০ - ৭:৫৯
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-muted/50">
-              <div className="space-y-1">
-                <p className="text-sm font-medium">বর্তমান স্ট্যাটাস:</p>
-                <p className={`text-lg font-bold flex items-center gap-2 ${attendance === 'Yes' ? 'text-green-500' : 'text-yellow-500'}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 rounded-xl bg-muted/30 border border-primary/5">
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">বর্তমান স্ট্যাটাস</p>
+                <div className={`text-xl font-bold flex items-center gap-3 ${attendance === 'Yes' ? 'text-emerald-400' : 'text-amber-400'}`}>
                   {attendance === "Yes" ? (
-                    <>
-                      <CheckCircle className="h-5 w-5" /> উপস্থিত
-                    </>
+                    <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                      <CheckCircle className="h-5 w-5" /> <span>উপস্থিত</span>
+                    </div>
                   ) : (
-                    "উপস্থিতি দিন"
+                    <div className="flex items-center gap-2 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                      <Clock className="h-5 w-5" /> <span>উপস্থিতি দিন</span>
+                    </div>
                   )}
-                </p>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm">
-                {attendanceStatus === "waiting" && (
-                  <span className="flex items-center gap-1 text-orange-500">
-                    <Hourglass className="h-4 w-4" /> সময় শুরু হতে বাকি
-                  </span>
-                )}
-                {attendanceStatus === "active" && (
-                  <span className="flex items-center gap-1 text-green-500 animate-pulse">
-                    <Circle className="h-4 w-4 fill-current" /> এখন সেরা সময়
-                  </span>
-                )}
-                {attendanceStatus === "ended" && (
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <Info className="h-4 w-4" /> সাজেস্টেড সময় শেষ
-                  </span>
-                )}
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  {attendanceStatus === "active" ? (
+                    <p className="text-xs font-bold text-emerald-400 flex items-center gap-1 justify-end animate-pulse">
+                      <Circle className="h-2 w-2 fill-current" /> এখন সেরা সময়
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground font-medium">সাজেস্টেড সময় অনুসরণ করুন</p>
+                  )}
+                </div>
+                <Button
+                  disabled={attendance === "Yes" || loading}
+                  onClick={() => handleSave(undefined, true)}
+                  className="bg-primary hover:bg-primary/90 text-white font-bold px-8 h-12 rounded-full shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
+                >
+                  {attendance === "Yes" ? "নিশ্চিত করা হয়েছে" : "উপস্থিতি নিশ্চিত করুন"}
+                </Button>
               </div>
-
-              <Button
-                disabled={attendance === "Yes" || loading}
-                onClick={() => handleSave(undefined, true)}
-                className="bg-primary hover:bg-primary/90"
-              >
-                {attendance === "Yes" ? "উপস্থিতি দেওয়া হয়েছে" : "উপস্থিতি নিশ্চিত করুন"}
-              </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Task Form */}
-        <form onSubmit={handleSave} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                দৈনিক টাস্ক (Tasks)
+        {/* Task Form - Premium Dark Style */}
+        <form onSubmit={handleSave} className="space-y-8">
+          <Card className="border-white/5 bg-card/40 backdrop-blur-md shadow-2xl">
+            <CardHeader className="border-b border-white/5 pb-6">
+              <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                  <Clock className="h-5 w-5" />
+                </div>
+                দৈনিক টাস্ক এবং অগ্রগতি
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Task 1 */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="task_1" className="text-base font-semibold">
-                    টাস্ক ১ (Task 1)
-                  </Label>
-                  <span className={`text-xs px-2 py-1 rounded-full ${task1Status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground'}`}>
-                    দুপুর ১২টা - ১টা
-                  </span>
-                </div>
-                <Textarea
-                  id="task_1"
-                  placeholder="আপনার টাস্ক ১ এর বিবরণ দিন..."
-                  className="min-h-[100px] bg-background/50"
-                  value={task1}
-                  onChange={(e) => setTask1(e.target.value)}
-                />
-              </div>
-
-              {/* Task 2 */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="task_2" className="text-base font-semibold">
-                    টাস্ক ২ (Task 2)
-                  </Label>
-                  <span className={`text-xs px-2 py-1 rounded-full ${task2Status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground'}`}>
-                    রাত ৯টা - ১০টা
-                  </span>
-                </div>
-                <Textarea
-                  id="task_2"
-                  placeholder="আপনার টাস্ক ২ এর বিবরণ দিন..."
-                  className="min-h-[100px] bg-background/50"
-                  value={task2}
-                  onChange={(e) => setTask2(e.target.value)}
-                />
-              </div>
-
-              {/* Exam Links */}
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">পরীক্ষার লিংক (Exam Links)</Label>
-                {examLinks.map((link, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      type="url"
-                      placeholder="https://..."
-                      value={link}
-                      onChange={(e) => {
-                        const newLinks = [...examLinks];
-                        newLinks[index] = e.target.value;
-                        setExamLinks(newLinks);
-                      }}
-                      className="bg-background/50"
-                    />
-                    {examLinks.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeExamLink(index)}
-                        className="text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+            <CardContent className="space-y-8 pt-8">
+              {/* Task Fields with Floating Layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3 group">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="task_1" className="text-sm font-bold text-muted-foreground group-focus-within:text-primary transition-colors">
+                      টাস্ক ১ (Task 1)
+                    </Label>
+                    <Badge variant="outline" className={`${task1Status === 'active' ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/5' : 'border-white/10 text-muted-foreground'} text-[10px]`}>
+                      দুপুর ১২টা - ১টা
+                    </Badge>
                   </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addExamLink}
-                  className="flex items-center gap-1"
-                >
-                  <Plus className="h-4 w-4" /> আরও লিংক যোগ করুন
-                </Button>
+                  <Textarea
+                    id="task_1"
+                    placeholder="আপনার টাস্ক ১ এর বিবরণ দিন..."
+                    className="min-h-[120px] bg-black/20 border-white/10 focus:border-primary/50 focus:ring-primary/20 resize-none transition-all"
+                    value={task1}
+                    onChange={(e) => setTask1(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-3 group">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="task_2" className="text-sm font-bold text-muted-foreground group-focus-within:text-primary transition-colors">
+                      টাস্ক ২ (Task 2)
+                    </Label>
+                    <Badge variant="outline" className={`${task2Status === 'active' ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/5' : 'border-white/10 text-muted-foreground'} text-[10px]`}>
+                      রাত ৯টা - ১০টা
+                    </Badge>
+                  </div>
+                  <Textarea
+                    id="task_2"
+                    placeholder="আপনার টাস্ক ২ এর বিবরণ দিন..."
+                    className="min-h-[120px] bg-black/20 border-white/10 focus:border-primary/50 focus:ring-primary/20 resize-none transition-all"
+                    value={task2}
+                    onChange={(e) => setTask2(e.target.value)}
+                  />
+                </div>
               </div>
 
-              {/* Exam Marks */}
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">পরীক্ষার নম্বর (Exam Marks)</Label>
-                {examMarks.map((mark, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={mark}
-                      onChange={(e) => {
-                        const newMarks = [...examMarks];
-                        newMarks[index] = e.target.value;
-                        setExamMarks(newMarks);
-                      }}
-                      className="bg-background/50"
-                    />
-                    {examMarks.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeExamMark(index)}
-                        className="text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+              {/* Dynamic Inputs with Modern Styling */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-white/5">
+                <div className="space-y-4">
+                  <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> পরীক্ষার লিংক (Exam Links)
+                  </Label>
+                  <div className="space-y-3">
+                    {examLinks.map((link, index) => (
+                      <div key={index} className="flex gap-2 group animate-in slide-in-from-left-2">
+                        <Input
+                          type="url"
+                          placeholder="https://..."
+                          value={link}
+                          onChange={(e) => {
+                            const newLinks = [...examLinks];
+                            newLinks[index] = e.target.value;
+                            setExamLinks(newLinks);
+                          }}
+                          className="bg-black/20 border-white/10 h-11"
+                        />
+                        {examLinks.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeExamLink(index)}
+                            className="text-destructive hover:bg-destructive/10 h-11 w-11 shrink-0"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addExamLink}
+                      className="w-full border-dashed border-white/10 hover:border-primary/50 hover:bg-primary/5 text-xs text-muted-foreground"
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> আরও লিংক যোগ করুন
+                    </Button>
                   </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addExamMark}
-                  className="flex items-center gap-1"
-                >
-                  <Plus className="h-4 w-4" /> আরও নম্বর যোগ করুন
-                </Button>
+                </div>
+
+                <div className="space-y-4">
+                  <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-pink-500" /> পরীক্ষার নম্বর (Exam Marks)
+                  </Label>
+                  <div className="space-y-3">
+                    {examMarks.map((mark, index) => (
+                      <div key={index} className="flex gap-2 group animate-in slide-in-from-right-2">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          value={mark}
+                          onChange={(e) => {
+                            const newMarks = [...examMarks];
+                            newMarks[index] = e.target.value;
+                            setExamMarks(newMarks);
+                          }}
+                          className="bg-black/20 border-white/10 h-11"
+                        />
+                        {examMarks.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeExamMark(index)}
+                            className="text-destructive hover:bg-destructive/10 h-11 w-11 shrink-0"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addExamMark}
+                      className="w-full border-dashed border-white/10 hover:border-primary/50 hover:bg-primary/5 text-xs text-muted-foreground"
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> আরও নম্বর যোগ করুন
+                    </Button>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -366,13 +377,15 @@ export default function DailyTaskPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-12 text-lg font-bold shadow-lg"
+            className="w-full h-14 text-lg font-black uppercase tracking-widest shadow-2xl shadow-primary/20 rounded-xl transition-all hover:translate-y-[-2px] active:translate-y-[0px]"
           >
             {loading ? (
-              "সেভ করা হচ্ছে..."
+              <div className="flex items-center gap-2">
+                <Hourglass className="h-5 w-5 animate-spin" /> সেভ করা হচ্ছে...
+              </div>
             ) : (
               <>
-                <Save className="mr-2 h-5 w-5" /> ডেটা সেভ / আপডেট করুন
+                <Save className="mr-3 h-6 w-6" /> ডেটা সেভ / আপডেট করুন
               </>
             )}
           </Button>
@@ -380,4 +393,5 @@ export default function DailyTaskPage() {
       </div>
     </div>
   );
+
 }

@@ -112,25 +112,26 @@ export default function AdminReportsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-8 pb-20 animate-in fade-in duration-700">
       <PageHeader
         title="মাসিক রিপোর্টস"
         description="ছাত্রদের দৈনিক উপস্থিতি এবং টাস্ক প্রগ্রেস ট্র্যাক করুন।"
       />
 
-      {/* Filters */}
-      <Card className="bg-card/50 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap items-end gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-1">
-                <Calendar className="h-4 w-4" /> মাস
+      {/* Filters - Glassmorphism Card */}
+      <Card className="bg-card/40 backdrop-blur-xl border-white/5 shadow-2xl overflow-hidden relative group">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-indigo-500 to-primary/50 opacity-50" />
+        <CardContent className="pt-8">
+          <div className="flex flex-wrap items-end gap-6">
+            <div className="space-y-3">
+              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Calendar className="h-3.5 w-3.5 text-primary" /> মাস
               </label>
               <Select value={month} onValueChange={setMonth}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-[160px] bg-black/20 border-white/10 h-11 transition-all focus:ring-primary/20">
                   <SelectValue placeholder="মাস নির্বাচন করুন" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-900 border-white/10 text-slate-200">
                   {months.map((m) => (
                     <SelectItem key={m.value} value={m.value}>
                       {m.label}
@@ -140,15 +141,15 @@ export default function AdminReportsPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-1">
-                <Calendar className="h-4 w-4" /> বছর
+            <div className="space-y-3">
+              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Calendar className="h-3.5 w-3.5 text-indigo-400" /> বছর
               </label>
               <Select value={year} onValueChange={setYear}>
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[130px] bg-black/20 border-white/10 h-11 transition-all focus:ring-primary/20">
                   <SelectValue placeholder="বছর নির্বাচন করুন" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-900 border-white/10 text-slate-200">
                   {years.map((y) => (
                     <SelectItem key={y.value} value={y.value}>
                       {y.label}
@@ -158,15 +159,15 @@ export default function AdminReportsPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-1">
-                <Filter className="h-4 w-4" /> ব্যাচ
+            <div className="space-y-3">
+              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Filter className="h-3.5 w-3.5 text-emerald-400" /> ব্যাচ
               </label>
               <Select value={batchId} onValueChange={setBatchId}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-[220px] bg-black/20 border-white/10 h-11 transition-all focus:ring-primary/20">
                   <SelectValue placeholder="ব্যাচ নির্বাচন করুন" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-900 border-white/10 text-slate-200">
                   <SelectItem value="all">সকল ব্যাচ</SelectItem>
                   {batches.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
@@ -177,42 +178,58 @@ export default function AdminReportsPage() {
               </Select>
             </div>
 
-            <Button onClick={fetchReports} disabled={loading} className="gap-2">
-              <Search className="h-4 w-4" /> লোড করুন
+            <Button 
+              onClick={fetchReports} 
+              disabled={loading} 
+              className="gap-2 h-11 px-8 font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
+            >
+              <Search className="h-4 w-4" /> রিপোর্ট লোড করুন
             </Button>
 
-            <Button variant="outline" onClick={() => window.print()} className="gap-2 ml-auto">
-              <Download className="h-4 w-4" /> PDF ডাউনলোড
+            <Button 
+              variant="outline" 
+              onClick={() => window.print()} 
+              className="gap-2 h-11 px-6 border-white/10 bg-white/5 hover:bg-white/10 ml-auto transition-all"
+            >
+              <Download className="h-4 w-4" /> PDF এক্সপোর্ট
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Report Table */}
-      <Card className="overflow-hidden border-none shadow-xl bg-[#1e1e2f] text-white">
-        <CardHeader className="bg-[#1d253b] border-b border-slate-700 py-4">
-          <CardTitle className="text-lg font-light flex items-center justify-between">
-            <span>মাসিক রিপোর্ট: {months.find(m => m.value === month.padStart(2, "0"))?.label} {year}</span>
-            <Badge variant="outline" className="text-slate-400 border-slate-700">
-              Students: {reports.length}
-            </Badge>
+      {/* Report Table - High End Dark Style */}
+      <Card className="overflow-hidden border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-[#0f111a] text-slate-200 ring-1 ring-white/5">
+        <CardHeader className="bg-[#161926] border-b border-white/5 py-6 px-8">
+          <CardTitle className="text-xl font-black tracking-tight flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <Calendar className="h-6 w-6" />
+              </div>
+              <span>মাসিক রিপোর্ট: <span className="text-primary">{months.find(m => m.value === month.padStart(2, "0"))?.label} {year}</span></span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="bg-white/5 border-white/10 text-slate-400 font-bold px-3 py-1">
+                STUDENTS: {reports.length}
+              </Badge>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <ScrollArea className="w-full">
-            <div className="min-w-[1200px]">
+            <div className="min-w-[1400px]">
               <Table className="border-collapse">
                 <TableHeader>
-                  <TableRow className="bg-[#1d253b] hover:bg-[#1d253b] border-slate-700">
-                    <TableHead className="w-[180px] sticky left-0 z-30 bg-[#1d253b] text-slate-300 font-bold border-r border-slate-700">
-                      Student Name
+                  <TableRow className="bg-[#1c2033] hover:bg-[#1c2033] border-white/5">
+                    <TableHead className="w-[200px] sticky left-0 z-30 bg-[#1c2033] text-primary font-black uppercase tracking-tighter text-[11px] border-r border-white/5 shadow-[5px_0_15px_rgba(0,0,0,0.3)]">
+                      User Identity
                     </TableHead>
-                    <TableHead className="w-[120px] sticky left-[180px] z-30 bg-[#1d253b] text-slate-300 font-bold border-r border-slate-700">
-                      Activity
+                    <TableHead className="w-[130px] sticky left-[200px] z-30 bg-[#1c2033] text-slate-400 font-bold uppercase tracking-tighter text-[10px] border-r border-white/5 shadow-[5px_0_15px_rgba(0,0,0,0.2)]">
+                      Metric
                     </TableHead>
                     {dayHeaders.map((day) => (
-                      <TableHead key={day} className="text-center text-[10px] p-1 border-r border-slate-700 min-w-[40px] text-slate-400 uppercase">
-                        {day.toString().padStart(2, "0")} {months.find(m => m.value === month.padStart(2, "0"))?.label.slice(0, 3)}
+                      <TableHead key={day} className="text-center text-[9px] p-2 border-r border-white/5 min-w-[45px] text-slate-500 font-black uppercase tracking-widest">
+                        {day.toString().padStart(2, "0")}<br/>
+                        <span className="text-primary/50">{months.find(m => m.value === month.padStart(2, "0"))?.label.slice(0, 3)}</span>
                       </TableHead>
                     ))}
                   </TableRow>
@@ -220,43 +237,51 @@ export default function AdminReportsPage() {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={daysInMonth + 2} className="h-40 text-center text-slate-500">
-                        লোডিং হচ্ছে...
+                      <TableCell colSpan={daysInMonth + 2} className="h-64 text-center">
+                        <div className="flex flex-col items-center justify-center gap-4 opacity-50">
+                          <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                          <p className="font-black uppercase tracking-widest text-xs">Generating Report Grid...</p>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ) : reports.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={daysInMonth + 2} className="h-40 text-center text-slate-500">
-                        কোনো তথ্য পাওয়া যায়নি।
+                      <TableCell colSpan={daysInMonth + 2} className="h-64 text-center opacity-40">
+                         <Search className="h-12 w-12 mx-auto mb-4" />
+                         <p className="font-bold">No Data Found for Selection</p>
                       </TableCell>
                     </TableRow>
                   ) : (
                     reports.map((student) => {
                       const activityTypes = [
-                        { key: "attendance", label: "Attendance" },
-                        { key: "task_1", label: "Task-01" },
-                        { key: "task_2", label: "Task-02" },
-                        { key: "exam", label: "Exam" },
-                        { key: "progress", label: "Progress" },
+                        { key: "attendance", label: "ATTENDANCE" },
+                        { key: "task_1", label: "TASK-01" },
+                        { key: "task_2", label: "TASK-02" },
+                        { key: "exam", label: "EXAM DATA" },
+                        { key: "progress", label: "STABILITY" },
                       ];
 
                       return (
                         <React.Fragment key={student.uid}>
                           {activityTypes.map((activity, idx) => (
-                            <TableRow key={`${student.uid}-${activity.key}`} className="border-slate-700 hover:bg-[#32325d]/30 transition-colors">
+                            <TableRow key={`${student.uid}-${activity.key}`} className="border-white/5 hover:bg-white/[0.02] transition-colors group/row">
                               {idx === 0 && (
                                 <TableCell 
                                   rowSpan={5} 
-                                  className="sticky left-0 z-20 bg-[#2e3046] text-[#00f2c3] font-bold border-r border-slate-700 border-b-[3px] border-b-[#1e1e2f]"
+                                  className="sticky left-0 z-20 bg-[#161926] text-emerald-400 font-black border-r border-white/10 shadow-[5px_0_15px_rgba(0,0,0,0.3)] align-top pt-6"
                                 >
-                                  <div className="truncate w-[160px]">{student.name}</div>
-                                  <div className="text-[10px] text-slate-400 font-normal">Roll: {student.roll}</div>
+                                  <div className="truncate w-[170px] text-sm tracking-tight mb-1">{student.name}</div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] text-emerald-500/80 border border-emerald-500/20">
+                                      ROLL: {student.roll}
+                                    </div>
+                                  </div>
                                 </TableCell>
                               )}
                               <TableCell 
-                                className={`sticky left-[180px] z-20 border-r border-slate-700 text-xs ${
-                                  activity.key === "progress" ? "bg-[#1d253b] text-[#00f2c3] font-bold" : "bg-[#27293d] text-slate-400"
-                                }`}
+                                className={`sticky left-[200px] z-20 border-r border-white/5 text-[9px] font-black tracking-widest px-4 ${
+                                  activity.key === "progress" ? "bg-[#1c2033] text-primary" : "bg-[#111421] text-slate-500"
+                                } shadow-[5px_0_10px_rgba(0,0,0,0.2)]`}
                               >
                                 {activity.label}
                               </TableCell>
@@ -264,15 +289,17 @@ export default function AdminReportsPage() {
                                 const dateStr = `${year}-${month.padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
                                 const dayData = student.days[dateStr];
                                 
-                                if (!dayData) return <TableCell key={day} className="text-center text-slate-700">-</TableCell>;
+                                if (!dayData) return <TableCell key={day} className="text-center text-slate-800 font-bold border-r border-white/5 opacity-20">-</TableCell>;
 
                                 if (activity.key === "attendance") {
                                   return (
-                                    <TableCell key={day} className="text-center p-0 border-r border-slate-700">
+                                    <TableCell key={day} className="text-center p-0 border-r border-white/5">
                                       {dayData.attendance === "Yes" ? (
-                                        <CheckCircle2 className="h-4 w-4 mx-auto text-[#00f2c3]" />
+                                        <div className="h-full w-full flex items-center justify-center py-2 bg-emerald-500/5">
+                                           <CheckCircle2 className="h-4 w-4 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                                        </div>
                                       ) : (
-                                        <span className="text-slate-700">-</span>
+                                        <span className="text-slate-800 font-bold opacity-30">-</span>
                                       )}
                                     </TableCell>
                                   );
@@ -281,12 +308,12 @@ export default function AdminReportsPage() {
                                 if (activity.key === "task_1" || activity.key === "task_2") {
                                   const content = activity.key === "task_1" ? dayData.task_1 : dayData.task_2;
                                   return (
-                                    <TableCell key={day} className="text-center p-0 border-r border-slate-700">
+                                    <TableCell key={day} className={`text-center p-0 border-r border-white/5 ${content ? 'bg-indigo-500/5' : ''}`}>
                                       {content ? (
                                         <Button 
                                           variant="ghost" 
                                           size="icon" 
-                                          className="h-6 w-6 text-blue-400 hover:text-blue-300 hover:bg-transparent"
+                                          className="h-9 w-full rounded-none text-indigo-400 hover:text-white hover:bg-indigo-500/20 transition-all"
                                           onClick={() => setSelectedDetail({
                                             title: `${activity.label} - ${dateStr}`,
                                             content: content
@@ -295,7 +322,7 @@ export default function AdminReportsPage() {
                                           <FileText className="h-4 w-4" />
                                         </Button>
                                       ) : (
-                                        <span className="text-slate-700">-</span>
+                                        <span className="text-slate-800 font-bold opacity-30">-</span>
                                       )}
                                     </TableCell>
                                   );
@@ -304,12 +331,12 @@ export default function AdminReportsPage() {
                                 if (activity.key === "exam") {
                                   const hasExams = dayData.exams && dayData.exams.length > 0;
                                   return (
-                                    <TableCell key={day} className="text-center p-0 border-r border-slate-700">
+                                    <TableCell key={day} className={`text-center p-0 border-r border-white/5 ${hasExams ? 'bg-primary/5' : ''}`}>
                                       {hasExams ? (
                                         <Button 
                                           variant="ghost" 
                                           size="icon" 
-                                          className="h-6 w-6 text-[#00f2c3] hover:text-[#00f2c3]/80 hover:bg-transparent"
+                                          className="h-9 w-full rounded-none text-primary hover:text-white hover:bg-primary/20 transition-all"
                                           onClick={() => {
                                             const items = dayData.exams.map((link, i) => ({
                                               label: `Exam ${i+1}${dayData.marks[i] ? ` (Marks: ${dayData.marks[i]})` : ''}`,
@@ -325,16 +352,20 @@ export default function AdminReportsPage() {
                                           <CheckCircle2 className="h-4 w-4" />
                                         </Button>
                                       ) : (
-                                        <span className="text-slate-700">-</span>
+                                        <span className="text-slate-800 font-bold opacity-30">-</span>
                                       )}
                                     </TableCell>
                                   );
                                 }
 
                                 if (activity.key === "progress") {
+                                  const pColor = dayData.progress >= 100 ? 'bg-emerald-500/40 text-emerald-300' : 
+                                                 dayData.progress > 0 ? 'bg-amber-500/40 text-amber-300' : 'bg-slate-800/50 text-slate-600';
                                   return (
-                                    <TableCell key={day} className={`text-center p-0 text-[10px] font-bold border-r border-slate-700 ${getProgressColor(dayData.progress)}`}>
-                                      {dayData.progress}%
+                                    <TableCell key={day} className={`text-center p-0 border-r border-white/5`}>
+                                      <div className={`h-9 w-full flex items-center justify-center text-[8px] font-black ${pColor} transition-all`}>
+                                        {dayData.progress}%
+                                      </div>
                                     </TableCell>
                                   );
                                 }
@@ -343,9 +374,11 @@ export default function AdminReportsPage() {
                               })}
                             </TableRow>
                           ))}
-                          {/* Spacer row */}
-                          <TableRow className="h-2 bg-[#1e1e2f] hover:bg-[#1e1e2f] border-none">
-                            <TableCell colSpan={daysInMonth + 2}></TableCell>
+                          {/* Modern Separator row */}
+                          <TableRow className="h-3 bg-[#0a0c14] hover:bg-[#0a0c14] border-none">
+                            <TableCell colSpan={daysInMonth + 2} className="p-0">
+                               <div className="h-px w-full bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                            </TableCell>
                           </TableRow>
                         </React.Fragment>
                       );
@@ -358,32 +391,46 @@ export default function AdminReportsPage() {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
+      {/* Modern Dialog - Styled for Dark Theme */}
       <Dialog open={!!selectedDetail} onOpenChange={(open) => !open && setSelectedDetail(null)}>
-        <DialogContent className="bg-[#27293d] text-white border-slate-700">
-          <DialogHeader>
-            <DialogTitle className="text-[#00f2c3]">{selectedDetail?.title}</DialogTitle>
+        <DialogContent className="bg-[#161926] text-slate-200 border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] sm:max-w-lg">
+          <DialogHeader className="border-b border-white/5 pb-4">
+            <DialogTitle className="text-primary font-black tracking-tight flex items-center gap-3">
+               <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                 <FileText className="h-5 w-5" />
+               </div>
+               {selectedDetail?.title}
+            </DialogTitle>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-6">
             {selectedDetail?.items ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {selectedDetail.items.map((item, i) => (
-                  <div key={i} className="p-3 bg-[#2e3046] rounded-lg space-y-1">
-                    <p className="text-[#00f2c3] font-bold text-sm">{item.label}</p>
+                  <div key={i} className="p-4 bg-black/40 rounded-xl border border-white/5 group hover:border-primary/30 transition-all">
+                    <p className="text-primary font-black text-[10px] uppercase tracking-widest mb-2 opacity-70">{item.label}</p>
                     <a 
                       href={item.value} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-blue-400 text-xs break-all hover:underline"
+                      className="text-blue-400 text-sm break-all hover:text-blue-300 hover:underline flex items-center gap-2"
                     >
-                      {item.value}
+                      <Download className="h-3.5 w-3.5 shrink-0" /> {item.value}
                     </a>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-slate-300 whitespace-pre-wrap">{selectedDetail?.content}</p>
+              <div className="p-6 bg-black/40 rounded-xl border border-white/5">
+                 <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap selection:bg-primary selection:text-white">
+                   {selectedDetail?.content}
+                 </p>
+              </div>
             )}
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button onClick={() => setSelectedDetail(null)} variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10 h-10 px-8">
+              বন্ধ করুন
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
