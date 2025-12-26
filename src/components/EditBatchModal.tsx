@@ -43,10 +43,14 @@ export function EditBatchModal({
     if (batch) {
       formRef.current?.reset();
       setIsPublic(batch.is_public || false);
-      // If batch has an icon_url that's base64, show preview
-      if (batch.icon_url && batch.icon_url.startsWith("data:image")) {
+      // If batch has an icon_url, show preview
+      if (batch.icon_url) {
         setImagePreview(batch.icon_url);
-        setImageBase64(batch.icon_url);
+        if (batch.icon_url.startsWith("data:image")) {
+          setImageBase64(batch.icon_url);
+        } else {
+          setImageBase64(null); // It's a remote URL, not a new upload
+        }
       } else {
         setImagePreview(null);
         setImageBase64(null);

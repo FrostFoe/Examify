@@ -9,13 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { AlertBox, CustomLoader } from "@/components";
 import { Plus, ImageIcon, X } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { Question } from "@/lib/types";
 
 interface QuestionEditorProps {
@@ -307,101 +300,53 @@ export default function QuestionEditor({
               <Label htmlFor="subject" className="font-bold text-xs">
                 Subject
               </Label>
-              <Select
-                value={formData.subject || "none"}
-                onValueChange={(val) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    subject: val === "none" ? "" : val,
-                  }))
-                }
-              >
-                <SelectTrigger className="rounded-xl h-9 text-sm">
-                  <SelectValue placeholder="Select Subject" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="physics">Physics</SelectItem>
-                  <SelectItem value="chemistry">Chemistry</SelectItem>
-                  <SelectItem value="higher_math">Higher Math</SelectItem>
-                  <SelectItem value="biology">Biology</SelectItem>
-                  <SelectItem value="bangla">Bangla</SelectItem>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="ict">ICT</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                id="subject"
+                name="subject"
+                value={formData.subject || ""}
+                onChange={handleChange}
+                className="rounded-xl h-9 text-sm"
+                placeholder="e.g., Physics"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="paper" className="font-bold text-xs">
                 Paper
               </Label>
-              <Select
-                value={formData.paper || "none"}
-                onValueChange={(val) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    paper: val === "none" ? "" : val,
-                  }))
-                }
-              >
-                <SelectTrigger className="rounded-xl h-9 text-sm">
-                  <SelectValue placeholder="Select Paper" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="1st">1st Paper</SelectItem>
-                  <SelectItem value="2nd">2nd Paper</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                id="paper"
+                name="paper"
+                value={formData.paper || ""}
+                onChange={handleChange}
+                className="rounded-xl h-9 text-sm"
+                placeholder="e.g., 1st"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="chapter" className="font-bold text-xs">
                 Chapter
               </Label>
-              <Select
-                value={formData.chapter || "none"}
-                onValueChange={(val) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    chapter: val === "none" ? "" : val,
-                  }))
-                }
-              >
-                <SelectTrigger className="rounded-xl h-9 text-sm">
-                  <SelectValue placeholder="Select Chapter" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {Array.from({ length: 20 }, (_, i) => (
-                    <SelectItem key={i + 1} value={String(i + 1)}>
-                      Chapter {i + 1}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                id="chapter"
+                name="chapter"
+                value={formData.chapter || ""}
+                onChange={handleChange}
+                className="rounded-xl h-9 text-sm"
+                placeholder="e.g., 5"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="highlight" className="font-bold text-xs">
                 Highlight
               </Label>
-              <Select
-                value={formData.highlight || "none"}
-                onValueChange={(val) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    highlight: val === "none" ? "" : val,
-                  }))
-                }
-              >
-                <SelectTrigger className="rounded-xl h-9 text-sm">
-                  <SelectValue placeholder="Select Highlight" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="Board">Board</SelectItem>
-                  <SelectItem value="Admission">Admission</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                id="highlight"
+                name="highlight"
+                value={formData.highlight || ""}
+                onChange={handleChange}
+                className="rounded-xl h-9 text-sm"
+                placeholder="e.g., Admission"
+              />
             </div>
           </div>
 

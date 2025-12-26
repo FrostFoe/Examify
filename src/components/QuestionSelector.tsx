@@ -136,6 +136,11 @@ export default function QuestionSelector({
     }
   };
 
+  const uniqueSubjects = Array.from(new Set(questions.map((q) => q.subject).filter(Boolean)));
+  const uniquePapers = Array.from(new Set(questions.map((q) => q.paper).filter(Boolean)));
+  const uniqueChapters = Array.from(new Set(questions.map((q) => q.chapter).filter(Boolean)));
+  const uniqueHighlights = Array.from(new Set(questions.map((q) => q.highlight).filter(Boolean)));
+
   const selectedFile = files.find((f) => f.id === selectedFileId);
 
   return (
@@ -197,13 +202,9 @@ export default function QuestionSelector({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">সব বিষয়</SelectItem>
-                <SelectItem value="physics">Physics</SelectItem>
-                <SelectItem value="chemistry">Chemistry</SelectItem>
-                <SelectItem value="higher_math">Higher Math</SelectItem>
-                <SelectItem value="biology">Biology</SelectItem>
-                <SelectItem value="bangla">Bangla</SelectItem>
-                <SelectItem value="english">English</SelectItem>
-                <SelectItem value="ict">ICT</SelectItem>
+                {uniqueSubjects.map((s) => (
+                  <SelectItem key={s} value={s as string}>{s}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
@@ -216,8 +217,9 @@ export default function QuestionSelector({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">সব পত্র</SelectItem>
-                <SelectItem value="1st">1st Paper</SelectItem>
-                <SelectItem value="2nd">2nd Paper</SelectItem>
+                {uniquePapers.map((p) => (
+                  <SelectItem key={p} value={p as string}>{p}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
@@ -230,10 +232,8 @@ export default function QuestionSelector({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">সব অধ্যায়</SelectItem>
-                {Array.from({ length: 20 }, (_, i) => (
-                  <SelectItem key={i + 1} value={String(i + 1)}>
-                    Chapter {i + 1}
-                  </SelectItem>
+                {uniqueChapters.map((c) => (
+                  <SelectItem key={c} value={c as string}>{c}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -247,8 +247,9 @@ export default function QuestionSelector({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">সব হাইলাইট</SelectItem>
-                <SelectItem value="Board">Board</SelectItem>
-                <SelectItem value="Admission">Admission</SelectItem>
+                {uniqueHighlights.map((h) => (
+                  <SelectItem key={h} value={h as string}>{h}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

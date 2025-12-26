@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Exam, SubjectConfig } from "@/lib/types";
+import type { Exam, SubjectConfig, Question } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { updateExam } from "@/lib/actions";
 import { CSVUploadComponent, CustomLoader } from "@/components";
@@ -101,6 +101,7 @@ export function EditExamModal({
 }: EditExamModalProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
   const [mode, setMode] = useState<"live" | "practice">("live");
   const formRef = useRef<HTMLFormElement>(null);
   const [shuffle, setShuffle] = useState(false);
@@ -133,62 +134,105 @@ export function EditExamModal({
   } | null>(null);
 
   useEffect(() => {
-    if (exam) {
-      formRef.current?.reset();
-      setMode((exam?.is_practice ? "practice" : "live") as "live" | "practice");
-      setShuffle(exam?.shuffle_questions || false);
-      setIsCustomExam(!!exam.total_subjects && exam.total_subjects > 0);
-      setUseQuestionBank(!!(exam.question_ids && exam.question_ids.length > 0));
+    const initModal = async () => {
+      if (!exam || !isOpen) return;
 
-      const mSubs = normalizeSubjects(exam.mandatory_subjects, "mandatory");
-      const oSubs = normalizeSubjects(exam.optional_subjects, "optional");
+      setIsLoadingData(true);
+      try {
+        formRef.current?.reset();
+        setMode((exam?.is_practice ? "practice" : "live") as "live" | "practice");
+        setShuffle(exam?.shuffle_questions || false);
 
-      setMandatorySubjects(mSubs);
-      setOptionalSubjects(oSubs);
-
-      // Populate available subjects from existing config if not in the default list
-      const existingSubjects = [...mSubs, ...oSubs];
-      setAvailableSubjects((prev) => {
-        const combined = [...prev];
-        existingSubjects.forEach((s) => {
-          if (!combined.find((item) => item.id === s.id)) {
-            combined.push({ id: s.id, name: s.name || `Subject ${s.id}` });
+        // Fetch full exam details to get ALL questions if not present
+        let currentQuestions = exam.questions || [];
+        if (currentQuestions.length === 0 && exam.file_id) {
+          const fetched = await fetchQuestions(exam.file_id, exam.id);
+          if (Array.isArray(fetched)) {
+            // Map RawQuestion to Question
+            currentQuestions = fetched.map(q => ({
+              ...q,
+              id: String(q.id),
+              question: q.question || q.question_text || "",
+              options: q.options || [],
+              answer: q.answer || 0,
+            })) as Question[];
           }
+        }
+
+        const mSubs = normalizeSubjects(exam.mandatory_subjects, "mandatory");
+        const oSubs = normalizeSubjects(exam.optional_subjects, "optional");
+
+        // Sync counts from actual questions if they are 0
+        const syncCounts = (configs: SubjectConfig[]) => {
+          return configs.map(config => {
+            if (config.count && config.count > 0) return config;
+            
+            // Try to find questions for this section
+            const sectionQuestions = currentQuestions.filter(q => 
+              q.subject === config.id || 
+              q.subject === config.name ||
+              (config.question_ids && config.question_ids.includes(String(q.id)))
+            );
+            
+            if (sectionQuestions.length > 0) {
+              return {
+                ...config,
+                count: sectionQuestions.length,
+                question_ids: config.question_ids?.length ? config.question_ids : sectionQuestions.map(q => String(q.id))
+              };
+            }
+            return config;
+          });
+        };
+
+        const syncedM = syncCounts(mSubs);
+        const syncedO = syncCounts(oSubs);
+
+        const hasSections = syncedM.length > 0 || syncedO.length > 0;
+        setIsCustomExam((!!exam.total_subjects && exam.total_subjects > 0) || hasSections);
+        setUseQuestionBank(!!(exam.question_ids && exam.question_ids.length > 0) && !hasSections);
+
+        setMandatorySubjects(syncedM);
+        setOptionalSubjects(syncedO);
+
+        // Populate available subjects
+        const existingSubjects = [...syncedM, ...syncedO];
+        setAvailableSubjects((prev) => {
+          const combined = [...prev];
+          existingSubjects.forEach((s) => {
+            if (!combined.find((item) => item.id === s.id)) {
+              combined.push({ id: s.id, name: s.name || `Subject ${s.id}` });
+            }
+          });
+          return combined;
         });
-        return combined;
-      });
 
-      setSelectedQuestionIds(exam.question_ids || []);
+        setSelectedQuestionIds(exam.question_ids || []);
 
-      if (exam.start_at) {
-        const { date, hour, minute, period } = parseDhakaDateTime(
-          exam.start_at,
-        );
-        setStartDate(date);
-        setStartHour(hour);
-        setStartMinute(minute);
-        setStartPeriod(period);
-      } else {
-        setStartDate(undefined);
-        setStartHour("12");
-        setStartMinute("00");
-        setStartPeriod("AM");
+        if (exam.start_at) {
+          const { date, hour, minute, period } = parseDhakaDateTime(exam.start_at);
+          setStartDate(date);
+          setStartHour(hour);
+          setStartMinute(minute);
+          setStartPeriod(period);
+        }
+
+        if (exam.end_at) {
+          const { date, hour, minute, period } = parseDhakaDateTime(exam.end_at);
+          setEndDate(date);
+          setEndHour(hour);
+          setEndMinute(minute);
+          setEndPeriod(period);
+        }
+      } catch (err) {
+        console.error("Error initializing modal:", err);
+      } finally {
+        setIsLoadingData(false);
       }
+    };
 
-      if (exam.end_at) {
-        const { date, hour, minute, period } = parseDhakaDateTime(exam.end_at);
-        setEndDate(date);
-        setEndHour(hour);
-        setEndMinute(minute);
-        setEndPeriod(period);
-      } else {
-        setEndDate(undefined);
-        setEndHour("12");
-        setEndMinute("00");
-        setEndPeriod("AM");
-      }
-    }
-  }, [exam]);
+    initModal();
+  }, [exam, isOpen]);
 
   const handleNumberInput = (e: FormEvent<HTMLInputElement>) => {
     const input = e.target as HTMLInputElement;
@@ -291,7 +335,13 @@ export function EditExamModal({
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto">
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+            {isLoadingData ? (
+              <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <CustomLoader />
+                <p className="text-sm font-bold text-primary animate-pulse">তথ্য লোড হচ্ছে...</p>
+              </div>
+            ) : (
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="exam-name-edit">পরীক্ষার নাম</Label>
                 <Input
@@ -989,6 +1039,7 @@ export function EditExamModal({
                 {isSubmitting ? <CustomLoader minimal /> : "পরীক্ষা আপডেট করুন"}
               </Button>
             </form>
+            )}
           </div>
         </DialogContent>
       </Dialog>
