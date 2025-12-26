@@ -18,6 +18,7 @@ type AuthContextType = {
     redirectTo?: string,
   ) => Promise<void>;
   signOut: () => void;
+  setGuestUser: (user: User) => void;
   loading: boolean;
 };
 
@@ -95,6 +96,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setGuestUser = (userData: User) => {
+    setUser(userData);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user", JSON.stringify(userData));
+    }
+  };
+
   const signOut = () => {
     setUser(null);
 
@@ -110,6 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     signIn,
     signOut,
+    setGuestUser,
     loading,
   };
 

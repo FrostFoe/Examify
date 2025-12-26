@@ -76,6 +76,39 @@ if ($method === 'GET') {
         $user = $stmt->fetch();
         $user['enrolled_batches'] = json_decode($user['enrolled_batches'] ?? '[]', true);
         echo json_encode(['success' => true, 'data' => $user]);
+    } elseif ($action === 'guest-enroll') {
+        $name = $input['name'] ?? '';
+        $roll = $input['roll'] ?? '';
+        
+        if (empty($name) || empty($roll)) {
+            echo json_encode(['success' => false, 'message' => 'Name and Roll are required']);
+            exit;
+        }
+
+        // Check if student with this roll already exists
+        $stmt = $pdo->prepare("SELECT uid, name, roll, enrolled_batches, created_at FROM students WHERE roll = ?");
+        $stmt->execute([$roll]);
+        $user = $stmt->fetch();
+        
+        if ($user) {
+            $user['enrolled_batches'] = json_decode($user['enrolled_batches'] ?? '[]', true);
+            echo json_encode(['success' => true, 'data' => $user]);
+        } else {
+            $uid = uuidv4();
+            $pass = 'guest_' . bin2hex(random_bytes(4)); // Placeholder password
+            $enrolled_batches = json_encode([]);
+
+            $stmt = $pdo->prepare("INSERT INTO students (uid, name, roll, pass, enrolled_batches) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$uid, $name, $roll, $pass, $enrolled_batches]);
+            
+            $stmt = $pdo->prepare("SELECT uid, name, roll, enrolled_batches, created_at FROM students WHERE uid = ?");
+            $stmt->execute([$uid]);
+            $user = $stmt->fetch();
+            if ($user) {
+                $user['enrolled_batches'] = json_decode($user['enrolled_batches'] ?? '[]', true);
+            }
+            echo json_encode(['success' => true, 'data' => $user]);
+        }
     } elseif ($action === 'update') {
         $uid = $input['uid'] ?? '';
         

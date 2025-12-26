@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { apiRequest } from "@/lib/api";
 import {
   Card,
@@ -19,6 +19,7 @@ import {
   User as UserIcon,
   UserPlus,
   ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -165,6 +166,7 @@ export function UsersClient({
   const [selectedBatch, setSelectedBatch] = useState<string | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -319,14 +321,16 @@ export function UsersClient({
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "1");
-    if (searchTerm) {
-      params.set("search", searchTerm);
-    } else {
-      params.delete("search");
-    }
-    router.push(`/admin/users?${params.toString()}`);
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", "1");
+      if (searchTerm) {
+        params.set("search", searchTerm);
+      } else {
+        params.delete("search");
+      }
+      router.push(`/admin/users?${params.toString()}`);
+    });
   };
 
   return (
@@ -340,11 +344,14 @@ export function UsersClient({
           সেটিংস-এ ফিরে যান
         </Link>
       </div>
-      <Card>
+      <Card className={isPending ? "opacity-60 transition-opacity" : ""}>
         <CardHeader>
           <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
             <div>
-              <CardTitle>ব্যবহারকারীগণ</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                ব্যবহারকারীগণ
+                {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              </CardTitle>
               <CardDescription>
                 আপনার প্ল্যাটফর্মে সমস্ত নিবন্ধিত ব্যবহারকারীদের পরিচালনা করুন।
               </CardDescription>

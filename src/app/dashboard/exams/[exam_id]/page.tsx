@@ -23,6 +23,8 @@ import {
   DialogDescription as DialogDescriptionComponent,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -87,6 +89,95 @@ const subjectsMap: { [key: string]: string } = {
 };
 
 const getSubjectName = (id: string) => subjectsMap[id] || id;
+
+function GuestIdentificationScreen({
+  onIdentify,
+  examName,
+}: {
+  onIdentify: (user: User) => void;
+  examName: string;
+}) {
+  const [name, setName] = useState("");
+  const [roll, setRoll] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !roll.trim()) {
+      toast({ title: "নাম এবং রোল দিন", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await apiRequest<User>(
+        "students",
+        "POST",
+        { name, roll },
+        { action: "guest-enroll" },
+      );
+
+      if (result.success && result.data) {
+        onIdentify(result.data);
+      } else {
+        toast({
+          title: "ব্যর্থ হয়েছে",
+          description: result.message || "অনুগ্রহ করে আবার চেষ্টা করুন",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "ত্রুটি",
+        description: "সার্ভারের সাথে যোগাযোগ করা যাচ্ছে না",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-4 flex items-center justify-center min-h-[80vh]">
+      <Card className="w-full max-w-md shadow-xl border-t-4 border-primary">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">আপনার পরিচয় দিন</CardTitle>
+          <CardDescription>
+            {examName} - এ অংশগ্রহণের জন্য আপনার নাম ও রোল দিন।
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">আপনার নাম</Label>
+              <Input
+                id="name"
+                placeholder="যেমন: আবরার আহমেদ"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="roll">রোল নম্বর / ফোন</Label>
+              <Input
+                id="roll"
+                placeholder="যেমন: ১০১ বা ০১৭..."
+                value={roll}
+                onChange={(e) => setRoll(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <CustomLoader minimal /> : "এগিয়ে যান"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 function SubjectSelectionScreen({
   exam,
@@ -328,7 +419,7 @@ export default function TakeExamPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, loading: authContextLoading } = useAuth();
+  const { user, loading: authContextLoading, setGuestUser } = useAuth();
   const exam_id = params.exam_id as string;
   const { toast } = useToast();
 
@@ -346,6 +437,7 @@ export default function TakeExamPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isPublicExam, setIsPublicExam] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
@@ -745,6 +837,7 @@ export default function TakeExamPage() {
           batchResult.data &&
           batchResult.data.is_public
         ) {
+          setIsPublicExam(true);
           setIsAuthorized(true);
           return;
         }
@@ -993,6 +1086,17 @@ export default function TakeExamPage() {
       <div className="flex items-center justify-center min-h-screen">
         <CustomLoader />
       </div>
+    );
+  }
+
+  if (isPublicExam && !user?.uid && !examStarted) {
+    return (
+      <GuestIdentificationScreen
+        examName={exam?.name || "পরীক্ষা"}
+        onIdentify={(userData) => {
+          setGuestUser(userData);
+        }}
+      />
     );
   }
 
