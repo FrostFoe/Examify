@@ -22,6 +22,16 @@ import {
   DialogTitle,
   DialogDescription as DialogDescriptionComponent,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -119,6 +129,8 @@ function GuestIdentificationScreen({
       );
 
       if (result.success && result.data) {
+        // Persist guest session
+        sessionStorage.setItem("guest_user", JSON.stringify(result.data));
         onIdentify(result.data);
       } else {
         toast({
@@ -441,10 +453,24 @@ export default function TakeExamPage() {
   const [authLoading, setAuthLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [examStarted, setExamStarted] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
   const [orderedSubjects, setOrderedSubjects] = useState<string[]>([]);
+  const [endTime, setEndTime] = useState<number | null>(null);
+
+  // Restore guest session
+  useEffect(() => {
+    const savedGuest = sessionStorage.getItem("guest_user");
+    if (savedGuest && !user) {
+      try {
+        setGuestUser(JSON.parse(savedGuest));
+      } catch (e) {
+        console.error("Failed to restore guest session", e);
+      }
+    }
+  }, [user, setGuestUser]);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -591,7 +617,7 @@ export default function TakeExamPage() {
     } else {
       setSelectedSubject("all");
     }
-    setTimeLeft((exam.duration_minutes || 0) * 60);
+    // setTimeLeft handled by effect
     setExamStarted(true);
   };
 
@@ -722,6 +748,12 @@ export default function TakeExamPage() {
         ? `exam_answers_${user.uid}_${exam_id}`
         : `exam_answers_anonymous_${exam_id}`;
 
+      // Clear progress storage
+      if (user?.uid) {
+        localStorage.removeItem(`exam_static_${user.uid}_${exam_id}`);
+        localStorage.removeItem(`exam_answers_prog_${user.uid}_${exam_id}`);
+      }
+
       const dataToStore = {
         answers: selectedAnswers,
         score: totalScore,
@@ -748,19 +780,116 @@ export default function TakeExamPage() {
     searchParams,
   ]);
 
+  // Restore exam progress
   useEffect(() => {
-    if (!submitted && timeLeft !== null && !isSubmitting && examStarted) {
-      if (timeLeft <= 1) {
-        handleSubmitExam();
+    if (!user?.uid || !exam_id || !exam) return;
+
+    const staticKey = `exam_static_${user.uid}_${exam_id}`;
+    const answersKey = `exam_answers_prog_${user.uid}_${exam_id}`;
+
+    try {
+      const staticDataStr = localStorage.getItem(staticKey);
+      const answersDataStr = localStorage.getItem(answersKey);
+
+      if (staticDataStr) {
+        const staticData = JSON.parse(staticDataStr);
+        if (staticData.questions) setQuestions(staticData.questions);
+        if (staticData.orderedSubjects)
+          setOrderedSubjects(staticData.orderedSubjects);
+        if (staticData.endTime) setEndTime(staticData.endTime);
+        if (staticData.examStarted) setExamStarted(true);
+        if (staticData.selectedSubject)
+          setSelectedSubject(staticData.selectedSubject);
       }
 
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => (prev !== null ? prev - 1 : null));
-      }, 1000);
+      if (answersDataStr) {
+        const answersData = JSON.parse(answersDataStr);
+        if (answersData) setSelectedAnswers(answersData);
+      }
+      
+      if (staticDataStr || answersDataStr) {
+          toast({ title: "পরীক্ষা পুনরুদ্ধার করা হয়েছে" });
+      }
+    } catch (e) {
+      console.error("Failed to restore progress", e);
+    }
+  }, [user?.uid, exam_id, exam]);
+
+  // Save static progress (Questions, Order, EndTime)
+  useEffect(() => {
+    if (!user?.uid || !exam_id || !examStarted) return;
+    const staticKey = `exam_static_${user.uid}_${exam_id}`;
+    const data = {
+      questions,
+      orderedSubjects,
+      endTime,
+      examStarted: true,
+      selectedSubject,
+    };
+    localStorage.setItem(staticKey, JSON.stringify(data));
+  }, [
+    user?.uid,
+    exam_id,
+    examStarted,
+    questions,
+    orderedSubjects,
+    endTime,
+    selectedSubject,
+  ]);
+
+  // Save answers progress (Frequent)
+  useEffect(() => {
+    if (!user?.uid || !exam_id || !examStarted) return;
+    const answersKey = `exam_answers_prog_${user.uid}_${exam_id}`;
+    localStorage.setItem(answersKey, JSON.stringify(selectedAnswers));
+  }, [user?.uid, exam_id, examStarted, selectedAnswers]);
+
+  // Timer Logic
+  useEffect(() => {
+    if (
+      !submitted &&
+      !isSubmitting &&
+      examStarted &&
+      exam?.duration_minutes && 
+      exam.duration_minutes > 0
+    ) {
+      // Initialize endTime if not set (First start)
+      if (endTime === null) {
+        // If we are here, it means we started the exam but haven't set an endTime yet (fresh start)
+        // Check if there is a previously saved end time that we missed? (Should be caught by restore effect)
+        // So we can safely set a new one.
+        const durationMs = exam.duration_minutes * 60 * 1000;
+        setEndTime(Date.now() + durationMs);
+        return;
+      }
+
+      const updateTimer = () => {
+        const now = Date.now();
+        const diff = endTime - now;
+        if (diff <= 0) {
+          setTimeLeft(0);
+          // Only submit if we haven't already
+          if (!isSubmitting && !submitted) {
+             handleSubmitExam();
+          }
+        } else {
+          setTimeLeft(Math.floor(diff / 1000));
+        }
+      };
+
+      updateTimer();
+      const timer = setInterval(updateTimer, 1000);
 
       return () => clearInterval(timer);
     }
-  }, [submitted, timeLeft, isSubmitting, examStarted, handleSubmitExam]);
+  }, [
+    submitted,
+    isSubmitting,
+    examStarted,
+    exam,
+    endTime,
+    handleSubmitExam,
+  ]);
 
   const showTimeWarning = useMemo(() => {
     if (timeLeft === null || exam?.duration_minutes === undefined) return false;
@@ -1212,7 +1341,7 @@ export default function TakeExamPage() {
         return;
       }
       setQuestions(allQuestions);
-      setTimeLeft((exam?.duration_minutes || 0) * 60);
+      // setTimeLeft handled by effect
       setExamStarted(true);
     };
 
@@ -1579,7 +1708,7 @@ export default function TakeExamPage() {
                   </Button>
                 ) : (
                   <Button
-                    onClick={handleSubmitExam}
+                    onClick={() => setShowSubmitDialog(true)}
                     disabled={isSubmitting}
                     className="flex-1 h-10 px-2 text-xs md:text-sm shadow-lg shadow-primary/20"
                   >
@@ -1679,6 +1808,24 @@ export default function TakeExamPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>আপনি কি নিশ্চিত?</AlertDialogTitle>
+            <AlertDialogDescription>
+              আপনি {questions.length} টির মধ্যে {attemptedCount} টি প্রশ্নের
+              উত্তর দিয়েছেন। জমা দেওয়ার পর আপনি আর পরিবর্তন করতে পারবেন না।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ফিরে যান</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSubmitExam}>
+              জমা দিন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
