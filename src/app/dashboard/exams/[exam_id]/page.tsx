@@ -639,7 +639,8 @@ export default function TakeExamPage() {
 
   const isLastPageOfExam =
     currentPageIndex === totalPages - 1 &&
-    uniqueSubjects.indexOf(selectedSubject) === uniqueSubjects.length - 1;
+    (selectedSubject === "all" ||
+      uniqueSubjects.indexOf(selectedSubject) === uniqueSubjects.length - 1);
 
   const handleSubmitExam = useCallback(async () => {
     setIsSubmitting(true);
@@ -1022,12 +1023,32 @@ export default function TakeExamPage() {
         setAllQuestions(finalQuestions);
 
         if (!examData.total_subjects) {
-          // Standard exam: shuffle globally if enabled
-          setQuestions(
-            examData.shuffle_questions
-              ? shuffleArray(finalQuestions)
-              : finalQuestions,
-          );
+          // Standard exam: shuffle by subject if enabled to keep sections intact
+          if (examData.shuffle_questions) {
+            const groups: { [key: string]: Question[] } = {};
+            const subjectOrder: string[] = [];
+
+            finalQuestions.forEach((q) => {
+              const subj = q.subject || "General";
+              if (!groups[subj]) {
+                groups[subj] = [];
+                subjectOrder.push(subj);
+              }
+              groups[subj].push(q);
+            });
+
+            let shuffledAndGrouped: Question[] = [];
+            subjectOrder.forEach((subj) => {
+              shuffledAndGrouped = [
+                ...shuffledAndGrouped,
+                ...shuffleArray(groups[subj]),
+              ];
+            });
+
+            setQuestions(shuffledAndGrouped);
+          } else {
+            setQuestions(finalQuestions);
+          }
         }
       } else {
         toast({
@@ -1533,7 +1554,8 @@ export default function TakeExamPage() {
                   onClick={handlePrevPage}
                   disabled={
                     (currentPageIndex === 0 &&
-                      uniqueSubjects.indexOf(selectedSubject) === 0) ||
+                      (selectedSubject === "all" ||
+                        uniqueSubjects.indexOf(selectedSubject) === 0)) ||
                     isSubmitting
                   }
                   className="flex-1 h-10 px-2 text-xs md:text-sm"
