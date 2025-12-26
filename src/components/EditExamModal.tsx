@@ -682,7 +682,7 @@ export function EditExamModal({
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
                               <Input
-                                className="h-8 font-semibold text-sm"
+                                className="h-8 font-semibold text-sm bg-background border border-input"
                                 value={subject.name || ""}
                                 onChange={(e) =>
                                   updateSubjectConfig(
@@ -746,7 +746,7 @@ export function EditExamModal({
                                     )
                                   }
                                 />
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">questions</span>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">টি প্রশ্ন</span>
                               </div>
                               
                               <Button
@@ -762,14 +762,14 @@ export function EditExamModal({
                                 }
                               >
                                 <ListChecks className="w-3 h-3 mr-1" />
-                                Select ({subject.question_ids?.length || 0})
+                                প্রশ্ন বাছুন ({subject.question_ids?.length || 0})
                               </Button>
 
                               <Button
                                 type="button"
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                                className="h-8 text-xs border-dashed"
                                 onClick={() => {
                                   setMandatorySubjects((prev) => prev.filter((s) => s.id !== subject.id));
                                   setOptionalSubjects((prev) => [...prev, { ...subject, type: "optional" }]);
@@ -777,7 +777,7 @@ export function EditExamModal({
                                 title="Move to Optional"
                               >
                                 <ArrowDown className="w-3 h-3 mr-1" />
-                                Optional
+                                ঐচ্ছিক করুন
                               </Button>
                               
                               <Button
@@ -817,7 +817,7 @@ export function EditExamModal({
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
                               <Input
-                                className="h-8 font-semibold text-sm"
+                                className="h-8 font-semibold text-sm bg-background border border-input"
                                 value={subject.name || ""}
                                 onChange={(e) =>
                                   updateSubjectConfig(
@@ -881,7 +881,7 @@ export function EditExamModal({
                                     )
                                   }
                                 />
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">questions</span>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">টি প্রশ্ন</span>
                               </div>
                               
                               <Button
@@ -897,14 +897,14 @@ export function EditExamModal({
                                 }
                               >
                                 <ListChecks className="w-3 h-3 mr-1" />
-                                Select ({subject.question_ids?.length || 0})
+                                প্রশ্ন বাছুন ({subject.question_ids?.length || 0})
                               </Button>
 
                               <Button
                                 type="button"
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                                className="h-8 text-xs border-dashed"
                                 onClick={() => {
                                   setOptionalSubjects((prev) => prev.filter((s) => s.id !== subject.id));
                                   setMandatorySubjects((prev) => [...prev, { ...subject, type: "mandatory" }]);
@@ -912,7 +912,7 @@ export function EditExamModal({
                                 title="Move to Mandatory"
                               >
                                 <ArrowUp className="w-3 h-3 mr-1" />
-                                Mandatory
+                                বাধ্যতামূলক করুন
                               </Button>
                               
                               <Button
@@ -973,7 +973,7 @@ export function EditExamModal({
                       }}
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Create Custom
+                      কাস্টম সেকশন তৈরি করুন
                     </Button>
                   </div>
                 </div>
