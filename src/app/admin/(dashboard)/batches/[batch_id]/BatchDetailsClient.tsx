@@ -4,6 +4,7 @@ import { useState, useRef, type FormEvent, useEffect } from "react";
 import { apiRequest } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -45,7 +46,7 @@ import { useToast } from "@/hooks/use-toast";
 import ConfirmPasswordDialog from "@/components/ConfirmPasswordDialog";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import type { Batch, Exam, User, SubjectConfig } from "@/lib/types";
-import { PlusCircle, ListChecks } from "lucide-react";
+import { PlusCircle, ListChecks, ArrowUp, ArrowDown, Trash2, Plus } from "lucide-react";
 import { EditExamModal } from "@/components/EditExamModal";
 import { CSVUploadComponent, CustomLoader } from "@/components";
 import QuestionSelector from "@/components/QuestionSelector";
@@ -196,57 +197,6 @@ export function BatchDetailsClient({
   const handleNumberInput = (e: FormEvent<HTMLInputElement>) => {
     const input = e.target as HTMLInputElement;
     input.value = bengaliToEnglishNumber(input.value);
-  };
-
-  const handleSubjectToggle = (
-    subjectId: string,
-    type: "mandatory" | "optional",
-    checked: boolean,
-  ) => {
-    const subject = availableSubjects.find((s) => s.id === subjectId);
-    if (type === "mandatory") {
-      if (checked) {
-        setOptionalSubjectConfigs((prev) =>
-          prev.filter((s) => s.id !== subjectId),
-        );
-      }
-      setMandatorySubjectConfigs((prev) => {
-        if (checked) {
-          return [
-            ...prev,
-            {
-              id: subjectId,
-              name: subject?.name || `Subject ${subjectId}`,
-              count: 0,
-              question_ids: [],
-              type: "mandatory",
-            },
-          ];
-        }
-        return prev.filter((s) => s.id !== subjectId);
-      });
-    } else {
-      if (checked) {
-        setMandatorySubjectConfigs((prev) =>
-          prev.filter((s) => s.id !== subjectId),
-        );
-      }
-      setOptionalSubjectConfigs((prev) => {
-        if (checked) {
-          return [
-            ...prev,
-            {
-              id: subjectId,
-              name: subject?.name || `Subject ${subjectId}`,
-              count: 0,
-              question_ids: [],
-              type: "optional",
-            },
-          ];
-        }
-        return prev.filter((s) => s.id !== subjectId);
-      });
-    }
   };
 
   const updateSubjectConfig = (
@@ -883,7 +833,7 @@ export function BatchDetailsClient({
                   </div>
 
                   {isCustomExam && (
-                    <div className="space-y-4 p-4 border rounded-md">
+                    <div className="space-y-4 p-4 border rounded-md bg-background/50">
                       <div className="space-y-2">
                         <Label htmlFor="total_subjects">মোট বিষয়</Label>
                         <Input
@@ -897,235 +847,319 @@ export function BatchDetailsClient({
                         />
                       </div>
 
+                      {/* Mandatory Sections */}
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-base font-bold">
-                            দাগানো বাধ্যতামূলক (Mandatory)
-                          </Label>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="text-xs h-7"
-                            onClick={() => {
-                              const newId = `custom_${Date.now()}`;
-                              setAvailableSubjects((prev) => [
-                                ...prev,
-                                { id: newId, name: "নতুন বিষয়" },
-                              ]);
-                            }}
-                          >
-                            নতুন বিষয় যোগ করুন
-                          </Button>
-                        </div>
+                        <Label className="text-base font-bold flex items-center justify-between">
+                          <span>বাধ্যতামূলক বিষয় (Mandatory)</span>
+                          <Badge variant="secondary">{mandatorySubjectConfigs.length}</Badge>
+                        </Label>
                         <div className="space-y-3">
-                          {availableSubjects.map((subject) => {
-                            const isSelected = mandatorySubjectConfigs.some(
-                              (s) => s.id === subject.id,
-                            );
-                            const config = mandatorySubjectConfigs.find(
-                              (s) => s.id === subject.id,
-                            );
-
-                            return (
-                              <div
-                                key={`mandatory-batch-${subject.id}`}
-                                className={`p-3 rounded-lg border ${isSelected ? "bg-primary/5 border-primary/20" : "bg-background"}`}
-                              >
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <Checkbox
-                                    id={`mandatory-batch-${subject.id}`}
-                                    value={subject.id}
-                                    checked={isSelected}
-                                    onCheckedChange={(checked) =>
-                                      handleSubjectToggle(
+                          {mandatorySubjectConfigs.map((subject, index) => (
+                            <div
+                              key={`mandatory-item-${subject.id}`}
+                              className="p-3 rounded-lg border bg-background relative group hover:border-primary/50 transition-colors"
+                            >
+                              <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
+                                  <Input
+                                    className="h-9 font-bold text-sm bg-background border-2 border-primary/20 focus:border-primary transition-all"
+                                    value={subject.name || ""}
+                                    onChange={(e) =>
+                                      updateSubjectConfig(
                                         subject.id,
                                         "mandatory",
-                                        checked as boolean,
+                                        "name",
+                                        e.target.value,
                                       )
                                     }
+                                    placeholder="সেকশনের নাম লিখুন (যেমন: পদার্থবিজ্ঞান)"
                                   />
-                                  <Input
-                                    className="h-8 font-semibold text-sm border-none bg-transparent focus-visible:ring-0 p-0"
-                                    value={
-                                      config?.name ||
-                                      availableSubjects.find(
-                                        (s) => s.id === subject.id,
-                                      )?.name
-                                    }
-                                    onChange={(e) => {
-                                      const newName = e.target.value;
-                                      setAvailableSubjects((prev) =>
-                                        prev.map((s) =>
-                                          s.id === subject.id
-                                            ? { ...s, name: newName }
-                                            : s,
-                                        ),
-                                      );
-                                      if (config) {
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      disabled={index === 0}
+                                      onClick={() => {
+                                        setMandatorySubjectConfigs((prev) => {
+                                          const newArr = [...prev];
+                                          [newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]];
+                                          return newArr;
+                                        });
+                                      }}
+                                      title="উপরে নিন"
+                                    >
+                                      <ArrowUp className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      disabled={index === mandatorySubjectConfigs.length - 1}
+                                      onClick={() => {
+                                        setMandatorySubjectConfigs((prev) => {
+                                          const newArr = [...prev];
+                                          [newArr[index], newArr[index + 1]] = [newArr[index + 1], newArr[index]];
+                                          return newArr;
+                                        });
+                                      }}
+                                      title="নিচে নিন"
+                                    >
+                                      <ArrowDown className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex flex-wrap items-center gap-3 pl-8 mt-1">
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      type="number"
+                                      placeholder="Count"
+                                      className="h-8 w-20 text-xs border-dashed"
+                                      value={subject.count || 0}
+                                      onChange={(e) =>
                                         updateSubjectConfig(
                                           subject.id,
                                           "mandatory",
-                                          "name",
-                                          newName,
-                                        );
+                                          "count",
+                                          parseInt(e.target.value) || 0,
+                                        )
                                       }
-                                    }}
-                                  />
-                                </div>
-
-                                {isSelected && config && (
-                                  <div className="pl-6 space-y-2">
-                                    <div className="flex items-center gap-2">
-                                      <Input
-                                        type="number"
-                                        placeholder="প্রশ্ন সংখ্যা"
-                                        className="h-8 w-32 text-xs"
-                                        value={config.count || ""}
-                                        onChange={(e) =>
-                                          updateSubjectConfig(
-                                            subject.id,
-                                            "mandatory",
-                                            "count",
-                                            parseInt(e.target.value) || 0,
-                                          )
-                                        }
-                                      />
-                                      <span className="text-xs text-muted-foreground">
-                                        টি প্রশ্ন
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 text-xs"
-                                        onClick={() =>
-                                          setActiveSubjectSelection({
-                                            id: subject.id,
-                                            type: "mandatory",
-                                          })
-                                        }
-                                      >
-                                        <ListChecks className="w-3 h-3 mr-1" />
-                                        প্রশ্ন বাছুন (
-                                        {config.question_ids?.length || 0})
-                                      </Button>
-                                    </div>
+                                    />
+                                    <span className="text-xs text-muted-foreground whitespace-nowrap">টি প্রশ্ন</span>
                                   </div>
-                                )}
+                                  
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 text-xs bg-primary/5 hover:bg-primary/10"
+                                    onClick={() =>
+                                      setActiveSubjectSelection({
+                                        id: subject.id,
+                                        type: "mandatory",
+                                      })
+                                    }
+                                  >
+                                    <ListChecks className="w-3 h-3 mr-1 text-primary" />
+                                    প্রশ্ন বাছুন ({subject.question_ids?.length || 0})
+                                  </Button>
+
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 text-xs border-dashed border-amber-500/50 text-amber-600 hover:bg-amber-50"
+                                    onClick={() => {
+                                      setMandatorySubjectConfigs((prev) => prev.filter((s) => s.id !== subject.id));
+                                      setOptionalSubjectConfigs((prev) => [...prev, { ...subject, type: "optional" }]);
+                                    }}
+                                    title="Move to Optional"
+                                  >
+                                    <ArrowDown className="w-3 h-3 mr-1" />
+                                    ঐচ্ছিক করুন
+                                  </Button>
+                                  
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive hover:bg-destructive/10 ml-auto"
+                                    onClick={() => setMandatorySubjectConfigs((prev) => prev.filter((s) => s.id !== subject.id))}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
-                            );
-                          })}
+                            </div>
+                          ))}
+                          {mandatorySubjectConfigs.length === 0 && (
+                            <div className="text-center p-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
+                              বাধ্যতামূলক কোনো সেকশন যোগ করা হয়নি।
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                        <Label className="text-base font-bold">
-                          অন্যান্য বিষয় (Optional)
+                      {/* Optional Sections */}
+                      <div className="space-y-4 pt-4 border-t">
+                        <Label className="text-base font-bold flex items-center justify-between">
+                          <span>অন্যান্য বিষয় (Optional)</span>
+                          <Badge variant="secondary">{optionalSubjectConfigs.length}</Badge>
                         </Label>
                         <div className="space-y-3">
-                          {availableSubjects.map((subject) => {
-                            const isSelected = optionalSubjectConfigs.some(
-                              (s) => s.id === subject.id,
-                            );
-                            const config = optionalSubjectConfigs.find(
-                              (s) => s.id === subject.id,
-                            );
-
-                            return (
-                              <div
-                                key={`optional-batch-${subject.id}`}
-                                className={`p-3 rounded-lg border ${isSelected ? "bg-secondary/5 border-secondary/20" : "bg-background"}`}
-                              >
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <Checkbox
-                                    id={`optional-batch-${subject.id}`}
-                                    value={subject.id}
-                                    checked={isSelected}
-                                    onCheckedChange={(checked) =>
-                                      handleSubjectToggle(
+                          {optionalSubjectConfigs.map((subject, index) => (
+                            <div
+                              key={`optional-item-${subject.id}`}
+                              className="p-3 rounded-lg border bg-secondary/5 relative group hover:border-secondary/50 transition-colors"
+                            >
+                              <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
+                                  <Input
+                                    className="h-9 font-bold text-sm bg-background border-2 border-secondary/20 focus:border-secondary transition-all"
+                                    value={subject.name || ""}
+                                    onChange={(e) =>
+                                      updateSubjectConfig(
                                         subject.id,
                                         "optional",
-                                        checked as boolean,
+                                        "name",
+                                        e.target.value,
                                       )
                                     }
+                                    placeholder="সেকশনের নাম লিখুন"
                                   />
-                                  <Input
-                                    className="h-8 font-semibold text-sm border-none bg-transparent focus-visible:ring-0 p-0"
-                                    value={
-                                      config?.name ||
-                                      availableSubjects.find(
-                                        (s) => s.id === subject.id,
-                                      )?.name
-                                    }
-                                    onChange={(e) => {
-                                      const newName = e.target.value;
-                                      setAvailableSubjects((prev) =>
-                                        prev.map((s) =>
-                                          s.id === subject.id
-                                            ? { ...s, name: newName }
-                                            : s,
-                                        ),
-                                      );
-                                      if (config) {
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      disabled={index === 0}
+                                      onClick={() => {
+                                        setOptionalSubjectConfigs((prev) => {
+                                          const newArr = [...prev];
+                                          [newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]];
+                                          return newArr;
+                                        });
+                                      }}
+                                      title="উপরে নিন"
+                                    >
+                                      <ArrowUp className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      disabled={index === optionalSubjectConfigs.length - 1}
+                                      onClick={() => {
+                                        setOptionalSubjectConfigs((prev) => {
+                                          const newArr = [...prev];
+                                          [newArr[index], newArr[index + 1]] = [newArr[index + 1], newArr[index]];
+                                          return newArr;
+                                        });
+                                      }}
+                                      title="নিচে নিন"
+                                    >
+                                      <ArrowDown className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex flex-wrap items-center gap-3 pl-8 mt-1">
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      type="number"
+                                      placeholder="Count"
+                                      className="h-8 w-20 text-xs border-dashed"
+                                      value={subject.count || 0}
+                                      onChange={(e) =>
                                         updateSubjectConfig(
                                           subject.id,
                                           "optional",
-                                          "name",
-                                          newName,
-                                        );
+                                          "count",
+                                          parseInt(e.target.value) || 0,
+                                        )
                                       }
-                                    }}
-                                  />
-                                </div>
-
-                                {isSelected && config && (
-                                  <div className="pl-6 space-y-2">
-                                    <div className="flex items-center gap-2">
-                                      <Input
-                                        type="number"
-                                        placeholder="প্রশ্ন সংখ্যা"
-                                        className="h-8 w-32 text-xs"
-                                        value={config.count || ""}
-                                        onChange={(e) =>
-                                          updateSubjectConfig(
-                                            subject.id,
-                                            "optional",
-                                            "count",
-                                            parseInt(e.target.value) || 0,
-                                          )
-                                        }
-                                      />
-                                      <span className="text-xs text-muted-foreground">
-                                        টি প্রশ্ন
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 text-xs"
-                                        onClick={() =>
-                                          setActiveSubjectSelection({
-                                            id: subject.id,
-                                            type: "optional",
-                                          })
-                                        }
-                                      >
-                                        <ListChecks className="w-3 h-3 mr-1" />
-                                        প্রশ্ন বাছুন (
-                                        {config.question_ids?.length || 0})
-                                      </Button>
-                                    </div>
+                                    />
+                                    <span className="text-xs text-muted-foreground whitespace-nowrap">টি প্রশ্ন</span>
                                   </div>
-                                )}
+                                  
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 text-xs bg-secondary/10 hover:bg-secondary/20"
+                                    onClick={() =>
+                                      setActiveSubjectSelection({
+                                        id: subject.id,
+                                        type: "optional",
+                                      })
+                                    }
+                                  >
+                                    <ListChecks className="w-3 h-3 mr-1 text-secondary-foreground" />
+                                    প্রশ্ন বাছুন ({subject.question_ids?.length || 0})
+                                  </Button>
+
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 text-xs border-dashed border-emerald-500/50 text-emerald-600 hover:bg-emerald-50"
+                                    onClick={() => {
+                                      setOptionalSubjectConfigs((prev) => prev.filter((s) => s.id !== subject.id));
+                                      setMandatorySubjectConfigs((prev) => [...prev, { ...subject, type: "mandatory" }]);
+                                    }}
+                                    title="Move to Mandatory"
+                                  >
+                                    <ArrowUp className="w-3 h-3 mr-1" />
+                                    বাধ্যতামূলক করুন
+                                  </Button>
+                                  
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive hover:bg-destructive/10 ml-auto"
+                                    onClick={() => setOptionalSubjectConfigs((prev) => prev.filter((s) => s.id !== subject.id))}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
-                            );
-                          })}
+                            </div>
+                          ))}
+                          {optionalSubjectConfigs.length === 0 && (
+                            <div className="text-center p-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
+                              ঐচ্ছিক কোনো সেকশন যোগ করা হয়নি।
+                            </div>
+                          )}
                         </div>
+                      </div>
+
+                      {/* Add New Section */}
+                      <div className="pt-4 border-t flex gap-2 items-center">
+                        <Select
+                          onValueChange={(val) => {
+                            const subject = availableSubjects.find(s => s.id === val);
+                            if (subject) {
+                              setMandatorySubjectConfigs(prev => [...prev, { ...subject, type: 'mandatory', count: 0, question_ids: [] }]);
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="সেকশন যোগ করুন..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableSubjects
+                              .filter(s => 
+                                !mandatorySubjectConfigs.some(m => m.id === s.id) && 
+                                !optionalSubjectConfigs.some(o => o.id === s.id)
+                              )
+                              .map(s => (
+                                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                              ))
+                            }
+                          </SelectContent>
+                        </Select>
+                        
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => {
+                            const newId = `custom_${Date.now()}`;
+                            const newSubject = { id: newId, name: "নতুন সেকশন" };
+                            setAvailableSubjects(prev => [...prev, newSubject]);
+                            setMandatorySubjectConfigs(prev => [...prev, { ...newSubject, type: 'mandatory', count: 0, question_ids: [] }]);
+                          }}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          কাস্টম সেকশন
+                        </Button>
                       </div>
                     </div>
                   )}

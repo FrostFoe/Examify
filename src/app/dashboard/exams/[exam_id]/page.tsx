@@ -899,6 +899,17 @@ export default function TakeExamPage() {
       const examData = examResult.data;
       setExam(examData);
 
+      // Create a mapping for subject IDs to names from exam configuration
+      const customMap: { [key: string]: string } = { ...subjectsMap };
+      const mConfigs = (examData.mandatory_subjects as (string | SubjectConfig)[]) || [];
+      const oConfigs = (examData.optional_subjects as (string | SubjectConfig)[]) || [];
+      
+      [...mConfigs, ...oConfigs].forEach((config) => {
+        if (config && typeof config === "object" && config.id && config.name) {
+          customMap[config.id] = config.name;
+        }
+      });
+
       let finalQuestions: Question[] = [];
 
       // Check if questions are already embedded in the exam data (e.g., custom exams)
@@ -937,12 +948,17 @@ export default function TakeExamPage() {
               opt && typeof opt === "string" && opt.trim() !== "",
           );
 
+          // Map subject name using customMap
+          const originalSubject = q.subject || "";
+          const mappedSubject = customMap[originalSubject] || subjectsMap[originalSubject] || originalSubject;
+
           return {
             ...q,
             id: String(q.id),
             question: q.question || q.question_text || "",
             answer: answerIndex,
             options,
+            subject: mappedSubject,
           } as Question;
         });
       } else {
@@ -975,6 +991,10 @@ export default function TakeExamPage() {
                     q.option5,
                   ].filter((opt): opt is string => !!opt);
 
+            // Map subject name using customMap
+            const originalSubject = q.subject || "";
+            const mappedSubject = customMap[originalSubject] || subjectsMap[originalSubject] || originalSubject;
+
             return {
               id: String(q.id),
               question: q.question || q.question_text || "",
@@ -987,7 +1007,7 @@ export default function TakeExamPage() {
                 | string
                 | undefined,
               question_marks: q.question_marks,
-              subject: q.subject,
+              subject: mappedSubject,
               paper: q.paper,
               chapter: q.chapter,
               highlight: q.highlight,

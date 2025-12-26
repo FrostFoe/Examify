@@ -510,11 +510,13 @@ export function EditExamModal({
                 type="hidden"
                 value={mode === "practice" ? "true" : "false"}
               />
-              <input
-                type="hidden"
-                name="file_id"
-                defaultValue={exam?.file_id || ""}
-              />
+              {!isCustomExam && (
+                <input
+                  type="hidden"
+                  name="file_id"
+                  defaultValue={exam?.file_id || ""}
+                />
+              )}
 
               {!isCustomExam && (
                 <>
@@ -682,7 +684,7 @@ export function EditExamModal({
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
                               <Input
-                                className="h-8 font-semibold text-sm bg-background border border-input"
+                                className="h-9 font-bold text-sm bg-background border-2 border-primary/20 focus:border-primary transition-all"
                                 value={subject.name || ""}
                                 onChange={(e) =>
                                   updateSubjectConfig(
@@ -692,12 +694,12 @@ export function EditExamModal({
                                     e.target.value,
                                   )
                                 }
-                                placeholder="Section Name"
+                                placeholder="সেকশনের নাম লিখুন"
                               />
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1 shrink-0">
                                 <Button
                                   type="button"
-                                  variant="ghost"
+                                  variant="secondary"
                                   size="icon"
                                   className="h-8 w-8"
                                   disabled={index === 0}
@@ -708,12 +710,13 @@ export function EditExamModal({
                                       return newArr;
                                     });
                                   }}
+                                  title="উপরে নিন"
                                 >
                                   <ArrowUp className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   type="button"
-                                  variant="ghost"
+                                  variant="secondary"
                                   size="icon"
                                   className="h-8 w-8"
                                   disabled={index === mandatorySubjects.length - 1}
@@ -724,18 +727,19 @@ export function EditExamModal({
                                       return newArr;
                                     });
                                   }}
+                                  title="নিচে নিন"
                                 >
                                   <ArrowDown className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>
                             
-                            <div className="flex items-center gap-3 pl-8">
-                              <div className="flex items-center gap-2 flex-1">
+                            <div className="flex flex-wrap items-center gap-3 pl-8 mt-1">
+                              <div className="flex items-center gap-2">
                                 <Input
                                   type="number"
                                   placeholder="Count"
-                                  className="h-8 w-20 text-xs"
+                                  className="h-8 w-20 text-xs border-dashed"
                                   value={subject.count || 0}
                                   onChange={(e) =>
                                     updateSubjectConfig(
@@ -753,7 +757,7 @@ export function EditExamModal({
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs"
+                                className="h-8 text-xs bg-primary/5 hover:bg-primary/10"
                                 onClick={() =>
                                   setActiveSubjectSelection({
                                     id: subject.id,
@@ -761,7 +765,7 @@ export function EditExamModal({
                                   })
                                 }
                               >
-                                <ListChecks className="w-3 h-3 mr-1" />
+                                <ListChecks className="w-3 h-3 mr-1 text-primary" />
                                 প্রশ্ন বাছুন ({subject.question_ids?.length || 0})
                               </Button>
 
@@ -769,7 +773,7 @@ export function EditExamModal({
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs border-dashed"
+                                className="h-8 text-xs border-dashed border-amber-500/50 text-amber-600 hover:bg-amber-50"
                                 onClick={() => {
                                   setMandatorySubjects((prev) => prev.filter((s) => s.id !== subject.id));
                                   setOptionalSubjects((prev) => [...prev, { ...subject, type: "optional" }]);
@@ -784,7 +788,7 @@ export function EditExamModal({
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                className="h-8 w-8 text-destructive hover:bg-destructive/10 ml-auto"
                                 onClick={() => setMandatorySubjects((prev) => prev.filter((s) => s.id !== subject.id))}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -795,7 +799,7 @@ export function EditExamModal({
                       ))}
                       {mandatorySubjects.length === 0 && (
                         <div className="text-center p-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
-                          No mandatory sections added.
+                          বাধ্যতামূলক কোনো সেকশন যোগ করা হয়নি।
                         </div>
                       )}
                     </div>
@@ -817,7 +821,7 @@ export function EditExamModal({
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
                               <Input
-                                className="h-8 font-semibold text-sm bg-background border border-input"
+                                className="h-9 font-bold text-sm bg-background border-2 border-secondary/20 focus:border-secondary transition-all"
                                 value={subject.name || ""}
                                 onChange={(e) =>
                                   updateSubjectConfig(
@@ -827,12 +831,12 @@ export function EditExamModal({
                                     e.target.value,
                                   )
                                 }
-                                placeholder="Section Name"
+                                placeholder="সেকশনের নাম লিখুন"
                               />
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1 shrink-0">
                                 <Button
                                   type="button"
-                                  variant="ghost"
+                                  variant="secondary"
                                   size="icon"
                                   className="h-8 w-8"
                                   disabled={index === 0}
@@ -843,12 +847,13 @@ export function EditExamModal({
                                       return newArr;
                                     });
                                   }}
+                                  title="উপরে নিন"
                                 >
                                   <ArrowUp className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   type="button"
-                                  variant="ghost"
+                                  variant="secondary"
                                   size="icon"
                                   className="h-8 w-8"
                                   disabled={index === optionalSubjects.length - 1}
@@ -859,18 +864,19 @@ export function EditExamModal({
                                       return newArr;
                                     });
                                   }}
+                                  title="নিচে নিন"
                                 >
                                   <ArrowDown className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>
                             
-                            <div className="flex items-center gap-3 pl-8">
-                              <div className="flex items-center gap-2 flex-1">
+                            <div className="flex flex-wrap items-center gap-3 pl-8 mt-1">
+                              <div className="flex items-center gap-2">
                                 <Input
                                   type="number"
                                   placeholder="Count"
-                                  className="h-8 w-20 text-xs"
+                                  className="h-8 w-20 text-xs border-dashed"
                                   value={subject.count || 0}
                                   onChange={(e) =>
                                     updateSubjectConfig(
@@ -888,7 +894,7 @@ export function EditExamModal({
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs"
+                                className="h-8 text-xs bg-secondary/10 hover:bg-secondary/20"
                                 onClick={() =>
                                   setActiveSubjectSelection({
                                     id: subject.id,
@@ -896,7 +902,7 @@ export function EditExamModal({
                                   })
                                 }
                               >
-                                <ListChecks className="w-3 h-3 mr-1" />
+                                <ListChecks className="w-3 h-3 mr-1 text-secondary-foreground" />
                                 প্রশ্ন বাছুন ({subject.question_ids?.length || 0})
                               </Button>
 
@@ -904,7 +910,7 @@ export function EditExamModal({
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs border-dashed"
+                                className="h-8 text-xs border-dashed border-emerald-500/50 text-emerald-600 hover:bg-emerald-50"
                                 onClick={() => {
                                   setOptionalSubjects((prev) => prev.filter((s) => s.id !== subject.id));
                                   setMandatorySubjects((prev) => [...prev, { ...subject, type: "mandatory" }]);
@@ -919,7 +925,7 @@ export function EditExamModal({
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                className="h-8 w-8 text-destructive hover:bg-destructive/10 ml-auto"
                                 onClick={() => setOptionalSubjects((prev) => prev.filter((s) => s.id !== subject.id))}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -930,7 +936,7 @@ export function EditExamModal({
                       ))}
                       {optionalSubjects.length === 0 && (
                         <div className="text-center p-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
-                          No optional sections added.
+                          ঐচ্ছিক কোনো সেকশন যোগ করা হয়নি।
                         </div>
                       )}
                     </div>
@@ -947,7 +953,7 @@ export function EditExamModal({
                       }}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Add a section..." />
+                        <SelectValue placeholder="সেকশন যোগ করুন..." />
                       </SelectTrigger>
                       <SelectContent>
                         {availableSubjects
