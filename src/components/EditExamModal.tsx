@@ -72,14 +72,25 @@ const normalizeSubjects = (
   if (!subs) return [];
   if (subs.length === 0) return [];
   if (typeof subs[0] === "string") {
-    return (subs as string[]).map((id) => ({
-      id,
-      count: 0,
-      question_ids: [],
-      type,
-    }));
+    return (subs as string[]).map((id) => {
+      const found = subjects.find((s) => s.id === id);
+      return {
+        id,
+        name: found ? found.name : `Subject ${id}`,
+        count: 0,
+        question_ids: [],
+        type,
+      };
+    });
   }
-  return (subs as SubjectConfig[]).map((s) => ({ ...s, type }));
+  return (subs as SubjectConfig[]).map((s) => ({
+    ...s,
+    type,
+    name:
+      s.name ||
+      subjects.find((sub) => sub.id === s.id)?.name ||
+      `Subject ${s.id}`,
+  }));
 };
 
 export function EditExamModal({
@@ -672,7 +683,7 @@ export function EditExamModal({
                               <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
                               <Input
                                 className="h-8 font-semibold text-sm"
-                                value={subject.name}
+                                value={subject.name || ""}
                                 onChange={(e) =>
                                   updateSubjectConfig(
                                     subject.id,
@@ -807,7 +818,7 @@ export function EditExamModal({
                               <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
                               <Input
                                 className="h-8 font-semibold text-sm"
-                                value={subject.name}
+                                value={subject.name || ""}
                                 onChange={(e) =>
                                   updateSubjectConfig(
                                     subject.id,
