@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api";
+import { StudentReport } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -24,7 +25,6 @@ import {
   Save,
   Hourglass,
   Circle,
-  Info,
 } from "lucide-react";
 import { PageHeader } from "@/components";
 

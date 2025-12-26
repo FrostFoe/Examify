@@ -65,7 +65,7 @@ async function handleRequest(request: NextRequest) {
       try {
         const data = JSON.parse(responseText);
         return NextResponse.json(data, { status: response.status });
-      } catch (e) {
+      } catch {
         console.error("[API-PROXY] JSON Parse Error. Raw response:", responseText);
         return NextResponse.json(
           {

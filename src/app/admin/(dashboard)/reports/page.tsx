@@ -105,12 +105,6 @@ export default function AdminReportsPage() {
   const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
   const dayHeaders = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  const getProgressColor = (progress: number) => {
-    if (progress >= 100) return "bg-green-500 text-white";
-    if (progress > 0) return "bg-pink-500 text-white";
-    return "bg-slate-700 text-slate-400";
-  };
-
   return (
     <div className="space-y-8 pb-20 animate-in fade-in duration-700">
       <PageHeader

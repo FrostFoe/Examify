@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,7 @@ import {
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
 import QuestionSelector from "./QuestionSelector";
-import { ListChecks } from "lucide-react";
+import { ListChecks, ArrowUp, ArrowDown, Trash2, Plus } from "lucide-react";
 import { combineDhakaDateTime, parseDhakaDateTime } from "@/lib/utils";
 import { fetchQuestions } from "@/lib/fetchQuestions";
 
@@ -181,53 +182,6 @@ export function EditExamModal({
   const handleNumberInput = (e: FormEvent<HTMLInputElement>) => {
     const input = e.target as HTMLInputElement;
     input.value = bengaliToEnglishNumber(input.value);
-  };
-
-  const handleSubjectToggle = (
-    subjectId: string,
-    type: "mandatory" | "optional",
-    checked: boolean,
-  ) => {
-    const subject = availableSubjects.find((s) => s.id === subjectId);
-    if (type === "mandatory") {
-      if (checked) {
-        setOptionalSubjects((prev) => prev.filter((s) => s.id !== subjectId));
-      }
-      setMandatorySubjects((prev) => {
-        if (checked) {
-          return [
-            ...prev,
-            {
-              id: subjectId,
-              name: subject?.name || `Subject ${subjectId}`,
-              count: 0,
-              question_ids: [],
-              type: "mandatory",
-            },
-          ];
-        }
-        return prev.filter((s) => s.id !== subjectId);
-      });
-    } else {
-      if (checked) {
-        setMandatorySubjects((prev) => prev.filter((s) => s.id !== subjectId));
-      }
-      setOptionalSubjects((prev) => {
-        if (checked) {
-          return [
-            ...prev,
-            {
-              id: subjectId,
-              name: subject?.name || `Subject ${subjectId}`,
-              count: 0,
-              question_ids: [],
-              type: "optional",
-            },
-          ];
-        }
-        return prev.filter((s) => s.id !== subjectId);
-      });
-    }
   };
 
   const updateSubjectConfig = (
@@ -686,7 +640,7 @@ export function EditExamModal({
               </div>
 
               {isCustomExam && (
-                <div className="space-y-4 p-4 border rounded-md">
+                <div className="space-y-4 p-4 border rounded-md bg-background/50">
                   <div className="space-y-2">
                     <Label htmlFor="total_subjects-edit">মোট বিষয়</Label>
                     <Input
@@ -701,235 +655,315 @@ export function EditExamModal({
                     />
                   </div>
 
+                  {/* Mandatory Sections */}
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-base font-bold">
-                        দাগানো বাধ্যতামূলক (Mandatory)
-                      </Label>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs h-7"
-                        onClick={() => {
-                          const newId = `custom_${Date.now()}`;
-                          setAvailableSubjects((prev) => [
-                            ...prev,
-                            { id: newId, name: "নতুন বিষয়" },
-                          ]);
-                        }}
-                      >
-                        নতুন বিষয় যোগ করুন
-                      </Button>
-                    </div>
+                    <Label className="text-base font-bold flex items-center justify-between">
+                      <span>বাধ্যতামূলক বিষয় (Mandatory)</span>
+                      <Badge variant="secondary">{mandatorySubjects.length}</Badge>
+                    </Label>
                     <div className="space-y-3">
-                      {availableSubjects.map((subject) => {
-                        const isSelected = mandatorySubjects.some(
-                          (s) => s.id === subject.id,
-                        );
-                        const config = mandatorySubjects.find(
-                          (s) => s.id === subject.id,
-                        );
-
-                        return (
-                          <div
-                            key={`mandatory-edit-${subject.id}`}
-                            className={`p-3 rounded-lg border ${isSelected ? "bg-primary/5 border-primary/20" : "bg-background"}`}
-                          >
-                            <div className="flex items-center space-x-2 mb-2">
-                              <Checkbox
-                                id={`mandatory-edit-${subject.id}`}
-                                value={subject.id}
-                                checked={isSelected}
-                                onCheckedChange={(checked) =>
-                                  handleSubjectToggle(
+                      {mandatorySubjects.map((subject, index) => (
+                        <div
+                          key={`mandatory-item-${subject.id}`}
+                          className="p-3 rounded-lg border bg-background relative group hover:border-primary/50 transition-colors"
+                        >
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
+                              <Input
+                                className="h-8 font-semibold text-sm"
+                                value={subject.name}
+                                onChange={(e) =>
+                                  updateSubjectConfig(
                                     subject.id,
                                     "mandatory",
-                                    checked as boolean,
+                                    "name",
+                                    e.target.value,
                                   )
                                 }
+                                placeholder="Section Name"
                               />
-                              <Input
-                                className="h-8 font-semibold text-sm border-none bg-transparent focus-visible:ring-0 p-0"
-                                value={
-                                  config?.name ||
-                                  availableSubjects.find(
-                                    (s) => s.id === subject.id,
-                                  )?.name
-                                }
-                                onChange={(e) => {
-                                  const newName = e.target.value;
-                                  setAvailableSubjects((prev) =>
-                                    prev.map((s) =>
-                                      s.id === subject.id
-                                        ? { ...s, name: newName }
-                                        : s,
-                                    ),
-                                  );
-                                  if (config) {
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  disabled={index === 0}
+                                  onClick={() => {
+                                    setMandatorySubjects((prev) => {
+                                      const newArr = [...prev];
+                                      [newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]];
+                                      return newArr;
+                                    });
+                                  }}
+                                >
+                                  <ArrowUp className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  disabled={index === mandatorySubjects.length - 1}
+                                  onClick={() => {
+                                    setMandatorySubjects((prev) => {
+                                      const newArr = [...prev];
+                                      [newArr[index], newArr[index + 1]] = [newArr[index + 1], newArr[index]];
+                                      return newArr;
+                                    });
+                                  }}
+                                >
+                                  <ArrowDown className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 pl-8">
+                              <div className="flex items-center gap-2 flex-1">
+                                <Input
+                                  type="number"
+                                  placeholder="Count"
+                                  className="h-8 w-20 text-xs"
+                                  value={subject.count || 0}
+                                  onChange={(e) =>
                                     updateSubjectConfig(
                                       subject.id,
                                       "mandatory",
-                                      "name",
-                                      newName,
-                                    );
+                                      "count",
+                                      parseInt(e.target.value) || 0,
+                                    )
                                   }
-                                }}
-                              />
-                            </div>
-
-                            {isSelected && config && (
-                              <div className="pl-6 space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    placeholder="প্রশ্ন সংখ্যা"
-                                    className="h-8 w-32 text-xs"
-                                    value={config.count || ""}
-                                    onChange={(e) =>
-                                      updateSubjectConfig(
-                                        subject.id,
-                                        "mandatory",
-                                        "count",
-                                        parseInt(e.target.value) || 0,
-                                      )
-                                    }
-                                  />
-                                  <span className="text-xs text-muted-foreground">
-                                    টি প্রশ্ন
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 text-xs"
-                                    onClick={() =>
-                                      setActiveSubjectSelection({
-                                        id: subject.id,
-                                        type: "mandatory",
-                                      })
-                                    }
-                                  >
-                                    <ListChecks className="w-3 h-3 mr-1" />
-                                    প্রশ্ন বাছুন (
-                                    {config.question_ids?.length || 0})
-                                  </Button>
-                                </div>
+                                />
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">questions</span>
                               </div>
-                            )}
+                              
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs"
+                                onClick={() =>
+                                  setActiveSubjectSelection({
+                                    id: subject.id,
+                                    type: "mandatory",
+                                  })
+                                }
+                              >
+                                <ListChecks className="w-3 h-3 mr-1" />
+                                Select ({subject.question_ids?.length || 0})
+                              </Button>
+
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                                onClick={() => {
+                                  setMandatorySubjects((prev) => prev.filter((s) => s.id !== subject.id));
+                                  setOptionalSubjects((prev) => [...prev, { ...subject, type: "optional" }]);
+                                }}
+                                title="Move to Optional"
+                              >
+                                <ArrowDown className="w-3 h-3 mr-1" />
+                                Optional
+                              </Button>
+                              
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                onClick={() => setMandatorySubjects((prev) => prev.filter((s) => s.id !== subject.id))}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
+                      {mandatorySubjects.length === 0 && (
+                        <div className="text-center p-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
+                          No mandatory sections added.
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <Label className="text-base font-bold">
-                      অন্যান্য বিষয় (Optional)
+                  {/* Optional Sections */}
+                  <div className="space-y-4 pt-4 border-t">
+                    <Label className="text-base font-bold flex items-center justify-between">
+                      <span>অন্যান্য বিষয় (Optional)</span>
+                      <Badge variant="secondary">{optionalSubjects.length}</Badge>
                     </Label>
                     <div className="space-y-3">
-                      {availableSubjects.map((subject) => {
-                        const isSelected = optionalSubjects.some(
-                          (s) => s.id === subject.id,
-                        );
-                        const config = optionalSubjects.find(
-                          (s) => s.id === subject.id,
-                        );
-
-                        return (
-                          <div
-                            key={`optional-edit-${subject.id}`}
-                            className={`p-3 rounded-lg border ${isSelected ? "bg-secondary/5 border-secondary/20" : "bg-background"}`}
-                          >
-                            <div className="flex items-center space-x-2 mb-2">
-                              <Checkbox
-                                id={`optional-edit-${subject.id}`}
-                                value={subject.id}
-                                checked={isSelected}
-                                onCheckedChange={(checked) =>
-                                  handleSubjectToggle(
+                      {optionalSubjects.map((subject, index) => (
+                        <div
+                          key={`optional-item-${subject.id}`}
+                          className="p-3 rounded-lg border bg-secondary/5 relative group hover:border-secondary/50 transition-colors"
+                        >
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
+                              <Input
+                                className="h-8 font-semibold text-sm"
+                                value={subject.name}
+                                onChange={(e) =>
+                                  updateSubjectConfig(
                                     subject.id,
                                     "optional",
-                                    checked as boolean,
+                                    "name",
+                                    e.target.value,
                                   )
                                 }
+                                placeholder="Section Name"
                               />
-                              <Input
-                                className="h-8 font-semibold text-sm border-none bg-transparent focus-visible:ring-0 p-0"
-                                value={
-                                  config?.name ||
-                                  availableSubjects.find(
-                                    (s) => s.id === subject.id,
-                                  )?.name
-                                }
-                                onChange={(e) => {
-                                  const newName = e.target.value;
-                                  setAvailableSubjects((prev) =>
-                                    prev.map((s) =>
-                                      s.id === subject.id
-                                        ? { ...s, name: newName }
-                                        : s,
-                                    ),
-                                  );
-                                  if (config) {
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  disabled={index === 0}
+                                  onClick={() => {
+                                    setOptionalSubjects((prev) => {
+                                      const newArr = [...prev];
+                                      [newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]];
+                                      return newArr;
+                                    });
+                                  }}
+                                >
+                                  <ArrowUp className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  disabled={index === optionalSubjects.length - 1}
+                                  onClick={() => {
+                                    setOptionalSubjects((prev) => {
+                                      const newArr = [...prev];
+                                      [newArr[index], newArr[index + 1]] = [newArr[index + 1], newArr[index]];
+                                      return newArr;
+                                    });
+                                  }}
+                                >
+                                  <ArrowDown className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 pl-8">
+                              <div className="flex items-center gap-2 flex-1">
+                                <Input
+                                  type="number"
+                                  placeholder="Count"
+                                  className="h-8 w-20 text-xs"
+                                  value={subject.count || 0}
+                                  onChange={(e) =>
                                     updateSubjectConfig(
                                       subject.id,
                                       "optional",
-                                      "name",
-                                      newName,
-                                    );
+                                      "count",
+                                      parseInt(e.target.value) || 0,
+                                    )
                                   }
-                                }}
-                              />
-                            </div>
-
-                            {isSelected && config && (
-                              <div className="pl-6 space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    placeholder="প্রশ্ন সংখ্যা"
-                                    className="h-8 w-32 text-xs"
-                                    value={config.count || ""}
-                                    onChange={(e) =>
-                                      updateSubjectConfig(
-                                        subject.id,
-                                        "optional",
-                                        "count",
-                                        parseInt(e.target.value) || 0,
-                                      )
-                                    }
-                                  />
-                                  <span className="text-xs text-muted-foreground">
-                                    টি প্রশ্ন
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 text-xs"
-                                    onClick={() =>
-                                      setActiveSubjectSelection({
-                                        id: subject.id,
-                                        type: "optional",
-                                      })
-                                    }
-                                  >
-                                    <ListChecks className="w-3 h-3 mr-1" />
-                                    প্রশ্ন বাছুন (
-                                    {config.question_ids?.length || 0})
-                                  </Button>
-                                </div>
+                                />
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">questions</span>
                               </div>
-                            )}
+                              
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs"
+                                onClick={() =>
+                                  setActiveSubjectSelection({
+                                    id: subject.id,
+                                    type: "optional",
+                                  })
+                                }
+                              >
+                                <ListChecks className="w-3 h-3 mr-1" />
+                                Select ({subject.question_ids?.length || 0})
+                              </Button>
+
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                                onClick={() => {
+                                  setOptionalSubjects((prev) => prev.filter((s) => s.id !== subject.id));
+                                  setMandatorySubjects((prev) => [...prev, { ...subject, type: "mandatory" }]);
+                                }}
+                                title="Move to Mandatory"
+                              >
+                                <ArrowUp className="w-3 h-3 mr-1" />
+                                Mandatory
+                              </Button>
+                              
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                onClick={() => setOptionalSubjects((prev) => prev.filter((s) => s.id !== subject.id))}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
+                      {optionalSubjects.length === 0 && (
+                        <div className="text-center p-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
+                          No optional sections added.
+                        </div>
+                      )}
                     </div>
+                  </div>
+
+                  {/* Add New Section */}
+                  <div className="pt-4 border-t flex gap-2 items-center">
+                    <Select
+                      onValueChange={(val) => {
+                        const subject = availableSubjects.find(s => s.id === val);
+                        if (subject) {
+                          setMandatorySubjects(prev => [...prev, { ...subject, type: 'mandatory', count: 0, question_ids: [] }]);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Add a section..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableSubjects
+                          .filter(s => 
+                            !mandatorySubjects.some(m => m.id === s.id) && 
+                            !optionalSubjects.some(o => o.id === s.id)
+                          )
+                          .map(s => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))
+                        }
+                      </SelectContent>
+                    </Select>
+                    
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        const newId = `custom_${Date.now()}`;
+                        const newSubject = { id: newId, name: "New Section" };
+                        setAvailableSubjects(prev => [...prev, newSubject]);
+                        setMandatorySubjects(prev => [...prev, { ...newSubject, type: 'mandatory', count: 0, question_ids: [] }]);
+                      }}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Custom
+                    </Button>
                   </div>
                 </div>
               )}

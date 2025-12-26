@@ -572,6 +572,11 @@ export default function TakeExamPage() {
           subject: displayName,
         }));
 
+        // Shuffle within the section if enabled
+        if (exam.shuffle_questions) {
+          subjectQuestions = shuffleArray(subjectQuestions);
+        }
+
         if (!subjectsOrder.includes(displayName)) {
           subjectsOrder.push(displayName);
         }
@@ -645,13 +650,19 @@ export default function TakeExamPage() {
     questions.forEach((q) => {
       const qId = String(q.id);
       const selectedOptIndex = selectedAnswers[qId];
-      const qMarks =
+
+      let qMarks = parseFloat(String(exam?.marks_per_question || 1));
+      if (
         q.question_marks !== null &&
         q.question_marks !== undefined &&
         q.question_marks !== ""
-          ? parseFloat(String(q.question_marks))
-          : parseFloat(String(exam?.marks_per_question || 1));
-      const qNeg = parseFloat(String(exam?.negative_marks_per_wrong || 0));
+      ) {
+        const parsed = parseFloat(String(q.question_marks));
+        if (!isNaN(parsed)) qMarks = parsed;
+      }
+
+      let qNeg = parseFloat(String(exam?.negative_marks_per_wrong || 0));
+      if (isNaN(qNeg)) qNeg = 0;
 
       if (selectedOptIndex !== undefined) {
         if (selectedOptIndex === q.answer) {
@@ -672,7 +683,7 @@ export default function TakeExamPage() {
           {
             exam_id: exam_id.toString(),
             student_id: user.uid,
-            score: totalScore,
+            score: Number(totalScore.toFixed(2)),
             correct_answers: correctAnswers,
             wrong_answers: wrongAnswers,
             unattempted: questions.length - Object.keys(selectedAnswers).length,
@@ -986,13 +997,17 @@ export default function TakeExamPage() {
       }
 
       if (finalQuestions.length > 0) {
-        const questionsToSet = examData.shuffle_questions
-          ? shuffleArray(finalQuestions)
-          : finalQuestions;
-        setAllQuestions(questionsToSet);
+        // Do not shuffle here for custom exams to preserve subject grouping potential
+        // For non-custom exams, we shuffle if needed when setting 'questions'
+        setAllQuestions(finalQuestions);
 
         if (!examData.total_subjects) {
-          setQuestions(questionsToSet);
+          // Standard exam: shuffle globally if enabled
+          setQuestions(
+            examData.shuffle_questions
+              ? shuffleArray(finalQuestions)
+              : finalQuestions,
+          );
         }
       } else {
         toast({

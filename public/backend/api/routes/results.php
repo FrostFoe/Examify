@@ -33,21 +33,33 @@ if ($method === 'GET') {
     }
 } elseif ($method === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input) {
+        $input = $_POST;
+    }
     $action = $_GET['action'] ?? '';
 
     if ($action === 'submit') {
-        $id = $input['id'] ?? uuidv4();
-        $exam_id = $input['exam_id'] ?? '';
-        $student_id = $input['student_id'] ?? '';
-        $score = $input['score'] ?? 0;
-        $correct_answers = $input['correct_answers'] ?? 0;
-        $wrong_answers = $input['wrong_answers'] ?? 0;
-        $unattempted = $input['unattempted'] ?? 0;
+        try {
+            $id = $input['id'] ?? uuidv4();
+            $exam_id = $input['exam_id'] ?? '';
+            $student_id = $input['student_id'] ?? '';
+            $score = isset($input['score']) ? (float)$input['score'] : 0.0;
+            $correct_answers = isset($input['correct_answers']) ? (int)$input['correct_answers'] : 0;
+            $wrong_answers = isset($input['wrong_answers']) ? (int)$input['wrong_answers'] : 0;
+            $unattempted = isset($input['unattempted']) ? (int)$input['unattempted'] : 0;
 
-        $stmt = $pdo->prepare("INSERT INTO student_exams (id, exam_id, student_id, score, correct_answers, wrong_answers, unattempted) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score), correct_answers = VALUES(correct_answers), wrong_answers = VALUES(wrong_answers), unattempted = VALUES(unattempted), submitted_at = CURRENT_TIMESTAMP");
-        $stmt->execute([$id, $exam_id, $student_id, $score, $correct_answers, $wrong_answers, $unattempted]);
-        
-        echo json_encode(['success' => true]);
+            if (empty($exam_id) || empty($student_id)) {
+                throw new Exception("Missing exam_id or student_id");
+            }
+
+            $stmt = $pdo->prepare("INSERT INTO student_exams (id, exam_id, student_id, score, correct_answers, wrong_answers, unattempted) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score), correct_answers = VALUES(correct_answers), wrong_answers = VALUES(wrong_answers), unattempted = VALUES(unattempted), submitted_at = CURRENT_TIMESTAMP");
+            $stmt->execute([$id, $exam_id, $student_id, $score, $correct_answers, $wrong_answers, $unattempted]);
+            
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
     } elseif ($action === 'delete') {
         $id = $input['id'] ?? '';
         $stmt = $pdo->prepare("DELETE FROM student_exams WHERE id = ?");

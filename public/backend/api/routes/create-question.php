@@ -132,7 +132,6 @@ try {
             'question_image' => $question_image,
             'explanation_image' => $explanation_image,
             'type' => $type,
-            'section' => $section,
             'order_index' => $order_index
         ];
         
