@@ -68,7 +68,12 @@ export default function AdminFilesPage() {
       if (debouncedSearchTerm) {
         params.search = debouncedSearchTerm;
       }
-      const result = await apiRequest<FileRecord[]>("files", "GET", null, params);
+      const result = await apiRequest<FileRecord[]>(
+        "files",
+        "GET",
+        null,
+        params,
+      );
       if (result.success && result.data) {
         setFiles(result.data);
       } else if (Array.isArray(result)) {
@@ -129,7 +134,6 @@ export default function AdminFilesPage() {
       alert("Error renaming file");
     }
   };
-
 
   if (!admin) {
     return (

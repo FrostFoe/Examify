@@ -61,11 +61,11 @@ export default function EditFileQuestionsPage() {
       setLoading(true);
       // Fetch File Details (only on first load or if needed)
       if (!file) {
-          const filesResult = await apiRequest<FileRecord[]>("files", "GET");
-          if (filesResult.success && Array.isArray(filesResult.data)) {
-            const foundFile = filesResult.data.find((f) => f.id === file_id);
-            setFile(foundFile || null);
-          }
+        const filesResult = await apiRequest<FileRecord[]>("files", "GET");
+        if (filesResult.success && Array.isArray(filesResult.data)) {
+          const foundFile = filesResult.data.find((f) => f.id === file_id);
+          setFile(foundFile || null);
+        }
       }
 
       // Fetch Questions with search

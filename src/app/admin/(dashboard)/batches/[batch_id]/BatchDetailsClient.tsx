@@ -785,11 +785,23 @@ export function BatchDetailsClient({
                             isBank={false}
                             onUploadSuccess={async (result) => {
                               const fid = (result.file_id as string) || "";
+                              if (!fid) {
+                                console.error("Upload success but no file_id in result:", result);
+                                toast({
+                                  title: "Error identifying uploaded file",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
                               setFileId(fid);
 
                               // Auto-group by sections if CSV has them
                               try {
-                                const qs = await fetchQuestions(fid, undefined, 5000);
+                                const qs = await fetchQuestions(
+                                  fid,
+                                  undefined,
+                                  5000,
+                                );
                                 if (qs && qs.length > 0) {
                                   const sectionMap = new Map<
                                     string,
@@ -803,7 +815,9 @@ export function BatchDetailsClient({
                                       sectionMap.set(section, []);
                                     }
                                     if (q.id)
-                                      sectionMap.get(section)?.push(String(q.id));
+                                      sectionMap
+                                        .get(section)
+                                        ?.push(String(q.id));
                                   });
 
                                   if (sectionMap.size > 0) {
@@ -1271,8 +1285,9 @@ export function BatchDetailsClient({
           <DialogHeader className="p-4 border-b shrink-0">
             <DialogTitle>
               {activeSubjectSelection &&
-                availableSubjects.find((s) => s.id === activeSubjectSelection.id)
-                  ?.name}{" "}
+                availableSubjects.find(
+                  (s) => s.id === activeSubjectSelection.id,
+                )?.name}{" "}
               - প্রশ্ন নির্বাচন
             </DialogTitle>
             <DialogDescription>

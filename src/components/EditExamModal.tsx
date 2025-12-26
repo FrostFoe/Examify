@@ -587,6 +587,15 @@ export function EditExamModal({
                       isBank={false}
                       onUploadSuccess={async (result) => {
                         const fid = (result.file_id as string) || "";
+                        if (!fid) {
+                          console.error("Upload success but no file_id in result:", result);
+                          toast({
+                            title: "Error identifying uploaded file",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
                         if (formRef.current) {
                           const fileIdInput = formRef.current.querySelector(
                             'input[name="file_id"]',
@@ -942,8 +951,9 @@ export function EditExamModal({
           <DialogHeader className="p-4 border-b shrink-0">
             <DialogTitle>
               {activeSubjectSelection &&
-                availableSubjects.find((s) => s.id === activeSubjectSelection.id)
-                  ?.name}{" "}
+                availableSubjects.find(
+                  (s) => s.id === activeSubjectSelection.id,
+                )?.name}{" "}
               - প্রশ্ন নির্বাচন
             </DialogTitle>
             <DialogDescription>

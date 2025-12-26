@@ -75,7 +75,7 @@ export default function CSVUploadComponent({
           (result as Record<string, unknown>),
       );
       if (onUploadSuccess) {
-        onUploadSuccess(result);
+        onUploadSuccess(result.data as Record<string, unknown>);
       }
 
       // Clear the file input
