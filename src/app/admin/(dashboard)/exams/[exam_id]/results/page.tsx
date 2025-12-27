@@ -302,7 +302,7 @@ export default function AdminExamResultsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
@@ -354,7 +354,7 @@ export default function AdminExamResultsPage() {
 
       {/* Results Table */}
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 md:gap-4">
           <div>
             <CardTitle>শিক্ষার্থীর ফলাফল</CardTitle>
             <CardDescription>

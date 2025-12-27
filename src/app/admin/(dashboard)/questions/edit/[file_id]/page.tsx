@@ -120,7 +120,7 @@ export default function EditFileQuestionsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-2 md:gap-4">
         <CustomLoader />
       </div>
     );
@@ -163,8 +163,8 @@ export default function EditFileQuestionsPage() {
   return (
     <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <Button
             variant="outline"
             size="icon"

@@ -359,7 +359,7 @@ export default function SolvePage() {
 
         <div className="space-y-6 mt-8">
           <Card className="border-0 shadow-sm">
-            <CardHeader className="flex flex-col md:flex-row justify-between items-center gap-4 p-4 md:p-6">
+            <CardHeader className="flex flex-col md:flex-row justify-between items-center gap-2 md:gap-4 p-2 md:p-6">
               <h2 className="text-xl font-bold">বিস্তারিত ফলাফল</h2>
               <div className="flex items-center gap-1 p-1 bg-muted rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                 <Button
@@ -420,7 +420,7 @@ export default function SolvePage() {
                   }`}
                 >
                   <CardHeader>
-                    <div className="flex justify-between items-start gap-4">
+                    <div className="flex justify-between items-start gap-2 md:gap-4">
                       <div className="space-y-2 flex-1 min-w-0">
                         <Badge
                           variant={

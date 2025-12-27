@@ -59,7 +59,7 @@ export function ExamsClient({
   }
 
   const renderExamGrid = (examsToRender: Exam[]) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
       {examsToRender.map((exam) => (
         <AdminExamCard
           key={exam.id}
@@ -78,7 +78,7 @@ export function ExamsClient({
   );
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
+    <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>সকল পরীক্ষা (অ্যাডমিন)</CardTitle>

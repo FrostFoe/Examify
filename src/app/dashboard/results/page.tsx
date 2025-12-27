@@ -326,7 +326,7 @@ export default function ResultsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2 text-center">
@@ -467,7 +467,7 @@ export default function ResultsPage() {
                     />
 
                     {/* Statistics */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">সঠিক</p>
                         <p className="text-lg font-bold text-green-600">

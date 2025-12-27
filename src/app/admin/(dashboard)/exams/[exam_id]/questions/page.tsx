@@ -144,8 +144,8 @@ export default function ExamQuestionsPage() {
   }
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
         <PageHeader
           title={examName || "পরীক্ষার প্রশ্নসমূহ"}
           description="এই পরীক্ষার সকল প্রশ্ন এখানে দেখা ও ম্যানেজ করা যাবে।"

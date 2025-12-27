@@ -151,7 +151,7 @@ function GuestIdentificationScreen({
   };
 
   return (
-    <div className="container mx-auto p-4 flex items-center justify-center min-h-[80vh]">
+    <div className="container mx-auto p-1 md:p-2 lg:p-4 flex items-center justify-center min-h-[80vh]">
       <Card className="w-full max-w-md shadow-xl border-t-4 border-primary">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">আপনার পরিচয় দিন</CardTitle>
@@ -344,7 +344,7 @@ function SubjectSelectionScreen({
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 text-sm">
             <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
               <BookOpen className="h-5 w-5 text-primary" />
               <div>

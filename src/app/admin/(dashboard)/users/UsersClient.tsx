@@ -409,11 +409,11 @@ export function UsersClient({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
             {users.length > 0 ? (
               users.map((user) => (
                 <Card key={user.uid} className="flex flex-col">
-                  <CardHeader className="flex flex-row items-center gap-4">
+                  <CardHeader className="flex flex-row items-center gap-2 md:gap-4">
                     <Avatar>
                       <AvatarFallback>
                         <UserIcon className="h-5 w-5" />

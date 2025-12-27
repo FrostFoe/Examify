@@ -443,7 +443,7 @@ export function BatchDetailsClient({
           <CardDescription>ব্যাচের বিবরণ এবং অবস্থা দেখুন।</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
             <div>
               <p className="text-sm text-muted-foreground">ব্যাচের নাম</p>
               <p className="text-lg font-semibold">{batch.name}</p>
@@ -573,7 +573,7 @@ export function BatchDetailsClient({
                   </div>
                   <div className="grid grid-cols-1 gap-3 items-center">
                     {mode === "live" && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                         <div className="space-y-2">
                           <Label>শুরুর সময়</Label>
                           <Input

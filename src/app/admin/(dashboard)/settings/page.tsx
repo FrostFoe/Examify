@@ -98,7 +98,7 @@ export default function AdminSettingsPage() {
               <ShieldCheck className="h-5 w-5 text-primary" />
               সাধারণ ব্যবস্থাপনা
             </h2>
-            <div className="grid gap-4">
+            <div className="grid gap-2 md:gap-4">
               <Link href="/admin/users">
                 <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

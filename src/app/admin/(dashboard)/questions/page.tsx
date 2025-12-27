@@ -137,7 +137,7 @@ export default function AdminFilesPage() {
 
   if (!admin) {
     return (
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-1 md:p-2 lg:p-4">
         <Card>
           <CardContent className="p-8 text-center">
             Please log in as admin.
@@ -291,7 +291,7 @@ export default function AdminFilesPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
               <Label htmlFor="name" className="text-right">
                 নাম
               </Label>
