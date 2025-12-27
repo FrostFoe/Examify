@@ -471,9 +471,9 @@ export default function TakeExamPage() {
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [isPublicExam, setIsPublicExam] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
@@ -978,13 +978,12 @@ export default function TakeExamPage() {
         }
 
         // If exam doesn't have a batch, it's considered accessible if logged in
-        // or we might want to allow it anonymously too if it's a general exam.
-        // For now, if no batch, require login.
         if (!exam.batch_id) {
           setIsAuthorized(!!user?.uid);
           return;
         }
 
+        // Check if batch is public
         const batchResult = await apiRequest<Batch>("batches", "GET", null, {
           id: exam.batch_id,
         });
@@ -994,12 +993,13 @@ export default function TakeExamPage() {
           batchResult.data &&
           batchResult.data.is_public
         ) {
+          // Public batch - allow anyone (logged in or guest)
           setIsPublicExam(true);
           setIsAuthorized(true);
           return;
         }
 
-        // If not public, require login and enrollment
+        // Private batch - require login and enrollment
         if (!user?.uid) {
           setIsAuthorized(false);
           return;
@@ -1014,10 +1014,19 @@ export default function TakeExamPage() {
           return;
         }
 
+        // Check if student is enrolled in the batch
         const isEnrolled = userResult.data.enrolled_batches?.includes(
           exam.batch_id,
         );
-        setIsAuthorized(!!isEnrolled);
+        
+        // If enrolled in batch, allow access
+        if (isEnrolled) {
+          setIsAuthorized(true);
+          return;
+        }
+
+        // Not enrolled
+        setIsAuthorized(false);
       } catch (err) {
         console.error("Auth check failed:", err);
         setIsAuthorized(false);
@@ -1262,7 +1271,7 @@ export default function TakeExamPage() {
     return "unattempted";
   };
 
-  if (authLoading) {
+  if (authLoading || isAuthorized === null) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <CustomLoader message="অনুমতি যাচাই করা হচ্ছে..." />
@@ -1270,14 +1279,14 @@ export default function TakeExamPage() {
     );
   }
 
-  if (isAuthorized === false && !authLoading) {
+  if (isAuthorized === false) {
     return (
       <div className="container mx-auto p-2 md:p-4 text-center">
         <Card className="max-w-md mx-auto">
           <CardHeader>
             <CardTitle>অনুমতি নেই</CardTitle>
             <CardDescription>
-              এই পরীক্ষায় অংশগ্রহণের জন্য আপনার অনুমতি নেই।
+              এই পরীক্ষায় অংশগ্রহণের জন্য আপনার অনুমতি নেই। দয়া করে নিশ্চিত করুন যে আপনি সঠিক batch এ নথিভুক্ত আছেন।
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -1288,11 +1297,6 @@ export default function TakeExamPage() {
         </Card>
       </div>
     );
-  }
-
-  // Show loader while authorization is being determined
-  if (isAuthorized === false && authLoading) {
-    return <CustomLoader />;
   }
 
   if (loading) {
