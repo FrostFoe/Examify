@@ -50,10 +50,7 @@ $routes = [
     'students' => 'routes/students.php',
     'results' => 'routes/results.php',
     'stats' => 'routes/stats.php',
-    'settings' => 'routes/settings.php',
-    'save-task' => 'routes/save-task.php',
-    'get-report' => 'routes/get-report.php',
-    'backup' => 'routes/backup.php'
+    'settings' => 'routes/settings.php'
 ];
 
 function attachImageUrls(array $question): array
