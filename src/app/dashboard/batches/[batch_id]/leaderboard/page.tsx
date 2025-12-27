@@ -5,6 +5,7 @@ import { apiRequest } from "@/lib/api";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { PageHeader, CustomLoader } from "@/components";
+import { maskMobileNumber } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -195,7 +196,7 @@ export default function BatchLeaderboardPage() {
                         {entry.student_name}
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
-                        {entry.student_roll}
+                        {maskMobileNumber(entry.student_roll)}
                       </TableCell>
                       <TableCell className="text-right font-bold whitespace-nowrap">
                         {parseFloat(String(entry.total_score)).toFixed(2)}

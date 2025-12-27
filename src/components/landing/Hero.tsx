@@ -30,9 +30,9 @@ export function Hero() {
               <div className="space-y-3">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                   <span className="bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-                    আপনার সাফল্যের যাত্রা
+                    সাফল্যের পথে এক ধাপ এগিয়ে
                   </span>
-                  <span className="block text-primary mt-2">শুরু করুন আজই</span>
+                  <span className="block text-primary mt-2">Examify</span>
                 </h1>
               </div>
 

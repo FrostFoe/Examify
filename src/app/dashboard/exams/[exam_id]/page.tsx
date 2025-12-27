@@ -1467,6 +1467,16 @@ export default function TakeExamPage() {
                     পৃষ্ঠা {currentPageIndex + 1} / {totalPages}
                   </p>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/dashboard/exams/${exam_id}/leaderboard`)}
+                  className="text-xs"
+                >
+                  <Zap className="h-3 w-3 mr-1" />
+                  <span className="hidden sm:inline">লিডারবোর্ড</span>
+                  <span className="sm:hidden">লিডারবোর্ড</span>
+                </Button>
               </div>
 
               <div className="flex items-center gap-2">

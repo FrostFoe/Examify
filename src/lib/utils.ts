@@ -148,3 +148,27 @@ export const formatExamDateTime = (date: Date | string | null | undefined) => {
     return null;
   }
 };
+
+/**
+ * Masks mobile numbers, showing only the last 4 digits
+ * If the input is 8+ digits, it's considered a phone number and masked
+ * @param input - The input string (could be roll number or phone number)
+ * @returns Masked string with only last 4 digits visible, or original if not a phone number
+ */
+export const maskMobileNumber = (input: string): string => {
+  if (!input) return input;
+
+  // Remove any non-digit characters to check length
+  const digitsOnly = input.replace(/\D/g, '');
+
+  // If it's 8 or more digits, consider it a phone number and mask it
+  if (digitsOnly.length >= 8) {
+    // Keep only the last 4 digits, replace the rest with '*'
+    const visibleDigits = digitsOnly.slice(-4);
+    const maskedPart = '*'.repeat(Math.max(0, digitsOnly.length - 4));
+    return maskedPart + visibleDigits;
+  }
+
+  // If less than 8 digits, return as is (likely a roll number)
+  return input;
+};
