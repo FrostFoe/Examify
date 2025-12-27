@@ -17,20 +17,20 @@ export default function RegisterPage() {
           <div className="flex justify-center items-center mb-4">
             <GraduationCap className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Examify</CardTitle>
+          <CardTitle className="text-2xl">নিবন্ধন</CardTitle>
           <CardDescription>
             অ্যাকাউন্ট তৈরি করতে নিচের ফর্মটি পূরণ করুন
           </CardDescription>
         </CardHeader>
         <CardFooter className="flex-col">
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
+            অ্যাকাউন্ট আছে?{" "}
             <Link href="/login" className="underline hover:text-primary">
-              Login here
+              লগইন করুন
             </Link>
           </p>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Please contact Examify admins to obtain your account.
+            আপনার অ্যাকাউন্ট পেতে অ্যাডমিনের সাথে যোগাযোগ করুন।
           </p>
         </CardFooter>
       </Card>

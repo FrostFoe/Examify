@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import type { Exam } from "@/lib/types";
+import { Clock } from "lucide-react";
 
 export const runtime = "edge";
 
@@ -322,7 +323,8 @@ export default function ExamLeaderboardPage() {
                               {result.unattempted || 0}
                             </span>
                           </div>
-                          <div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
                             <span className="font-medium">সময়: </span>
                             {formatDuration(
                               result.started_at,
@@ -357,7 +359,10 @@ export default function ExamLeaderboardPage() {
                       {result.unattempted || 0}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {formatDuration(result.started_at, result.submitted_at)}
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        {formatDuration(result.started_at, result.submitted_at)}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
