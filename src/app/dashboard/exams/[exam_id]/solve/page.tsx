@@ -25,9 +25,28 @@ import {
   HelpCircle,
   BookOpen,
   Zap,
+  Clock,
 } from "lucide-react";
 
 export const runtime = "edge";
+
+function formatDuration(start?: string | null, end?: string): string {
+  if (!start || !end) return "N/A";
+  const startTime = new Date(start).getTime();
+  const endTime = new Date(end).getTime();
+  const diff = endTime - startTime;
+
+  if (diff < 0) return "N/A";
+
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  const seconds = Math.floor((diff % 60000) / 1000);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }
+  return `${minutes}m ${seconds}s`;
+}
 
 export default function SolvePage() {
   const params = useParams();
@@ -43,6 +62,10 @@ export default function SolvePage() {
   const [loading, setLoading] = useState(true);
   const [loadedUserAnswers, setLoadedUserAnswers] = useState<{
     [key: string]: number;
+  } | null>(null);
+  const [examResultData, setExamResultData] = useState<{
+    started_at?: string;
+    submitted_at?: string;
   } | null>(null);
   const [filter, setFilter] = useState<"all" | "correct" | "wrong" | "skipped">(
     "all",
@@ -124,6 +147,7 @@ export default function SolvePage() {
           try {
             const parsedData = JSON.parse(savedData);
             setLoadedUserAnswers(parsedData.answers || parsedData);
+            setExamResultData(parsedData);
           } catch (e) {
             console.error("Failed to parse saved answers", e);
           }
@@ -264,6 +288,18 @@ export default function SolvePage() {
               <div className="text-4xl md:text-6xl font-black bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 {finalScore.toFixed(2)}
               </div>
+              {examResultData?.started_at && examResultData?.submitted_at && (
+                <div className="flex items-center justify-center gap-2 text-muted-foreground mt-2">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-medium">
+                    সময়:{" "}
+                    {formatDuration(
+                      examResultData.started_at,
+                      examResultData.submitted_at,
+                    )}
+                  </span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

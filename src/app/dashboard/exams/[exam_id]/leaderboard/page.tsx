@@ -37,6 +37,7 @@ interface StudentResult {
   wrong_answers: number;
   unattempted: number;
   submitted_at: string;
+  started_at?: string | null;
 }
 
 interface ApiResult {
@@ -48,6 +49,25 @@ interface ApiResult {
   unattempted: number;
   score: string;
   submitted_at: string;
+  started_at?: string | null;
+}
+
+function formatDuration(start?: string | null, end?: string): string {
+  if (!start || !end) return "N/A";
+  const startTime = new Date(start).getTime();
+  const endTime = new Date(end).getTime();
+  const diff = endTime - startTime;
+
+  if (diff < 0) return "N/A";
+
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  const seconds = Math.floor((diff % 60000) / 1000);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }
+  return `${minutes}m ${seconds}s`;
 }
 
 export default function ExamLeaderboardPage() {
@@ -94,6 +114,7 @@ export default function ExamLeaderboardPage() {
             wrong_answers: r.wrong_answers,
             unattempted: r.unattempted,
             submitted_at: r.submitted_at,
+            started_at: r.started_at,
           })),
         );
       } catch (err) {
@@ -303,11 +324,9 @@ export default function ExamLeaderboardPage() {
                           </div>
                           <div>
                             <span className="font-medium">সময়: </span>
-                            {new Date(result.submitted_at).toLocaleString(
-                              "bn-BD",
-                              {
-                                timeZone: "Asia/Dhaka",
-                              },
+                            {formatDuration(
+                              result.started_at,
+                              result.submitted_at,
                             )}
                           </div>
                         </div>
@@ -338,9 +357,7 @@ export default function ExamLeaderboardPage() {
                       {result.unattempted || 0}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {new Date(result.submitted_at).toLocaleString("bn-BD", {
-                        timeZone: "Asia/Dhaka",
-                      })}
+                      {formatDuration(result.started_at, result.submitted_at)}
                     </TableCell>
                   </TableRow>
                 ))
