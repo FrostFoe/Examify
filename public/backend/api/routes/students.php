@@ -161,9 +161,28 @@ if ($method === 'GET') {
             $uid = $input['uid'] ?? '';
             $batch_id = $input['batch_id'] ?? '';
             
+            // First check if student exists
             $stmt = $pdo->prepare("SELECT enrolled_batches FROM students WHERE uid = ?");
             $stmt->execute([$uid]);
             $user = $stmt->fetch();
+            
+            // If student doesn't exist, create one from users table
+            if (!$user) {
+                $stmt = $pdo->prepare("SELECT id, name FROM users WHERE id = ?");
+                $stmt->execute([$uid]);
+                $userInfo = $stmt->fetch();
+                
+                if ($userInfo) {
+                    // Create student record
+                    $name = $userInfo['name'] ?? 'Unknown';
+                    $stmt = $pdo->prepare("INSERT INTO students (uid, name, roll, pass, enrolled_batches) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->execute([$uid, $name, '', '', json_encode([])]);
+                    $user = ['enrolled_batches' => '[]'];
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'User not found']);
+                    exit;
+                }
+            }
             
             if ($user) {
                 $batches = json_decode($user['enrolled_batches'] ?? '[]', true);

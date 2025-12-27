@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import {
   PageHeader,
   CustomLoader,
@@ -388,11 +389,13 @@ export default function EditFileQuestionsPage() {
                       <LatexRenderer html={q.explanation} />
                     </div>
                     {q.explanation_image_url && (
-                      <div className="mt-3 rounded-xl overflow-hidden border max-w-sm bg-white">
-                        <img
+                      <div className="mt-3 rounded-xl overflow-hidden border max-w-sm bg-white relative h-[200px]">
+                        <Image
                           src={q.explanation_image_url}
                           alt="Explanation"
-                          className="w-full h-auto object-contain max-h-[200px]"
+                          fill
+                          className="object-contain"
+                          priority={false}
                         />
                       </div>
                     )}

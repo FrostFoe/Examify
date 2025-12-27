@@ -25,20 +25,13 @@ export function StudentBatchCard({ batch }: StudentBatchCardProps) {
     <Card className="overflow-hidden">
       {batch.icon_url ? (
         <div className="relative aspect-[16/9] w-full">
-          {isBase64 ? (
-            <img
-              src={batch.icon_url}
-              alt={batch.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <Image
-              src={batch.icon_url}
-              alt={batch.name}
-              fill
-              className="object-cover"
-            />
-          )}
+          <Image
+            src={batch.icon_url}
+            alt={batch.name}
+            fill
+            className="object-cover"
+            priority={false}
+          />
         </div>
       ) : (
         <div className="aspect-[16/9] w-full bg-muted flex items-center justify-center">

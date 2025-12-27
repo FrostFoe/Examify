@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -221,11 +222,14 @@ export function BatchesClient({
                   />
                   {imagePreview && (
                     <div className="space-y-2">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-24 h-24 object-cover rounded-lg border"
-                      />
+                      <div className="relative w-24 h-24">
+                        <Image
+                          src={imagePreview}
+                          alt="Preview"
+                          fill
+                          className="object-cover rounded-lg border"
+                        />
+                      </div>
                       <Button
                         type="button"
                         variant="destructive"

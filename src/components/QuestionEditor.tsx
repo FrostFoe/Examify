@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import { apiRequest } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -366,11 +367,14 @@ export default function QuestionEditor({
                 />
                 {formData.question_image && (
                   <div className="space-y-2">
-                    <img
-                      src={formData.question_image}
-                      alt="Question Preview"
-                      className="w-24 h-24 object-cover rounded-lg border"
-                    />
+                    <div className="relative w-24 h-24">
+                      <Image
+                        src={formData.question_image}
+                        alt="Question Preview"
+                        fill
+                        className="object-cover rounded-lg border"
+                      />
+                    </div>
                     <Button
                       type="button"
                       variant="destructive"
@@ -398,11 +402,14 @@ export default function QuestionEditor({
                 />
                 {formData.explanation_image && (
                   <div className="space-y-2">
-                    <img
-                      src={formData.explanation_image}
-                      alt="Explanation Preview"
-                      className="w-24 h-24 object-cover rounded-lg border"
-                    />
+                    <div className="relative w-24 h-24">
+                      <Image
+                        src={formData.explanation_image}
+                        alt="Explanation Preview"
+                        fill
+                        className="object-cover rounded-lg border"
+                      />
+                    </div>
                     <Button
                       type="button"
                       variant="destructive"

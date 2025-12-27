@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { apiRequest } from "@/lib/api";
 import {
   fetchQuestions,
@@ -493,11 +494,13 @@ export default function SolvePage() {
                         </h3>
                         {question.question_image_url &&
                           typeof question.question_image_url === "string" && (
-                            <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
-                              <img
+                            <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white relative h-[300px]">
+                              <Image
                                 src={question.question_image_url}
                                 alt="Question"
-                                className="w-full h-auto object-contain max-h-[300px]"
+                                fill
+                                className="object-contain"
+                                priority={false}
                               />
                             </div>
                           )}
@@ -573,11 +576,13 @@ export default function SolvePage() {
                         {question.explanation_image_url &&
                           typeof question.explanation_image_url ===
                             "string" && (
-                            <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white">
-                              <img
+                            <div className="mt-3 rounded-lg overflow-hidden border max-w-full bg-white relative h-[200px]">
+                              <Image
                                 src={question.explanation_image_url}
                                 alt="Explanation"
-                                className="w-full h-auto object-contain max-h-[200px]"
+                                fill
+                                className="object-contain"
+                                priority={false}
                                 onContextMenu={(e) => e.preventDefault()}
                                 onDragStart={(e) => e.preventDefault()}
                                 style={{ userSelect: "none" }}
