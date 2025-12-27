@@ -244,8 +244,31 @@ function SubjectSelectionScreen({
     for (const k of keys) {
       const v = examRecord ? examRecord[k] : undefined;
       if (!v) continue;
-      const d = new Date(String(v));
-      if (!isNaN(d.getTime())) return d;
+
+      let dateValue: Date | null = null;
+
+      if (typeof v === 'string') {
+        // Handle different date formats that might come from the database
+        // Try to parse as ISO string first
+        dateValue = new Date(v);
+
+        // If it's not a valid date or it contains space (like 'YYYY-MM-DD HH:MM:SS'),
+        // it might be in a format that needs timezone handling
+        if (isNaN(dateValue.getTime()) || (v.includes(' ') && !v.includes('T'))) {
+          // For 'YYYY-MM-DD HH:MM:SS' format, treat as Bangladesh time (UTC+6)
+          // Convert to ISO format and add timezone offset
+          const bdTimeStr = v.replace(' ', 'T') + '+06:00';
+          dateValue = new Date(bdTimeStr);
+        }
+      } else if (v instanceof Date) {
+        dateValue = v;
+      } else {
+        dateValue = new Date(v);
+      }
+
+      if (dateValue && !isNaN(dateValue.getTime())) {
+        return dateValue;
+      }
     }
     return null;
   };
