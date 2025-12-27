@@ -6,7 +6,7 @@ $uid = $_GET['uid'] ?? null;
 
 if ($method === 'GET') {
     if ($uid) {
-        $stmt = $pdo->prepare("SELECT uid, name, roll, enrolled_batches, created_at FROM students WHERE uid = ?");
+        $stmt = $pdo->prepare("SELECT uid, name, roll, pass, enrolled_batches, created_at FROM students WHERE uid = ?");
         $stmt->execute([$uid]);
         $student = $stmt->fetch();
         if ($student) {

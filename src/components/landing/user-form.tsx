@@ -74,13 +74,18 @@ export function UserForm({
         : formSchema.extend({
             pass: z
               .string()
-              .min(4, { message: "পাসওয়ার্ড কমপক্ষে ৪টি অক্ষরের হতে হবে।" }),
+              .optional()
+              .transform((val) => val?.trim() || "")
+              .refine(
+                (val) => val === "" || val.length >= 4,
+                { message: "পাসওয়ার্ড কমপক্ষে ৪টি অক্ষরের হতে হবে।" }
+              ),
           }),
     ),
     defaultValues: {
       name: defaultValues?.name || "",
       roll: defaultValues?.roll || "",
-      pass: "",
+      pass: isCreateMode ? "" : defaultValues?.pass || "",
       batch_id: "",
       passwordMode: "auto",
     },
@@ -103,7 +108,14 @@ export function UserForm({
         formData.append("pass", values.pass || "");
       }
     } else {
-      formData.append("pass", values.pass || "");
+      // Only append password if it's provided (user wants to change it)
+      // Otherwise, leave it empty to keep the existing password
+      if (values.pass && values.pass.trim() !== "") {
+        formData.append("pass", values.pass);
+      } else {
+        // Send empty pass field to indicate no password change
+        formData.append("pass", "");
+      }
       if (defaultValues?.uid) {
         formData.append("uid", defaultValues.uid);
       }
@@ -262,7 +274,7 @@ export function UserForm({
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="নতুন পাসওয়ার্ড"
+                      placeholder="নতুন পাসওয়ার্ড (খালি রাখলে পুরনো পাসওয়ার্ড অপরিবর্তিত থাকবে)"
                       {...field}
                       disabled={formState.isSubmitting}
                     />
