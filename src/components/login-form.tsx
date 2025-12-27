@@ -89,7 +89,7 @@ export function UnifiedLoginForm({
               </div>
             </div>
             <CardTitle className="text-3xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Examify
+              লগইন
             </CardTitle>
             <p className="text-sm font-medium text-muted-foreground mt-2">
               {userTypeLabel}

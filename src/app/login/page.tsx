@@ -51,7 +51,7 @@ function LoginPageContent() {
           <div className="flex justify-center items-center mb-4">
             <GraduationCap className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Examify</CardTitle>
+          <CardTitle className="text-2xl">লগইন</CardTitle>
           <CardDescription>
             লগইন করতে আপনার রোল নম্বর ও পাসওয়ার্ড দিন
           </CardDescription>
