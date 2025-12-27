@@ -27,9 +27,14 @@ export async function createUser(formData: FormData) {
   const name = formData.get("name") as string;
   const roll = formData.get("roll") as string;
   const batch_id = formData.get("batch_id") as string | null;
+  const passwordMode = formData.get("passwordMode") as "auto" | "manual";
+  const manualPassword = formData.get("pass") as string;
 
-  // 1. Generate a random 8-digit password
-  const newPassword = Math.random().toString(36).slice(-8);
+  // 1. Generate password based on mode
+  let newPassword = manualPassword;
+  if (passwordMode === "auto") {
+    newPassword = Math.random().toString(36).slice(-8);
+  }
 
   // 2. Insert the new user
   const enrolled_batches = batch_id ? [batch_id] : [];

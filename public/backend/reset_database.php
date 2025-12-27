@@ -38,7 +38,7 @@ try {
 }
 
 // Read and execute the merged SQL file
-$sqlFilePath = __DIR__ . '/merged.sql';
+$sqlFilePath = __DIR__ . '/schema.sql';
 if (!file_exists($sqlFilePath)) {
     die("SQL file not found: " . $sqlFilePath);
 }

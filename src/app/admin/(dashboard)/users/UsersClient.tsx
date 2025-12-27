@@ -389,7 +389,7 @@ export function UsersClient({
                     <DialogDescription>
                       {selectedUser
                         ? "এই ব্যবহারকারীর তথ্য পরিবর্তন করুন।"
-                        : "একটি পাসওয়ার্ড স্বয়ংক্রিয়ভাবে তৈরি হবে।"}
+                        : "স্বয়ংক্রিয় বা ম্যানুয়াল পাসওয়ার্ড দিয়ে নতুন ব্যবহারকারী তৈরি করুন।"}
                     </DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="flex-1 -mr-2 pr-2">

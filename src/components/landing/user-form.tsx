@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@/components/ui/radio-group";
 
 // Updated schema to handle both create and edit
 const formSchema = z.object({
@@ -38,6 +43,7 @@ const formSchema = z.object({
   }),
   pass: z.string().optional(),
   batch_id: z.string().optional(),
+  passwordMode: z.enum(["auto", "manual"]).optional(),
 });
 
 type UserFormValues = z.infer<typeof formSchema>;
@@ -57,10 +63,12 @@ export function UserForm({
   isCreateMode = false,
   batches = [],
 }: UserFormProps) {
+  const [passwordMode, setPasswordMode] = useState<"auto" | "manual">("auto");
+
   const form = useForm<UserFormValues>({
     resolver: zodResolver(
       isCreateMode
-        ? formSchema.pick({ name: true, roll: true, batch_id: true })
+        ? formSchema.pick({ name: true, roll: true, batch_id: true, passwordMode: true })
         : formSchema.extend({
             pass: z
               .string()
@@ -72,6 +80,7 @@ export function UserForm({
       roll: defaultValues?.roll || "",
       pass: "",
       batch_id: "",
+      passwordMode: "auto",
     },
   });
 
@@ -85,6 +94,11 @@ export function UserForm({
     if (isCreateMode) {
       if (values.batch_id) {
         formData.append("batch_id", values.batch_id);
+      }
+      // Pass password mode to action
+      formData.append("passwordMode", passwordMode);
+      if (passwordMode === "manual") {
+        formData.append("pass", values.pass || "");
       }
     } else {
       formData.append("pass", values.pass || "");
@@ -164,6 +178,55 @@ export function UserForm({
                     ))}
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {isCreateMode && (
+          <FormItem>
+            <FormLabel>পাসওয়ার্ড মোড</FormLabel>
+            <FormControl>
+              <RadioGroup
+                value={passwordMode}
+                onValueChange={(value) => {
+                  setPasswordMode(value as "auto" | "manual");
+                  form.setValue("passwordMode", value as "auto" | "manual");
+                }}
+                disabled={formState.isSubmitting}
+                className="space-y-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="auto" id="mode-auto" />
+                  <label htmlFor="mode-auto" className="cursor-pointer">
+                    স্বয়ংক্রিয় তৈরি (সুপারিশকৃত)
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="manual" id="mode-manual" />
+                  <label htmlFor="mode-manual" className="cursor-pointer">
+                    ম্যানুয়াল প্রবেশ
+                  </label>
+                </div>
+              </RadioGroup>
+            </FormControl>
+          </FormItem>
+        )}
+        {isCreateMode && passwordMode === "manual" && (
+          <FormField
+            control={form.control}
+            name="pass"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>পাসওয়ার্ড</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="ব্যবহারকারীর পাসওয়ার্ড"
+                    {...field}
+                    disabled={formState.isSubmitting}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
