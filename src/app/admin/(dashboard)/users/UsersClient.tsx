@@ -196,16 +196,23 @@ export function UsersClient({
     setIsUserDialogOpen(true);
   };
 
-  const handleEditUser = async (user: User) => {
+  const handleEditUser = (user: User) => {
     // Fetch the user with password for editing
-    const result = await apiRequest<User>(`students`, "GET", null, { uid: user.uid });
-    if (result.success && result.data) {
-      setSelectedUser(result.data);
-    } else {
-      // Fallback to the user data without password if API call fails
-      setSelectedUser(user);
-    }
-    setIsUserDialogOpen(true);
+    apiRequest<User>(`students`, "GET", null, { uid: user.uid })
+      .then(result => {
+        if (result.success && result.data) {
+          setSelectedUser(result.data);
+        } else {
+          // Fallback to the user data without password if API call fails
+          setSelectedUser(user);
+        }
+        setIsUserDialogOpen(true);
+      })
+      .catch(() => {
+        // Fallback to the user data without password if API call fails
+        setSelectedUser(user);
+        setIsUserDialogOpen(true);
+      });
   };
 
   const openDeleteConfirm = (user: User) => {
