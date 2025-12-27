@@ -49,7 +49,9 @@ export async function fetchQuestions(
 ): Promise<RawQuestion[]> {
   // Safety guard: if we have no filters at all, don't fetch anything to avoid returning the whole database
   if (!fileId && !exam_id && !search) {
-    console.warn("fetchQuestions called without any filters, aborting fetch to prevent full database return.");
+    console.warn(
+      "fetchQuestions called without any filters, aborting fetch to prevent full database return.",
+    );
     return [];
   }
 

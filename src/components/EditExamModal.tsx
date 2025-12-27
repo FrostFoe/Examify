@@ -140,7 +140,9 @@ export function EditExamModal({
       setIsLoadingData(true);
       try {
         formRef.current?.reset();
-        setMode((exam?.is_practice ? "practice" : "live") as "live" | "practice");
+        setMode(
+          (exam?.is_practice ? "practice" : "live") as "live" | "practice",
+        );
         setShuffle(exam?.shuffle_questions || false);
 
         // Fetch full exam details to get ALL questions if not present
@@ -149,7 +151,7 @@ export function EditExamModal({
           const fetched = await fetchQuestions(exam.file_id, exam.id);
           if (Array.isArray(fetched)) {
             // Map RawQuestion to Question
-            currentQuestions = fetched.map(q => ({
+            currentQuestions = fetched.map((q) => ({
               ...q,
               id: String(q.id),
               question: q.question || q.question_text || "",
@@ -164,21 +166,25 @@ export function EditExamModal({
 
         // Sync counts from actual questions if they are 0
         const syncCounts = (configs: SubjectConfig[]) => {
-          return configs.map(config => {
+          return configs.map((config) => {
             if (config.count && config.count > 0) return config;
-            
+
             // Try to find questions for this section
-            const sectionQuestions = currentQuestions.filter(q => 
-              q.subject === config.id || 
-              q.subject === config.name ||
-              (config.question_ids && config.question_ids.includes(String(q.id)))
+            const sectionQuestions = currentQuestions.filter(
+              (q) =>
+                q.subject === config.id ||
+                q.subject === config.name ||
+                (config.question_ids &&
+                  config.question_ids.includes(String(q.id))),
             );
-            
+
             if (sectionQuestions.length > 0) {
               return {
                 ...config,
                 count: sectionQuestions.length,
-                question_ids: config.question_ids?.length ? config.question_ids : sectionQuestions.map(q => String(q.id))
+                question_ids: config.question_ids?.length
+                  ? config.question_ids
+                  : sectionQuestions.map((q) => String(q.id)),
               };
             }
             return config;
@@ -189,8 +195,12 @@ export function EditExamModal({
         const syncedO = syncCounts(oSubs);
 
         const hasSections = syncedM.length > 0 || syncedO.length > 0;
-        setIsCustomExam((!!exam.total_subjects && exam.total_subjects > 0) || hasSections);
-        setUseQuestionBank(!!(exam.question_ids && exam.question_ids.length > 0) && !hasSections);
+        setIsCustomExam(
+          (!!exam.total_subjects && exam.total_subjects > 0) || hasSections,
+        );
+        setUseQuestionBank(
+          !!(exam.question_ids && exam.question_ids.length > 0) && !hasSections,
+        );
 
         setMandatorySubjects(syncedM);
         setOptionalSubjects(syncedO);
@@ -210,7 +220,9 @@ export function EditExamModal({
         setSelectedQuestionIds(exam.question_ids || []);
 
         if (exam.start_at) {
-          const { date, hour, minute, period } = parseDhakaDateTime(exam.start_at);
+          const { date, hour, minute, period } = parseDhakaDateTime(
+            exam.start_at,
+          );
           setStartDate(date);
           setStartHour(hour);
           setStartMinute(minute);
@@ -218,7 +230,9 @@ export function EditExamModal({
         }
 
         if (exam.end_at) {
-          const { date, hour, minute, period } = parseDhakaDateTime(exam.end_at);
+          const { date, hour, minute, period } = parseDhakaDateTime(
+            exam.end_at,
+          );
           setEndDate(date);
           setEndHour(hour);
           setEndMinute(minute);
@@ -338,707 +352,802 @@ export function EditExamModal({
             {isLoadingData ? (
               <div className="flex flex-col items-center justify-center h-64 gap-4">
                 <CustomLoader />
-                <p className="text-sm font-bold text-primary animate-pulse">তথ্য লোড হচ্ছে...</p>
+                <p className="text-sm font-bold text-primary animate-pulse">
+                  তথ্য লোড হচ্ছে...
+                </p>
               </div>
             ) : (
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="exam-name-edit">পরীক্ষার নাম</Label>
-                <Input
-                  id="exam-name-edit"
-                  type="text"
-                  name="name"
-                  defaultValue={exam?.name || ""}
-                  placeholder="পরীক্ষার নাম"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="duration_minutes-edit">সময় (মিনিট)</Label>
-                <Input
-                  id="duration_minutes-edit"
-                  type="number"
-                  name="duration_minutes"
-                  defaultValue={String(exam?.duration_minutes || "")}
-                  placeholder="সময় (মিনিট)"
-                  onInput={handleNumberInput}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="marks_per_question-edit">
-                  প্রশ্ন প্রতি মার্ক
-                </Label>
-                <Input
-                  id="marks_per_question-edit"
-                  type="number"
-                  step="0.1"
-                  name="marks_per_question"
-                  defaultValue={String(exam?.marks_per_question || "1")}
-                  placeholder="প্রশ্ন প্রতি মার্ক"
-                  onInput={handleNumberInput}
-                />
-              </div>
-
-              <div className="flex flex-col md:flex-row md:items-center gap-3">
-                <Label>পরীক্ষার মোড</Label>
-                <Select
-                  value={mode}
-                  onValueChange={(value) =>
-                    setMode(value as "live" | "practice")
-                  }
-                >
-                  <SelectTrigger className="w-full md:w-[220px]">
-                    <SelectValue placeholder="পরীক্ষার মোড নির্বাচন করুন" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="live">লাইভ (Time-limited)</SelectItem>
-                    <SelectItem value="practice">
-                      প্রাকটিস (আনলিমিটেড)
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {mode === "live" && (
-                <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-semibold">
-                        শুরুর তারিখ
-                      </Label>
-                      <Input
-                        type="date"
-                        value={
-                          startDate ? startDate.toLocaleDateString("en-CA") : ""
-                        }
-                        onChange={(e) =>
-                          setStartDate(
-                            e.target.value
-                              ? new Date(e.target.value)
-                              : undefined,
-                          )
-                        }
-                        className="w-full"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-semibold">
-                        শুরুর সময়
-                      </Label>
-                      <div className="flex gap-1 items-center">
-                        <Select value={startHour} onValueChange={setStartHour}>
-                          <SelectTrigger className="w-20">
-                            <SelectValue placeholder="ঘন্টা" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {hours12.map((h) => (
-                              <SelectItem key={h} value={h}>
-                                {h}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <span className="text-lg font-bold text-muted-foreground">
-                          :
-                        </span>
-                        <Select
-                          value={startMinute}
-                          onValueChange={setStartMinute}
-                        >
-                          <SelectTrigger className="w-20">
-                            <SelectValue placeholder="মিনিট" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {minutes.map((m) => (
-                              <SelectItem key={m} value={m}>
-                                {m}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Select
-                          value={startPeriod}
-                          onValueChange={(v) =>
-                            setStartPeriod(v as "AM" | "PM")
-                          }
-                        >
-                          <SelectTrigger className="w-24">
-                            <SelectValue placeholder="AM/PM" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="AM">AM</SelectItem>
-                            <SelectItem value="PM">PM</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-semibold">
-                        শেষের তারিখ
-                      </Label>
-                      <Input
-                        type="date"
-                        value={
-                          endDate ? endDate.toLocaleDateString("en-CA") : ""
-                        }
-                        onChange={(e) =>
-                          setEndDate(
-                            e.target.value
-                              ? new Date(e.target.value)
-                              : undefined,
-                          )
-                        }
-                        className="w-full"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-semibold">
-                        শেষের সময়
-                      </Label>
-                      <div className="flex gap-1 items-center">
-                        <Select value={endHour} onValueChange={setEndHour}>
-                          <SelectTrigger className="w-20">
-                            <SelectValue placeholder="ঘন্টা" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {hours12.map((h) => (
-                              <SelectItem key={h} value={h}>
-                                {h}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <span className="text-lg font-bold text-muted-foreground">
-                          :
-                        </span>
-                        <Select value={endMinute} onValueChange={setEndMinute}>
-                          <SelectTrigger className="w-20">
-                            <SelectValue placeholder="মিনিট" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {minutes.map((m) => (
-                              <SelectItem key={m} value={m}>
-                                {m}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Select
-                          value={endPeriod}
-                          onValueChange={(v) => setEndPeriod(v as "AM" | "PM")}
-                        >
-                          <SelectTrigger className="w-24">
-                            <SelectValue placeholder="AM/PM" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="AM">AM</SelectItem>
-                            <SelectItem value="PM">PM</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="exam-name-edit">পরীক্ষার নাম</Label>
+                  <Input
+                    id="exam-name-edit"
+                    type="text"
+                    name="name"
+                    defaultValue={exam?.name || ""}
+                    placeholder="পরীক্ষার নাম"
+                    required
+                  />
                 </div>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="negative_marks-edit">নেগেটিভ মার্ক</Label>
-                <Input
-                  id="negative_marks-edit"
-                  type="number"
-                  step="0.01"
-                  name="negative_marks_per_wrong"
-                  defaultValue={String(exam?.negative_marks_per_wrong || "")}
-                  placeholder="নেগেটিভ মার্ক"
-                  onInput={handleNumberInput}
-                />
-              </div>
-              <input
-                name="is_practice"
-                type="hidden"
-                value={mode === "practice" ? "true" : "false"}
-              />
-              {!isCustomExam && (
-                <input
-                  type="hidden"
-                  name="file_id"
-                  defaultValue={exam?.file_id || ""}
-                />
-              )}
+                <div className="space-y-2">
+                  <Label htmlFor="duration_minutes-edit">সময় (মিনিট)</Label>
+                  <Input
+                    id="duration_minutes-edit"
+                    type="number"
+                    name="duration_minutes"
+                    defaultValue={String(exam?.duration_minutes || "")}
+                    placeholder="সময় (মিনিট)"
+                    onInput={handleNumberInput}
+                  />
+                </div>
 
-              {!isCustomExam && (
-                <>
-                  <div className="flex items-center space-x-2 pt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="marks_per_question-edit">
+                    প্রশ্ন প্রতি মার্ক
+                  </Label>
+                  <Input
+                    id="marks_per_question-edit"
+                    type="number"
+                    step="0.1"
+                    name="marks_per_question"
+                    defaultValue={String(exam?.marks_per_question || "1")}
+                    placeholder="প্রশ্ন প্রতি মার্ক"
+                    onInput={handleNumberInput}
+                  />
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center gap-3">
+                  <Label>পরীক্ষার মোড</Label>
+                  <Select
+                    value={mode}
+                    onValueChange={(value) =>
+                      setMode(value as "live" | "practice")
+                    }
+                  >
+                    <SelectTrigger className="w-full md:w-[220px]">
+                      <SelectValue placeholder="পরীক্ষার মোড নির্বাচন করুন" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="live">লাইভ (Time-limited)</SelectItem>
+                      <SelectItem value="practice">
+                        প্রাকটিস (আনলিমিটেড)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {mode === "live" && (
+                  <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold">
+                          শুরুর তারিখ
+                        </Label>
+                        <Input
+                          type="date"
+                          value={
+                            startDate
+                              ? startDate.toLocaleDateString("en-CA")
+                              : ""
+                          }
+                          onChange={(e) =>
+                            setStartDate(
+                              e.target.value
+                                ? new Date(e.target.value)
+                                : undefined,
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold">
+                          শুরুর সময়
+                        </Label>
+                        <div className="flex gap-1 items-center">
+                          <Select
+                            value={startHour}
+                            onValueChange={setStartHour}
+                          >
+                            <SelectTrigger className="w-20">
+                              <SelectValue placeholder="ঘন্টা" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {hours12.map((h) => (
+                                <SelectItem key={h} value={h}>
+                                  {h}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <span className="text-lg font-bold text-muted-foreground">
+                            :
+                          </span>
+                          <Select
+                            value={startMinute}
+                            onValueChange={setStartMinute}
+                          >
+                            <SelectTrigger className="w-20">
+                              <SelectValue placeholder="মিনিট" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {minutes.map((m) => (
+                                <SelectItem key={m} value={m}>
+                                  {m}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select
+                            value={startPeriod}
+                            onValueChange={(v) =>
+                              setStartPeriod(v as "AM" | "PM")
+                            }
+                          >
+                            <SelectTrigger className="w-24">
+                              <SelectValue placeholder="AM/PM" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="AM">AM</SelectItem>
+                              <SelectItem value="PM">PM</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold">
+                          শেষের তারিখ
+                        </Label>
+                        <Input
+                          type="date"
+                          value={
+                            endDate ? endDate.toLocaleDateString("en-CA") : ""
+                          }
+                          onChange={(e) =>
+                            setEndDate(
+                              e.target.value
+                                ? new Date(e.target.value)
+                                : undefined,
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold">
+                          শেষের সময়
+                        </Label>
+                        <div className="flex gap-1 items-center">
+                          <Select value={endHour} onValueChange={setEndHour}>
+                            <SelectTrigger className="w-20">
+                              <SelectValue placeholder="ঘন্টা" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {hours12.map((h) => (
+                                <SelectItem key={h} value={h}>
+                                  {h}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <span className="text-lg font-bold text-muted-foreground">
+                            :
+                          </span>
+                          <Select
+                            value={endMinute}
+                            onValueChange={setEndMinute}
+                          >
+                            <SelectTrigger className="w-20">
+                              <SelectValue placeholder="মিনিট" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {minutes.map((m) => (
+                                <SelectItem key={m} value={m}>
+                                  {m}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select
+                            value={endPeriod}
+                            onValueChange={(v) =>
+                              setEndPeriod(v as "AM" | "PM")
+                            }
+                          >
+                            <SelectTrigger className="w-24">
+                              <SelectValue placeholder="AM/PM" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="AM">AM</SelectItem>
+                              <SelectItem value="PM">PM</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="negative_marks-edit">নেগেটিভ মার্ক</Label>
+                  <Input
+                    id="negative_marks-edit"
+                    type="number"
+                    step="0.01"
+                    name="negative_marks_per_wrong"
+                    defaultValue={String(exam?.negative_marks_per_wrong || "")}
+                    placeholder="নেগেটিভ মার্ক"
+                    onInput={handleNumberInput}
+                  />
+                </div>
+                <input
+                  name="is_practice"
+                  type="hidden"
+                  value={mode === "practice" ? "true" : "false"}
+                />
+                {!isCustomExam && (
+                  <input
+                    type="hidden"
+                    name="file_id"
+                    defaultValue={exam?.file_id || ""}
+                  />
+                )}
+
+                {!isCustomExam && (
+                  <>
+                    <div className="flex items-center space-x-2 pt-2">
+                      <Checkbox
+                        id="use-question-bank-toggle-edit"
+                        checked={useQuestionBank}
+                        onCheckedChange={(checked) =>
+                          setUseQuestionBank(checked as boolean)
+                        }
+                      />
+                      <Label htmlFor="use-question-bank-toggle-edit">
+                        প্রশ্ন ব্যাংক থেকে প্রশ্ন বাছুন
+                      </Label>
+                    </div>
+
+                    {useQuestionBank && (
+                      <div className="space-y-2 p-4 border rounded-md bg-muted/30">
+                        <Label className="text-sm font-semibold">
+                          প্রশ্ন নির্বাচন
+                        </Label>
+                        <QuestionSelector
+                          selectedIds={selectedQuestionIds}
+                          onChange={setSelectedQuestionIds}
+                          minimal
+                        />
+                      </div>
+                    )}
+
+                    <div className="mt-4">
+                      <h3 className="text-sm font-medium mb-2">
+                        অথবা CSV থেকে প্রশ্ন আপলোড করুন
+                      </h3>
+                      <CSVUploadComponent
+                        isBank={false}
+                        onUploadSuccess={async (result) => {
+                          const fid = (result.file_id as string) || "";
+                          if (!fid) {
+                            console.error(
+                              "Upload success but no file_id in result:",
+                              result,
+                            );
+                            toast({
+                              title: "Error identifying uploaded file",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+
+                          if (formRef.current) {
+                            const fileIdInput = formRef.current.querySelector(
+                              'input[name="file_id"]',
+                            ) as HTMLInputElement;
+                            if (fileIdInput) fileIdInput.value = fid;
+                          }
+
+                          // Auto-group by sections if CSV has them
+                          try {
+                            const qs = await fetchQuestions(
+                              fid,
+                              undefined,
+                              5000,
+                            );
+                            if (qs && qs.length > 0) {
+                              const sectionMap = new Map<string, string[]>();
+                              qs.forEach((q) => {
+                                const section = String(
+                                  q.subject || q.type || "1",
+                                );
+                                if (!sectionMap.has(section)) {
+                                  sectionMap.set(section, []);
+                                }
+                                if (q.id)
+                                  sectionMap.get(section)?.push(String(q.id));
+                              });
+
+                              if (sectionMap.size > 0) {
+                                const newSubjects = Array.from(
+                                  sectionMap.keys(),
+                                ).map((s) => ({
+                                  id: s,
+                                  name: `Section ${s}`,
+                                }));
+                                setAvailableSubjects(newSubjects);
+                                setIsCustomExam(true);
+
+                                const configs: SubjectConfig[] = Array.from(
+                                  sectionMap.entries(),
+                                ).map(([s, ids]) => ({
+                                  id: s,
+                                  name: `Section ${s}`,
+                                  count: ids.length,
+                                  question_ids: ids,
+                                  type: "mandatory",
+                                }));
+                                setMandatorySubjects(configs);
+                                setOptionalSubjects([]);
+                                toast({
+                                  title: "CSV Grouping Successful",
+                                  description: `Detected ${sectionMap.size} sections.`,
+                                });
+                              }
+                            }
+                          } catch (err) {
+                            console.error("Error auto-grouping:", err);
+                          }
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="use-question-bank-toggle-edit"
-                      checked={useQuestionBank}
+                      id="shuffle_questions_edit"
+                      name="shuffle_questions"
+                      checked={shuffle}
                       onCheckedChange={(checked) =>
-                        setUseQuestionBank(checked as boolean)
+                        setShuffle(checked as boolean)
                       }
+                      value="true"
                     />
-                    <Label htmlFor="use-question-bank-toggle-edit">
-                      প্রশ্ন ব্যাংক থেকে প্রশ্ন বাছুন
+                    <Label htmlFor="shuffle_questions_edit">
+                      প্রশ্নগুলো এলোমেলো করুন
                     </Label>
                   </div>
+                </div>
 
-                  {useQuestionBank && (
-                    <div className="space-y-2 p-4 border rounded-md bg-muted/30">
-                      <Label className="text-sm font-semibold">
-                        প্রশ্ন নির্বাচন
-                      </Label>
-                      <QuestionSelector
-                        selectedIds={selectedQuestionIds}
-                        onChange={setSelectedQuestionIds}
-                        minimal
-                      />
-                    </div>
-                  )}
-
-                  <div className="mt-4">
-                    <h3 className="text-sm font-medium mb-2">
-                      অথবা CSV থেকে প্রশ্ন আপলোড করুন
-                    </h3>
-                    <CSVUploadComponent
-                      isBank={false}
-                      onUploadSuccess={async (result) => {
-                        const fid = (result.file_id as string) || "";
-                        if (!fid) {
-                          console.error("Upload success but no file_id in result:", result);
-                          toast({
-                            title: "Error identifying uploaded file",
-                            variant: "destructive",
-                          });
-                          return;
-                        }
-
-                        if (formRef.current) {
-                          const fileIdInput = formRef.current.querySelector(
-                            'input[name="file_id"]',
-                          ) as HTMLInputElement;
-                          if (fileIdInput) fileIdInput.value = fid;
-                        }
-
-                        // Auto-group by sections if CSV has them
-                        try {
-                          const qs = await fetchQuestions(fid, undefined, 5000);
-                          if (qs && qs.length > 0) {
-                            const sectionMap = new Map<string, string[]>();
-                            qs.forEach((q) => {
-                              const section = String(
-                                q.subject || q.type || "1",
-                              );
-                              if (!sectionMap.has(section)) {
-                                sectionMap.set(section, []);
-                              }
-                              if (q.id)
-                                sectionMap.get(section)?.push(String(q.id));
-                            });
-
-                            if (sectionMap.size > 0) {
-                              const newSubjects = Array.from(
-                                sectionMap.keys(),
-                              ).map((s) => ({
-                                id: s,
-                                name: `Section ${s}`,
-                              }));
-                              setAvailableSubjects(newSubjects);
-                              setIsCustomExam(true);
-
-                              const configs: SubjectConfig[] = Array.from(
-                                sectionMap.entries(),
-                              ).map(([s, ids]) => ({
-                                id: s,
-                                name: `Section ${s}`,
-                                count: ids.length,
-                                question_ids: ids,
-                                type: "mandatory",
-                              }));
-                              setMandatorySubjects(configs);
-                              setOptionalSubjects([]);
-                              toast({
-                                title: "CSV Grouping Successful",
-                                description: `Detected ${sectionMap.size} sections.`,
-                              });
-                            }
-                          }
-                        } catch (err) {
-                          console.error("Error auto-grouping:", err);
-                        }
-                      }}
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 pt-2">
                   <Checkbox
-                    id="shuffle_questions_edit"
-                    name="shuffle_questions"
-                    checked={shuffle}
+                    id="custom-exam-toggle-edit"
+                    checked={isCustomExam}
                     onCheckedChange={(checked) =>
-                      setShuffle(checked as boolean)
+                      setIsCustomExam(checked as boolean)
                     }
-                    value="true"
                   />
-                  <Label htmlFor="shuffle_questions_edit">
-                    প্রশ্নগুলো এলোমেলো করুন
+                  <Label htmlFor="custom-exam-toggle-edit">
+                    কাস্টম এক্সাম (বিষয় ভিত্তিক)
                   </Label>
                 </div>
-              </div>
 
-              <div className="flex items-center space-x-2 pt-2">
-                <Checkbox
-                  id="custom-exam-toggle-edit"
-                  checked={isCustomExam}
-                  onCheckedChange={(checked) =>
-                    setIsCustomExam(checked as boolean)
-                  }
-                />
-                <Label htmlFor="custom-exam-toggle-edit">
-                  কাস্টম এক্সাম (বিষয় ভিত্তিক)
-                </Label>
-              </div>
+                {isCustomExam && (
+                  <div className="space-y-4 p-4 border rounded-md bg-background/50">
+                    <div className="space-y-2">
+                      <Label htmlFor="total_subjects-edit">মোট বিষয়</Label>
+                      <Input
+                        id="total_subjects-edit"
+                        name="total_subjects"
+                        type="number"
+                        min="1"
+                        step="1"
+                        placeholder="e.g., 4"
+                        defaultValue={exam?.total_subjects || ""}
+                        onInput={handleNumberInput}
+                      />
+                    </div>
 
-              {isCustomExam && (
-                <div className="space-y-4 p-4 border rounded-md bg-background/50">
-                  <div className="space-y-2">
-                    <Label htmlFor="total_subjects-edit">মোট বিষয়</Label>
-                    <Input
-                      id="total_subjects-edit"
-                      name="total_subjects"
-                      type="number"
-                      min="1"
-                      step="1"
-                      placeholder="e.g., 4"
-                      defaultValue={exam?.total_subjects || ""}
-                      onInput={handleNumberInput}
-                    />
-                  </div>
-
-                  {/* Mandatory Sections */}
-                  <div className="space-y-4">
-                    <Label className="text-base font-bold flex items-center justify-between">
-                      <span>বাধ্যতামূলক বিষয় (Mandatory)</span>
-                      <Badge variant="secondary">{mandatorySubjects.length}</Badge>
-                    </Label>
-                    <div className="space-y-3">
-                      {mandatorySubjects.map((subject, index) => (
-                        <div
-                          key={`mandatory-item-${subject.id}`}
-                          className="p-3 rounded-lg border bg-background relative group hover:border-primary/50 transition-colors"
-                        >
-                          <div className="flex flex-col gap-3">
-                            <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
-                              <Input
-                                className="h-9 font-bold text-sm bg-background border-2 border-primary/20 focus:border-primary transition-all"
-                                value={subject.name || ""}
-                                onChange={(e) =>
-                                  updateSubjectConfig(
-                                    subject.id,
-                                    "mandatory",
-                                    "name",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="সেকশনের নাম লিখুন"
-                              />
-                              <div className="flex items-center gap-1 shrink-0">
-                                <Button
-                                  type="button"
-                                  variant="secondary"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  disabled={index === 0}
-                                  onClick={() => {
-                                    setMandatorySubjects((prev) => {
-                                      const newArr = [...prev];
-                                      [newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]];
-                                      return newArr;
-                                    });
-                                  }}
-                                  title="উপরে নিন"
-                                >
-                                  <ArrowUp className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="secondary"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  disabled={index === mandatorySubjects.length - 1}
-                                  onClick={() => {
-                                    setMandatorySubjects((prev) => {
-                                      const newArr = [...prev];
-                                      [newArr[index], newArr[index + 1]] = [newArr[index + 1], newArr[index]];
-                                      return newArr;
-                                    });
-                                  }}
-                                  title="নিচে নিন"
-                                >
-                                  <ArrowDown className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            <div className="flex flex-wrap items-center gap-3 pl-8 mt-1">
+                    {/* Mandatory Sections */}
+                    <div className="space-y-4">
+                      <Label className="text-base font-bold flex items-center justify-between">
+                        <span>বাধ্যতামূলক বিষয় (Mandatory)</span>
+                        <Badge variant="secondary">
+                          {mandatorySubjects.length}
+                        </Badge>
+                      </Label>
+                      <div className="space-y-3">
+                        {mandatorySubjects.map((subject, index) => (
+                          <div
+                            key={`mandatory-item-${subject.id}`}
+                            className="p-3 rounded-lg border bg-background relative group hover:border-primary/50 transition-colors"
+                          >
+                            <div className="flex flex-col gap-3">
                               <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground font-mono text-xs w-6">
+                                  {index + 1}.
+                                </span>
                                 <Input
-                                  type="number"
-                                  placeholder="Count"
-                                  className="h-8 w-20 text-xs border-dashed"
-                                  value={subject.count || 0}
+                                  className="h-9 font-bold text-sm bg-background border-2 border-primary/20 focus:border-primary transition-all"
+                                  value={subject.name || ""}
                                   onChange={(e) =>
                                     updateSubjectConfig(
                                       subject.id,
                                       "mandatory",
-                                      "count",
-                                      parseInt(e.target.value) || 0,
+                                      "name",
+                                      e.target.value,
                                     )
                                   }
+                                  placeholder="সেকশনের নাম লিখুন"
                                 />
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">টি প্রশ্ন</span>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    disabled={index === 0}
+                                    onClick={() => {
+                                      setMandatorySubjects((prev) => {
+                                        const newArr = [...prev];
+                                        [newArr[index - 1], newArr[index]] = [
+                                          newArr[index],
+                                          newArr[index - 1],
+                                        ];
+                                        return newArr;
+                                      });
+                                    }}
+                                    title="উপরে নিন"
+                                  >
+                                    <ArrowUp className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    disabled={
+                                      index === mandatorySubjects.length - 1
+                                    }
+                                    onClick={() => {
+                                      setMandatorySubjects((prev) => {
+                                        const newArr = [...prev];
+                                        [newArr[index], newArr[index + 1]] = [
+                                          newArr[index + 1],
+                                          newArr[index],
+                                        ];
+                                        return newArr;
+                                      });
+                                    }}
+                                    title="নিচে নিন"
+                                  >
+                                    <ArrowDown className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
-                              
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-8 text-xs bg-primary/5 hover:bg-primary/10"
-                                onClick={() =>
-                                  setActiveSubjectSelection({
-                                    id: subject.id,
-                                    type: "mandatory",
-                                  })
-                                }
-                              >
-                                <ListChecks className="w-3 h-3 mr-1 text-primary" />
-                                প্রশ্ন বাছুন ({subject.question_ids?.length || 0})
-                              </Button>
 
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-8 text-xs border-dashed border-amber-500/50 text-amber-600 hover:bg-amber-50"
-                                onClick={() => {
-                                  setMandatorySubjects((prev) => prev.filter((s) => s.id !== subject.id));
-                                  setOptionalSubjects((prev) => [...prev, { ...subject, type: "optional" }]);
-                                }}
-                                title="Move to Optional"
-                              >
-                                <ArrowDown className="w-3 h-3 mr-1" />
-                                ঐচ্ছিক করুন
-                              </Button>
-                              
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:bg-destructive/10 ml-auto"
-                                onClick={() => setMandatorySubjects((prev) => prev.filter((s) => s.id !== subject.id))}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <div className="flex flex-wrap items-center gap-3 pl-8 mt-1">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    placeholder="Count"
+                                    className="h-8 w-20 text-xs border-dashed"
+                                    value={subject.count || 0}
+                                    onChange={(e) =>
+                                      updateSubjectConfig(
+                                        subject.id,
+                                        "mandatory",
+                                        "count",
+                                        parseInt(e.target.value) || 0,
+                                      )
+                                    }
+                                  />
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    টি প্রশ্ন
+                                  </span>
+                                </div>
+
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 text-xs bg-primary/5 hover:bg-primary/10"
+                                  onClick={() =>
+                                    setActiveSubjectSelection({
+                                      id: subject.id,
+                                      type: "mandatory",
+                                    })
+                                  }
+                                >
+                                  <ListChecks className="w-3 h-3 mr-1 text-primary" />
+                                  প্রশ্ন বাছুন (
+                                  {subject.question_ids?.length || 0})
+                                </Button>
+
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 text-xs border-dashed border-amber-500/50 text-amber-600 hover:bg-amber-50"
+                                  onClick={() => {
+                                    setMandatorySubjects((prev) =>
+                                      prev.filter((s) => s.id !== subject.id),
+                                    );
+                                    setOptionalSubjects((prev) => [
+                                      ...prev,
+                                      { ...subject, type: "optional" },
+                                    ]);
+                                  }}
+                                  title="Move to Optional"
+                                >
+                                  <ArrowDown className="w-3 h-3 mr-1" />
+                                  ঐচ্ছিক করুন
+                                </Button>
+
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:bg-destructive/10 ml-auto"
+                                  onClick={() =>
+                                    setMandatorySubjects((prev) =>
+                                      prev.filter((s) => s.id !== subject.id),
+                                    )
+                                  }
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                      {mandatorySubjects.length === 0 && (
-                        <div className="text-center p-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
-                          বাধ্যতামূলক কোনো সেকশন যোগ করা হয়নি।
-                        </div>
-                      )}
+                        ))}
+                        {mandatorySubjects.length === 0 && (
+                          <div className="text-center p-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
+                            বাধ্যতামূলক কোনো সেকশন যোগ করা হয়নি।
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Optional Sections */}
-                  <div className="space-y-4 pt-4 border-t">
-                    <Label className="text-base font-bold flex items-center justify-between">
-                      <span>অন্যান্য বিষয় (Optional)</span>
-                      <Badge variant="secondary">{optionalSubjects.length}</Badge>
-                    </Label>
-                    <div className="space-y-3">
-                      {optionalSubjects.map((subject, index) => (
-                        <div
-                          key={`optional-item-${subject.id}`}
-                          className="p-3 rounded-lg border bg-secondary/5 relative group hover:border-secondary/50 transition-colors"
-                        >
-                          <div className="flex flex-col gap-3">
-                            <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
-                              <Input
-                                className="h-9 font-bold text-sm bg-background border-2 border-secondary/20 focus:border-secondary transition-all"
-                                value={subject.name || ""}
-                                onChange={(e) =>
-                                  updateSubjectConfig(
-                                    subject.id,
-                                    "optional",
-                                    "name",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="সেকশনের নাম লিখুন"
-                              />
-                              <div className="flex items-center gap-1 shrink-0">
-                                <Button
-                                  type="button"
-                                  variant="secondary"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  disabled={index === 0}
-                                  onClick={() => {
-                                    setOptionalSubjects((prev) => {
-                                      const newArr = [...prev];
-                                      [newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]];
-                                      return newArr;
-                                    });
-                                  }}
-                                  title="উপরে নিন"
-                                >
-                                  <ArrowUp className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="secondary"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  disabled={index === optionalSubjects.length - 1}
-                                  onClick={() => {
-                                    setOptionalSubjects((prev) => {
-                                      const newArr = [...prev];
-                                      [newArr[index], newArr[index + 1]] = [newArr[index + 1], newArr[index]];
-                                      return newArr;
-                                    });
-                                  }}
-                                  title="নিচে নিন"
-                                >
-                                  <ArrowDown className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            <div className="flex flex-wrap items-center gap-3 pl-8 mt-1">
+                    {/* Optional Sections */}
+                    <div className="space-y-4 pt-4 border-t">
+                      <Label className="text-base font-bold flex items-center justify-between">
+                        <span>অন্যান্য বিষয় (Optional)</span>
+                        <Badge variant="secondary">
+                          {optionalSubjects.length}
+                        </Badge>
+                      </Label>
+                      <div className="space-y-3">
+                        {optionalSubjects.map((subject, index) => (
+                          <div
+                            key={`optional-item-${subject.id}`}
+                            className="p-3 rounded-lg border bg-secondary/5 relative group hover:border-secondary/50 transition-colors"
+                          >
+                            <div className="flex flex-col gap-3">
                               <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground font-mono text-xs w-6">
+                                  {index + 1}.
+                                </span>
                                 <Input
-                                  type="number"
-                                  placeholder="Count"
-                                  className="h-8 w-20 text-xs border-dashed"
-                                  value={subject.count || 0}
+                                  className="h-9 font-bold text-sm bg-background border-2 border-secondary/20 focus:border-secondary transition-all"
+                                  value={subject.name || ""}
                                   onChange={(e) =>
                                     updateSubjectConfig(
                                       subject.id,
                                       "optional",
-                                      "count",
-                                      parseInt(e.target.value) || 0,
+                                      "name",
+                                      e.target.value,
                                     )
                                   }
+                                  placeholder="সেকশনের নাম লিখুন"
                                 />
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">টি প্রশ্ন</span>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    disabled={index === 0}
+                                    onClick={() => {
+                                      setOptionalSubjects((prev) => {
+                                        const newArr = [...prev];
+                                        [newArr[index - 1], newArr[index]] = [
+                                          newArr[index],
+                                          newArr[index - 1],
+                                        ];
+                                        return newArr;
+                                      });
+                                    }}
+                                    title="উপরে নিন"
+                                  >
+                                    <ArrowUp className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    disabled={
+                                      index === optionalSubjects.length - 1
+                                    }
+                                    onClick={() => {
+                                      setOptionalSubjects((prev) => {
+                                        const newArr = [...prev];
+                                        [newArr[index], newArr[index + 1]] = [
+                                          newArr[index + 1],
+                                          newArr[index],
+                                        ];
+                                        return newArr;
+                                      });
+                                    }}
+                                    title="নিচে নিন"
+                                  >
+                                    <ArrowDown className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
-                              
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-8 text-xs bg-secondary/10 hover:bg-secondary/20"
-                                onClick={() =>
-                                  setActiveSubjectSelection({
-                                    id: subject.id,
-                                    type: "optional",
-                                  })
-                                }
-                              >
-                                <ListChecks className="w-3 h-3 mr-1 text-secondary-foreground" />
-                                প্রশ্ন বাছুন ({subject.question_ids?.length || 0})
-                              </Button>
 
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-8 text-xs border-dashed border-emerald-500/50 text-emerald-600 hover:bg-emerald-50"
-                                onClick={() => {
-                                  setOptionalSubjects((prev) => prev.filter((s) => s.id !== subject.id));
-                                  setMandatorySubjects((prev) => [...prev, { ...subject, type: "mandatory" }]);
-                                }}
-                                title="Move to Mandatory"
-                              >
-                                <ArrowUp className="w-3 h-3 mr-1" />
-                                বাধ্যতামূলক করুন
-                              </Button>
-                              
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:bg-destructive/10 ml-auto"
-                                onClick={() => setOptionalSubjects((prev) => prev.filter((s) => s.id !== subject.id))}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <div className="flex flex-wrap items-center gap-3 pl-8 mt-1">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    placeholder="Count"
+                                    className="h-8 w-20 text-xs border-dashed"
+                                    value={subject.count || 0}
+                                    onChange={(e) =>
+                                      updateSubjectConfig(
+                                        subject.id,
+                                        "optional",
+                                        "count",
+                                        parseInt(e.target.value) || 0,
+                                      )
+                                    }
+                                  />
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    টি প্রশ্ন
+                                  </span>
+                                </div>
+
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 text-xs bg-secondary/10 hover:bg-secondary/20"
+                                  onClick={() =>
+                                    setActiveSubjectSelection({
+                                      id: subject.id,
+                                      type: "optional",
+                                    })
+                                  }
+                                >
+                                  <ListChecks className="w-3 h-3 mr-1 text-secondary-foreground" />
+                                  প্রশ্ন বাছুন (
+                                  {subject.question_ids?.length || 0})
+                                </Button>
+
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 text-xs border-dashed border-emerald-500/50 text-emerald-600 hover:bg-emerald-50"
+                                  onClick={() => {
+                                    setOptionalSubjects((prev) =>
+                                      prev.filter((s) => s.id !== subject.id),
+                                    );
+                                    setMandatorySubjects((prev) => [
+                                      ...prev,
+                                      { ...subject, type: "mandatory" },
+                                    ]);
+                                  }}
+                                  title="Move to Mandatory"
+                                >
+                                  <ArrowUp className="w-3 h-3 mr-1" />
+                                  বাধ্যতামূলক করুন
+                                </Button>
+
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:bg-destructive/10 ml-auto"
+                                  onClick={() =>
+                                    setOptionalSubjects((prev) =>
+                                      prev.filter((s) => s.id !== subject.id),
+                                    )
+                                  }
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                      {optionalSubjects.length === 0 && (
-                        <div className="text-center p-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
-                          ঐচ্ছিক কোনো সেকশন যোগ করা হয়নি।
-                        </div>
-                      )}
+                        ))}
+                        {optionalSubjects.length === 0 && (
+                          <div className="text-center p-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
+                            ঐচ্ছিক কোনো সেকশন যোগ করা হয়নি।
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Add New Section */}
+                    <div className="pt-4 border-t flex gap-2 items-center">
+                      <Select
+                        onValueChange={(val) => {
+                          const subject = availableSubjects.find(
+                            (s) => s.id === val,
+                          );
+                          if (subject) {
+                            setMandatorySubjects((prev) => [
+                              ...prev,
+                              {
+                                ...subject,
+                                type: "mandatory",
+                                count: 0,
+                                question_ids: [],
+                              },
+                            ]);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="সেকশন যোগ করুন..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableSubjects
+                            .filter(
+                              (s) =>
+                                !mandatorySubjects.some((m) => m.id === s.id) &&
+                                !optionalSubjects.some((o) => o.id === s.id),
+                            )
+                            .map((s) => (
+                              <SelectItem key={s.id} value={s.id}>
+                                {s.name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          const newId = `custom_${Date.now()}`;
+                          const newSubject = { id: newId, name: "New Section" };
+                          setAvailableSubjects((prev) => [...prev, newSubject]);
+                          setMandatorySubjects((prev) => [
+                            ...prev,
+                            {
+                              ...newSubject,
+                              type: "mandatory",
+                              count: 0,
+                              question_ids: [],
+                            },
+                          ]);
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        কাস্টম সেকশন তৈরি করুন
+                      </Button>
                     </div>
                   </div>
+                )}
 
-                  {/* Add New Section */}
-                  <div className="pt-4 border-t flex gap-2 items-center">
-                    <Select
-                      onValueChange={(val) => {
-                        const subject = availableSubjects.find(s => s.id === val);
-                        if (subject) {
-                          setMandatorySubjects(prev => [...prev, { ...subject, type: 'mandatory', count: 0, question_ids: [] }]);
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="সেকশন যোগ করুন..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableSubjects
-                          .filter(s => 
-                            !mandatorySubjects.some(m => m.id === s.id) && 
-                            !optionalSubjects.some(o => o.id === s.id)
-                          )
-                          .map(s => (
-                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                          ))
-                        }
-                      </SelectContent>
-                    </Select>
-                    
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        const newId = `custom_${Date.now()}`;
-                        const newSubject = { id: newId, name: "New Section" };
-                        setAvailableSubjects(prev => [...prev, newSubject]);
-                        setMandatorySubjects(prev => [...prev, { ...newSubject, type: 'mandatory', count: 0, question_ids: [] }]);
-                      }}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      কাস্টম সেকশন তৈরি করুন
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              <Button type="submit" disabled={isSubmitting} className="w-full">
-                {isSubmitting ? <CustomLoader minimal /> : "পরীক্ষা আপডেট করুন"}
-              </Button>
-            </form>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  {isSubmitting ? (
+                    <CustomLoader minimal />
+                  ) : (
+                    "পরীক্ষা আপডেট করুন"
+                  )}
+                </Button>
+              </form>
             )}
           </div>
         </DialogContent>

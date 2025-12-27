@@ -806,9 +806,9 @@ export default function TakeExamPage() {
         const answersData = JSON.parse(answersDataStr);
         if (answersData) setSelectedAnswers(answersData);
       }
-      
+
       if (staticDataStr || answersDataStr) {
-          toast({ title: "পরীক্ষা পুনরুদ্ধার করা হয়েছে" });
+        toast({ title: "পরীক্ষা পুনরুদ্ধার করা হয়েছে" });
       }
     } catch (e) {
       console.error("Failed to restore progress", e);
@@ -850,7 +850,7 @@ export default function TakeExamPage() {
       !submitted &&
       !isSubmitting &&
       examStarted &&
-      exam?.duration_minutes && 
+      exam?.duration_minutes &&
       exam.duration_minutes > 0
     ) {
       // Initialize endTime if not set (First start)
@@ -870,7 +870,7 @@ export default function TakeExamPage() {
           setTimeLeft(0);
           // Only submit if we haven't already
           if (!isSubmitting && !submitted) {
-             handleSubmitExam();
+            handleSubmitExam();
           }
         } else {
           setTimeLeft(Math.floor(diff / 1000));
@@ -882,14 +882,7 @@ export default function TakeExamPage() {
 
       return () => clearInterval(timer);
     }
-  }, [
-    submitted,
-    isSubmitting,
-    examStarted,
-    exam,
-    endTime,
-    handleSubmitExam,
-  ]);
+  }, [submitted, isSubmitting, examStarted, exam, endTime, handleSubmitExam]);
 
   const showTimeWarning = useMemo(() => {
     if (timeLeft === null || exam?.duration_minutes === undefined) return false;
@@ -1031,9 +1024,11 @@ export default function TakeExamPage() {
 
       // Create a mapping for subject IDs to names from exam configuration
       const customMap: { [key: string]: string } = { ...subjectsMap };
-      const mConfigs = (examData.mandatory_subjects as (string | SubjectConfig)[]) || [];
-      const oConfigs = (examData.optional_subjects as (string | SubjectConfig)[]) || [];
-      
+      const mConfigs =
+        (examData.mandatory_subjects as (string | SubjectConfig)[]) || [];
+      const oConfigs =
+        (examData.optional_subjects as (string | SubjectConfig)[]) || [];
+
       [...mConfigs, ...oConfigs].forEach((config) => {
         if (config && typeof config === "object" && config.id && config.name) {
           customMap[config.id] = config.name;
@@ -1080,7 +1075,10 @@ export default function TakeExamPage() {
 
           // Map subject name using customMap
           const originalSubject = q.subject || "";
-          const mappedSubject = customMap[originalSubject] || subjectsMap[originalSubject] || originalSubject;
+          const mappedSubject =
+            customMap[originalSubject] ||
+            subjectsMap[originalSubject] ||
+            originalSubject;
 
           return {
             ...q,
@@ -1123,7 +1121,10 @@ export default function TakeExamPage() {
 
             // Map subject name using customMap
             const originalSubject = q.subject || "";
-            const mappedSubject = customMap[originalSubject] || subjectsMap[originalSubject] || originalSubject;
+            const mappedSubject =
+              customMap[originalSubject] ||
+              subjectsMap[originalSubject] ||
+              originalSubject;
 
             return {
               id: String(q.id),

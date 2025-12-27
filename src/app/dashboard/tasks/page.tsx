@@ -52,11 +52,16 @@ export default function DailyTaskPage() {
     const localDate = new Date(now.getTime() - offset * 60 * 1000);
     const todayStr = localDate.toISOString().split("T")[0];
 
-    const result = await apiRequest<StudentReport[]>("get-report", "GET", null, {
-      student_uid: user?.uid,
-      month: todayStr.split("-")[1],
-      year: todayStr.split("-")[0],
-    });
+    const result = await apiRequest<StudentReport[]>(
+      "get-report",
+      "GET",
+      null,
+      {
+        student_uid: user?.uid,
+        month: todayStr.split("-")[1],
+        year: todayStr.split("-")[0],
+      },
+    );
 
     if (result.success && result.data && result.data.length > 0) {
       const studentData = result.data[0];
@@ -195,8 +200,12 @@ export default function DailyTaskPage() {
           <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 rounded-xl bg-muted/30 border border-primary/5">
               <div className="space-y-2">
-                <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">বর্তমান স্ট্যাটাস</p>
-                <div className={`text-xl font-bold flex items-center gap-3 ${attendance === 'Yes' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                  বর্তমান স্ট্যাটাস
+                </p>
+                <div
+                  className={`text-xl font-bold flex items-center gap-3 ${attendance === "Yes" ? "text-emerald-400" : "text-amber-400"}`}
+                >
                   {attendance === "Yes" ? (
                     <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
                       <CheckCircle className="h-5 w-5" /> <span>উপস্থিত</span>
@@ -216,7 +225,9 @@ export default function DailyTaskPage() {
                       <Circle className="h-2 w-2 fill-current" /> এখন সেরা সময়
                     </p>
                   ) : (
-                    <p className="text-xs text-muted-foreground font-medium">সাজেস্টেড সময় অনুসরণ করুন</p>
+                    <p className="text-xs text-muted-foreground font-medium">
+                      সাজেস্টেড সময় অনুসরণ করুন
+                    </p>
                   )}
                 </div>
                 <Button
@@ -224,7 +235,9 @@ export default function DailyTaskPage() {
                   onClick={() => handleSave(undefined, true)}
                   className="bg-primary hover:bg-primary/90 text-white font-bold px-8 h-12 rounded-full shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
                 >
-                  {attendance === "Yes" ? "নিশ্চিত করা হয়েছে" : "উপস্থিতি নিশ্চিত করুন"}
+                  {attendance === "Yes"
+                    ? "নিশ্চিত করা হয়েছে"
+                    : "উপস্থিতি নিশ্চিত করুন"}
                 </Button>
               </div>
             </div>
@@ -247,10 +260,16 @@ export default function DailyTaskPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div className="space-y-3 group">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="task_1" className="text-sm font-bold text-muted-foreground group-focus-within:text-primary transition-colors">
+                    <Label
+                      htmlFor="task_1"
+                      className="text-sm font-bold text-muted-foreground group-focus-within:text-primary transition-colors"
+                    >
                       টাস্ক ১ (Task 1)
                     </Label>
-                    <Badge variant="outline" className={`${task1Status === 'active' ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/5' : 'border-white/10 text-muted-foreground'} text-[10px]`}>
+                    <Badge
+                      variant="outline"
+                      className={`${task1Status === "active" ? "border-emerald-500/50 text-emerald-400 bg-emerald-500/5" : "border-white/10 text-muted-foreground"} text-[10px]`}
+                    >
                       দুপুর ১২টা - ১টা
                     </Badge>
                   </div>
@@ -265,10 +284,16 @@ export default function DailyTaskPage() {
 
                 <div className="space-y-3 group">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="task_2" className="text-sm font-bold text-muted-foreground group-focus-within:text-primary transition-colors">
+                    <Label
+                      htmlFor="task_2"
+                      className="text-sm font-bold text-muted-foreground group-focus-within:text-primary transition-colors"
+                    >
                       টাস্ক ২ (Task 2)
                     </Label>
-                    <Badge variant="outline" className={`${task2Status === 'active' ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/5' : 'border-white/10 text-muted-foreground'} text-[10px]`}>
+                    <Badge
+                      variant="outline"
+                      className={`${task2Status === "active" ? "border-emerald-500/50 text-emerald-400 bg-emerald-500/5" : "border-white/10 text-muted-foreground"} text-[10px]`}
+                    >
                       রাত ৯টা - ১০টা
                     </Badge>
                   </div>
@@ -286,11 +311,15 @@ export default function DailyTaskPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-4 border-t border-white/5">
                 <div className="space-y-4">
                   <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> পরীক্ষার লিংক (Exam Links)
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />{" "}
+                    পরীক্ষার লিংক (Exam Links)
                   </Label>
                   <div className="space-y-3">
                     {examLinks.map((link, index) => (
-                      <div key={index} className="flex gap-2 group animate-in slide-in-from-left-2">
+                      <div
+                        key={index}
+                        className="flex gap-2 group animate-in slide-in-from-left-2"
+                      >
                         <Input
                           type="url"
                           placeholder="https://..."
@@ -329,11 +358,15 @@ export default function DailyTaskPage() {
 
                 <div className="space-y-4">
                   <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-pink-500" /> পরীক্ষার নম্বর (Exam Marks)
+                    <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />{" "}
+                    পরীক্ষার নম্বর (Exam Marks)
                   </Label>
                   <div className="space-y-3">
                     {examMarks.map((mark, index) => (
-                      <div key={index} className="flex gap-2 group animate-in slide-in-from-right-2">
+                      <div
+                        key={index}
+                        className="flex gap-2 group animate-in slide-in-from-right-2"
+                      >
                         <Input
                           type="number"
                           step="0.01"
@@ -393,5 +426,4 @@ export default function DailyTaskPage() {
       </div>
     </div>
   );
-
 }

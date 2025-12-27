@@ -129,4 +129,3 @@ export type StudentReport = {
   roll: string;
   days: Record<string, ReportDay>;
 };
-

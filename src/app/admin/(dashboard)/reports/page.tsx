@@ -4,12 +4,7 @@ import React, { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/api";
 import { StudentReport, Batch } from "@/lib/types";
 import { PageHeader } from "@/components";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -70,7 +65,7 @@ export default function AdminReportsPage() {
   const [month, setMonth] = useState(new Date().getMonth() + 1 + "");
   const [year, setYear] = useState(new Date().getFullYear() + "");
   const [batchId, setBatchId] = useState<string>("all");
-  
+
   const [selectedDetail, setSelectedDetail] = useState<{
     title: string;
     content: string;
@@ -95,7 +90,12 @@ export default function AdminReportsPage() {
     };
     if (batchId !== "all") params.batch_id = batchId;
 
-    const result = await apiRequest<StudentReport[]>("get-report", "GET", null, params);
+    const result = await apiRequest<StudentReport[]>(
+      "get-report",
+      "GET",
+      null,
+      params,
+    );
     if (result.success) {
       setReports(result.data);
     }
@@ -172,17 +172,17 @@ export default function AdminReportsPage() {
               </Select>
             </div>
 
-            <Button 
-              onClick={fetchReports} 
-              disabled={loading} 
+            <Button
+              onClick={fetchReports}
+              disabled={loading}
               className="gap-2 h-11 px-8 font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
             >
               <Search className="h-4 w-4" /> রিপোর্ট লোড করুন
             </Button>
 
-            <Button 
-              variant="outline" 
-              onClick={() => window.print()} 
+            <Button
+              variant="outline"
+              onClick={() => window.print()}
               className="gap-2 h-11 px-6 border-white/10 bg-white/5 hover:bg-white/10 ml-auto transition-all"
             >
               <Download className="h-4 w-4" /> PDF এক্সপোর্ট
@@ -199,10 +199,22 @@ export default function AdminReportsPage() {
               <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
                 <Calendar className="h-6 w-6" />
               </div>
-              <span>মাসিক রিপোর্ট: <span className="text-primary">{months.find(m => m.value === month.padStart(2, "0"))?.label} {year}</span></span>
+              <span>
+                মাসিক রিপোর্ট:{" "}
+                <span className="text-primary">
+                  {
+                    months.find((m) => m.value === month.padStart(2, "0"))
+                      ?.label
+                  }{" "}
+                  {year}
+                </span>
+              </span>
             </div>
             <div className="flex items-center gap-3">
-              <Badge variant="outline" className="bg-white/5 border-white/10 text-slate-400 font-bold px-3 py-1">
+              <Badge
+                variant="outline"
+                className="bg-white/5 border-white/10 text-slate-400 font-bold px-3 py-1"
+              >
                 STUDENTS: {reports.length}
               </Badge>
             </div>
@@ -221,9 +233,17 @@ export default function AdminReportsPage() {
                       Metric
                     </TableHead>
                     {dayHeaders.map((day) => (
-                      <TableHead key={day} className="text-center text-[9px] p-2 border-r border-white/5 min-w-[45px] text-slate-500 font-black uppercase tracking-widest">
-                        {day.toString().padStart(2, "0")}<br/>
-                        <span className="text-primary/50">{months.find(m => m.value === month.padStart(2, "0"))?.label.slice(0, 3)}</span>
+                      <TableHead
+                        key={day}
+                        className="text-center text-[9px] p-2 border-r border-white/5 min-w-[45px] text-slate-500 font-black uppercase tracking-widest"
+                      >
+                        {day.toString().padStart(2, "0")}
+                        <br />
+                        <span className="text-primary/50">
+                          {months
+                            .find((m) => m.value === month.padStart(2, "0"))
+                            ?.label.slice(0, 3)}
+                        </span>
                       </TableHead>
                     ))}
                   </TableRow>
@@ -231,18 +251,26 @@ export default function AdminReportsPage() {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={daysInMonth + 2} className="h-64 text-center">
+                      <TableCell
+                        colSpan={daysInMonth + 2}
+                        className="h-64 text-center"
+                      >
                         <div className="flex flex-col items-center justify-center gap-4 opacity-50">
                           <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                          <p className="font-black uppercase tracking-widest text-xs">Generating Report Grid...</p>
+                          <p className="font-black uppercase tracking-widest text-xs">
+                            Generating Report Grid...
+                          </p>
                         </div>
                       </TableCell>
                     </TableRow>
                   ) : reports.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={daysInMonth + 2} className="h-64 text-center opacity-40">
-                         <Search className="h-12 w-12 mx-auto mb-4" />
-                         <p className="font-bold">No Data Found for Selection</p>
+                      <TableCell
+                        colSpan={daysInMonth + 2}
+                        className="h-64 text-center opacity-40"
+                      >
+                        <Search className="h-12 w-12 mx-auto mb-4" />
+                        <p className="font-bold">No Data Found for Selection</p>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -258,13 +286,18 @@ export default function AdminReportsPage() {
                       return (
                         <React.Fragment key={student.uid}>
                           {activityTypes.map((activity, idx) => (
-                            <TableRow key={`${student.uid}-${activity.key}`} className="border-white/5 hover:bg-white/[0.02] transition-colors group/row">
+                            <TableRow
+                              key={`${student.uid}-${activity.key}`}
+                              className="border-white/5 hover:bg-white/[0.02] transition-colors group/row"
+                            >
                               {idx === 0 && (
-                                <TableCell 
-                                  rowSpan={5} 
+                                <TableCell
+                                  rowSpan={5}
                                   className="sticky left-0 z-20 bg-[#161926] text-emerald-400 font-black border-r border-white/10 shadow-[5px_0_15px_rgba(0,0,0,0.3)] align-top pt-6"
                                 >
-                                  <div className="truncate w-[170px] text-sm tracking-tight mb-1">{student.name}</div>
+                                  <div className="truncate w-[170px] text-sm tracking-tight mb-1">
+                                    {student.name}
+                                  </div>
                                   <div className="flex items-center gap-2">
                                     <div className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] text-emerald-500/80 border border-emerald-500/20">
                                       ROLL: {student.roll}
@@ -272,9 +305,11 @@ export default function AdminReportsPage() {
                                   </div>
                                 </TableCell>
                               )}
-                              <TableCell 
+                              <TableCell
                                 className={`sticky left-[200px] z-20 border-r border-white/5 text-[9px] font-black tracking-widest px-4 ${
-                                  activity.key === "progress" ? "bg-[#1c2033] text-primary" : "bg-[#111421] text-slate-500"
+                                  activity.key === "progress"
+                                    ? "bg-[#1c2033] text-primary"
+                                    : "bg-[#111421] text-slate-500"
                                 } shadow-[5px_0_10px_rgba(0,0,0,0.2)]`}
                               >
                                 {activity.label}
@@ -282,96 +317,146 @@ export default function AdminReportsPage() {
                               {dayHeaders.map((day) => {
                                 const dateStr = `${year}-${month.padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
                                 const dayData = student.days[dateStr];
-                                
-                                if (!dayData) return <TableCell key={day} className="text-center text-slate-800 font-bold border-r border-white/5 opacity-20">-</TableCell>;
+
+                                if (!dayData)
+                                  return (
+                                    <TableCell
+                                      key={day}
+                                      className="text-center text-slate-800 font-bold border-r border-white/5 opacity-20"
+                                    >
+                                      -
+                                    </TableCell>
+                                  );
 
                                 if (activity.key === "attendance") {
                                   return (
-                                    <TableCell key={day} className="text-center p-0 border-r border-white/5">
+                                    <TableCell
+                                      key={day}
+                                      className="text-center p-0 border-r border-white/5"
+                                    >
                                       {dayData.attendance === "Yes" ? (
                                         <div className="h-full w-full flex items-center justify-center py-2 bg-emerald-500/5">
-                                           <CheckCircle2 className="h-4 w-4 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                                          <CheckCircle2 className="h-4 w-4 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
                                         </div>
                                       ) : (
-                                        <span className="text-slate-800 font-bold opacity-30">-</span>
+                                        <span className="text-slate-800 font-bold opacity-30">
+                                          -
+                                        </span>
                                       )}
                                     </TableCell>
                                   );
                                 }
 
-                                if (activity.key === "task_1" || activity.key === "task_2") {
-                                  const content = activity.key === "task_1" ? dayData.task_1 : dayData.task_2;
+                                if (
+                                  activity.key === "task_1" ||
+                                  activity.key === "task_2"
+                                ) {
+                                  const content =
+                                    activity.key === "task_1"
+                                      ? dayData.task_1
+                                      : dayData.task_2;
                                   return (
-                                    <TableCell key={day} className={`text-center p-0 border-r border-white/5 ${content ? 'bg-indigo-500/5' : ''}`}>
+                                    <TableCell
+                                      key={day}
+                                      className={`text-center p-0 border-r border-white/5 ${content ? "bg-indigo-500/5" : ""}`}
+                                    >
                                       {content ? (
-                                        <Button 
-                                          variant="ghost" 
-                                          size="icon" 
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
                                           className="h-9 w-full rounded-none text-indigo-400 hover:text-white hover:bg-indigo-500/20 transition-all"
-                                          onClick={() => setSelectedDetail({
-                                            title: `${activity.label} - ${dateStr}`,
-                                            content: content
-                                          })}
+                                          onClick={() =>
+                                            setSelectedDetail({
+                                              title: `${activity.label} - ${dateStr}`,
+                                              content: content,
+                                            })
+                                          }
                                         >
                                           <FileText className="h-4 w-4" />
                                         </Button>
                                       ) : (
-                                        <span className="text-slate-800 font-bold opacity-30">-</span>
+                                        <span className="text-slate-800 font-bold opacity-30">
+                                          -
+                                        </span>
                                       )}
                                     </TableCell>
                                   );
                                 }
 
                                 if (activity.key === "exam") {
-                                  const hasExams = dayData.exams && dayData.exams.length > 0;
+                                  const hasExams =
+                                    dayData.exams && dayData.exams.length > 0;
                                   return (
-                                    <TableCell key={day} className={`text-center p-0 border-r border-white/5 ${hasExams ? 'bg-primary/5' : ''}`}>
+                                    <TableCell
+                                      key={day}
+                                      className={`text-center p-0 border-r border-white/5 ${hasExams ? "bg-primary/5" : ""}`}
+                                    >
                                       {hasExams ? (
-                                        <Button 
-                                          variant="ghost" 
-                                          size="icon" 
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
                                           className="h-9 w-full rounded-none text-primary hover:text-white hover:bg-primary/20 transition-all"
                                           onClick={() => {
-                                            const items = dayData.exams.map((link, i) => ({
-                                              label: `Exam ${i+1}${dayData.marks[i] ? ` (Marks: ${dayData.marks[i]})` : ''}`,
-                                              value: link
-                                            }));
+                                            const items = dayData.exams.map(
+                                              (link, i) => ({
+                                                label: `Exam ${i + 1}${dayData.marks[i] ? ` (Marks: ${dayData.marks[i]})` : ""}`,
+                                                value: link,
+                                              }),
+                                            );
                                             setSelectedDetail({
                                               title: `Exam Details - ${dateStr}`,
                                               content: "",
-                                              items
+                                              items,
                                             });
                                           }}
                                         >
                                           <CheckCircle2 className="h-4 w-4" />
                                         </Button>
                                       ) : (
-                                        <span className="text-slate-800 font-bold opacity-30">-</span>
+                                        <span className="text-slate-800 font-bold opacity-30">
+                                          -
+                                        </span>
                                       )}
                                     </TableCell>
                                   );
                                 }
 
                                 if (activity.key === "progress") {
-                                  const pColor = dayData.progress >= 100 ? 'bg-emerald-500/40 text-emerald-300' : 
-                                                 dayData.progress > 0 ? 'bg-amber-500/40 text-amber-300' : 'bg-slate-800/50 text-slate-600';
+                                  const pColor =
+                                    dayData.progress >= 100
+                                      ? "bg-emerald-500/40 text-emerald-300"
+                                      : dayData.progress > 0
+                                        ? "bg-amber-500/40 text-amber-300"
+                                        : "bg-slate-800/50 text-slate-600";
                                   return (
-                                    <TableCell key={day} className={`text-center p-0 border-r border-white/5`}>
-                                      <div className={`h-9 w-full flex items-center justify-center text-[8px] font-black ${pColor} transition-all`}>
+                                    <TableCell
+                                      key={day}
+                                      className={`text-center p-0 border-r border-white/5`}
+                                    >
+                                      <div
+                                        className={`h-9 w-full flex items-center justify-center text-[8px] font-black ${pColor} transition-all`}
+                                      >
                                         {dayData.progress}%
                                       </div>
                                     </TableCell>
                                   );
                                 }
 
-                                return <TableCell key={day} className="text-center">-</TableCell>;
+                                return (
+                                  <TableCell key={day} className="text-center">
+                                    -
+                                  </TableCell>
+                                );
                               })}
                             </TableRow>
                           ))}
                           {/* Modern Separator row */}
                           <TableRow className="h-3 bg-[#0a0c14] hover:bg-[#0a0c14] border-none">
-                            <TableCell colSpan={daysInMonth + 2} className="p-0">
-                               <div className="h-px w-full bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                            <TableCell
+                              colSpan={daysInMonth + 2}
+                              className="p-0"
+                            >
+                              <div className="h-px w-full bg-gradient-to-r from-transparent via-white/5 to-transparent" />
                             </TableCell>
                           </TableRow>
                         </React.Fragment>
@@ -386,26 +471,34 @@ export default function AdminReportsPage() {
       </Card>
 
       {/* Modern Dialog - Styled for Dark Theme */}
-      <Dialog open={!!selectedDetail} onOpenChange={(open) => !open && setSelectedDetail(null)}>
+      <Dialog
+        open={!!selectedDetail}
+        onOpenChange={(open) => !open && setSelectedDetail(null)}
+      >
         <DialogContent className="bg-[#161926] text-slate-200 border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] sm:max-w-lg">
           <DialogHeader className="border-b border-white/5 pb-4">
             <DialogTitle className="text-primary font-black tracking-tight flex items-center gap-3">
-               <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                 <FileText className="h-5 w-5" />
-               </div>
-               {selectedDetail?.title}
+              <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                <FileText className="h-5 w-5" />
+              </div>
+              {selectedDetail?.title}
             </DialogTitle>
           </DialogHeader>
           <div className="py-6">
             {selectedDetail?.items ? (
               <div className="space-y-4">
                 {selectedDetail.items.map((item, i) => (
-                  <div key={i} className="p-4 bg-black/40 rounded-xl border border-white/5 group hover:border-primary/30 transition-all">
-                    <p className="text-primary font-black text-[10px] uppercase tracking-widest mb-2 opacity-70">{item.label}</p>
-                    <a 
-                      href={item.value} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
+                  <div
+                    key={i}
+                    className="p-4 bg-black/40 rounded-xl border border-white/5 group hover:border-primary/30 transition-all"
+                  >
+                    <p className="text-primary font-black text-[10px] uppercase tracking-widest mb-2 opacity-70">
+                      {item.label}
+                    </p>
+                    <a
+                      href={item.value}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-blue-400 text-sm break-all hover:text-blue-300 hover:underline flex items-center gap-2"
                     >
                       <Download className="h-3.5 w-3.5 shrink-0" /> {item.value}
@@ -415,14 +508,18 @@ export default function AdminReportsPage() {
               </div>
             ) : (
               <div className="p-6 bg-black/40 rounded-xl border border-white/5">
-                 <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap selection:bg-primary selection:text-white">
-                   {selectedDetail?.content}
-                 </p>
+                <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap selection:bg-primary selection:text-white">
+                  {selectedDetail?.content}
+                </p>
               </div>
             )}
           </div>
           <div className="flex justify-end pt-2">
-            <Button onClick={() => setSelectedDetail(null)} variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10 h-10 px-8">
+            <Button
+              onClick={() => setSelectedDetail(null)}
+              variant="outline"
+              className="border-white/10 bg-white/5 hover:bg-white/10 h-10 px-8"
+            >
               বন্ধ করুন
             </Button>
           </div>
@@ -432,22 +529,74 @@ export default function AdminReportsPage() {
       {/* Custom Global CSS for Print and Component behavior */}
       <style jsx global>{`
         @media print {
-          body { background: white !important; color: black !important; }
-          .no-print { display: none !important; }
-          header, footer, nav, aside { display: none !important; }
-          .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
-          .card { border: 1px solid #ccc !important; box-shadow: none !important; }
-          .bg-[#1e1e2f] { background: white !important; color: black !important; }
-          .bg-[#1d253b] { background: #f0f0f0 !important; color: black !important; }
-          .text-white { color: black !important; }
-          .text-slate-400 { color: #666 !important; }
-          .border-slate-700 { border-color: #ddd !important; }
-          table { width: 100% !important; font-size: 8pt !important; border-collapse: collapse !important; }
-          th, td { border: 1px solid #ddd !important; padding: 2px !important; color: black !important; }
-          .sticky { position: static !important; }
-          .bg-green-500 { background-color: #dcfce7 !important; color: #166534 !important; -webkit-print-color-adjust: exact; }
-          .bg-pink-500 { background-color: #fce7f3 !important; color: #9d174d !important; -webkit-print-color-adjust: exact; }
-          .bg-slate-700 { background-color: #f3f4f6 !important; color: #374151 !important; -webkit-print-color-adjust: exact; }
+          body {
+            background: white !important;
+            color: black !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+          header,
+          footer,
+          nav,
+          aside {
+            display: none !important;
+          }
+          .main-content {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+          }
+          .card {
+            border: 1px solid #ccc !important;
+            box-shadow: none !important;
+          }
+          .bg-[#1e1e2f] {
+            background: white !important;
+            color: black !important;
+          }
+          .bg-[#1d253b] {
+            background: #f0f0f0 !important;
+            color: black !important;
+          }
+          .text-white {
+            color: black !important;
+          }
+          .text-slate-400 {
+            color: #666 !important;
+          }
+          .border-slate-700 {
+            border-color: #ddd !important;
+          }
+          table {
+            width: 100% !important;
+            font-size: 8pt !important;
+            border-collapse: collapse !important;
+          }
+          th,
+          td {
+            border: 1px solid #ddd !important;
+            padding: 2px !important;
+            color: black !important;
+          }
+          .sticky {
+            position: static !important;
+          }
+          .bg-green-500 {
+            background-color: #dcfce7 !important;
+            color: #166534 !important;
+            -webkit-print-color-adjust: exact;
+          }
+          .bg-pink-500 {
+            background-color: #fce7f3 !important;
+            color: #9d174d !important;
+            -webkit-print-color-adjust: exact;
+          }
+          .bg-slate-700 {
+            background-color: #f3f4f6 !important;
+            color: #374151 !important;
+            -webkit-print-color-adjust: exact;
+          }
         }
       `}</style>
     </div>

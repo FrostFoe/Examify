@@ -78,16 +78,18 @@ export default function SolvePage() {
         Array.isArray(examData.questions) &&
         examData.questions.length > 0
       ) {
-        finalQuestions = (examData.questions as RawQuestion[]).map((q: RawQuestion) => {
-          const normalized = normalizeQuestion(q);
-          return {
-            ...normalized,
-            // Ensure compatibility with Question
-            answer:
-              typeof normalized.answer === "number" ? normalized.answer : -1,
-            options: normalized.options || [],
-          } as unknown as Question;
-        });
+        finalQuestions = (examData.questions as RawQuestion[]).map(
+          (q: RawQuestion) => {
+            const normalized = normalizeQuestion(q);
+            return {
+              ...normalized,
+              // Ensure compatibility with Question
+              answer:
+                typeof normalized.answer === "number" ? normalized.answer : -1,
+              options: normalized.options || [],
+            } as unknown as Question;
+          },
+        );
       } else {
         // Fallback: Fetch questions using file_id (legacy/CSV based exams)
         const fetched = await fetchQuestions(examData.file_id, examData.id);

@@ -46,7 +46,15 @@ import { useToast } from "@/hooks/use-toast";
 import ConfirmPasswordDialog from "@/components/ConfirmPasswordDialog";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import type { Batch, Exam, User, SubjectConfig } from "@/lib/types";
-import { PlusCircle, ListChecks, ArrowUp, ArrowDown, Trash2, Plus, Copy } from "lucide-react";
+import {
+  PlusCircle,
+  ListChecks,
+  ArrowUp,
+  ArrowDown,
+  Trash2,
+  Plus,
+  Copy,
+} from "lucide-react";
 import { EditExamModal } from "@/components/EditExamModal";
 import { CSVUploadComponent, CustomLoader } from "@/components";
 import QuestionSelector from "@/components/QuestionSelector";
@@ -736,7 +744,10 @@ export function BatchDetailsClient({
                             onUploadSuccess={async (result) => {
                               const fid = (result.file_id as string) || "";
                               if (!fid) {
-                                console.error("Upload success but no file_id in result:", result);
+                                console.error(
+                                  "Upload success but no file_id in result:",
+                                  result,
+                                );
                                 toast({
                                   title: "Error identifying uploaded file",
                                   variant: "destructive",
@@ -851,7 +862,9 @@ export function BatchDetailsClient({
                       <div className="space-y-4">
                         <Label className="text-base font-bold flex items-center justify-between">
                           <span>বাধ্যতামূলক বিষয় (Mandatory)</span>
-                          <Badge variant="secondary">{mandatorySubjectConfigs.length}</Badge>
+                          <Badge variant="secondary">
+                            {mandatorySubjectConfigs.length}
+                          </Badge>
                         </Label>
                         <div className="space-y-3">
                           {mandatorySubjectConfigs.map((subject, index) => (
@@ -861,7 +874,9 @@ export function BatchDetailsClient({
                             >
                               <div className="flex flex-col gap-3">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
+                                  <span className="text-muted-foreground font-mono text-xs w-6">
+                                    {index + 1}.
+                                  </span>
                                   <Input
                                     className="h-9 font-bold text-sm bg-background border-2 border-primary/20 focus:border-primary transition-all"
                                     value={subject.name || ""}
@@ -885,7 +900,10 @@ export function BatchDetailsClient({
                                       onClick={() => {
                                         setMandatorySubjectConfigs((prev) => {
                                           const newArr = [...prev];
-                                          [newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]];
+                                          [newArr[index - 1], newArr[index]] = [
+                                            newArr[index],
+                                            newArr[index - 1],
+                                          ];
                                           return newArr;
                                         });
                                       }}
@@ -898,11 +916,17 @@ export function BatchDetailsClient({
                                       variant="secondary"
                                       size="icon"
                                       className="h-8 w-8"
-                                      disabled={index === mandatorySubjectConfigs.length - 1}
+                                      disabled={
+                                        index ===
+                                        mandatorySubjectConfigs.length - 1
+                                      }
                                       onClick={() => {
                                         setMandatorySubjectConfigs((prev) => {
                                           const newArr = [...prev];
-                                          [newArr[index], newArr[index + 1]] = [newArr[index + 1], newArr[index]];
+                                          [newArr[index], newArr[index + 1]] = [
+                                            newArr[index + 1],
+                                            newArr[index],
+                                          ];
                                           return newArr;
                                         });
                                       }}
@@ -912,7 +936,7 @@ export function BatchDetailsClient({
                                     </Button>
                                   </div>
                                 </div>
-                                
+
                                 <div className="flex flex-wrap items-center gap-3 pl-8 mt-1">
                                   <div className="flex items-center gap-2">
                                     <Input
@@ -929,9 +953,11 @@ export function BatchDetailsClient({
                                         )
                                       }
                                     />
-                                    <span className="text-xs text-muted-foreground whitespace-nowrap">টি প্রশ্ন</span>
+                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                      টি প্রশ্ন
+                                    </span>
                                   </div>
-                                  
+
                                   <Button
                                     type="button"
                                     variant="outline"
@@ -945,7 +971,8 @@ export function BatchDetailsClient({
                                     }
                                   >
                                     <ListChecks className="w-3 h-3 mr-1 text-primary" />
-                                    প্রশ্ন বাছুন ({subject.question_ids?.length || 0})
+                                    প্রশ্ন বাছুন (
+                                    {subject.question_ids?.length || 0})
                                   </Button>
 
                                   <Button
@@ -954,21 +981,30 @@ export function BatchDetailsClient({
                                     size="sm"
                                     className="h-8 text-xs border-dashed border-amber-500/50 text-amber-600 hover:bg-amber-50"
                                     onClick={() => {
-                                      setMandatorySubjectConfigs((prev) => prev.filter((s) => s.id !== subject.id));
-                                      setOptionalSubjectConfigs((prev) => [...prev, { ...subject, type: "optional" }]);
+                                      setMandatorySubjectConfigs((prev) =>
+                                        prev.filter((s) => s.id !== subject.id),
+                                      );
+                                      setOptionalSubjectConfigs((prev) => [
+                                        ...prev,
+                                        { ...subject, type: "optional" },
+                                      ]);
                                     }}
                                     title="Move to Optional"
                                   >
                                     <ArrowDown className="w-3 h-3 mr-1" />
                                     ঐচ্ছিক করুন
                                   </Button>
-                                  
+
                                   <Button
                                     type="button"
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-destructive hover:bg-destructive/10 ml-auto"
-                                    onClick={() => setMandatorySubjectConfigs((prev) => prev.filter((s) => s.id !== subject.id))}
+                                    onClick={() =>
+                                      setMandatorySubjectConfigs((prev) =>
+                                        prev.filter((s) => s.id !== subject.id),
+                                      )
+                                    }
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -988,7 +1024,9 @@ export function BatchDetailsClient({
                       <div className="space-y-4 pt-4 border-t">
                         <Label className="text-base font-bold flex items-center justify-between">
                           <span>অন্যান্য বিষয় (Optional)</span>
-                          <Badge variant="secondary">{optionalSubjectConfigs.length}</Badge>
+                          <Badge variant="secondary">
+                            {optionalSubjectConfigs.length}
+                          </Badge>
                         </Label>
                         <div className="space-y-3">
                           {optionalSubjectConfigs.map((subject, index) => (
@@ -998,7 +1036,9 @@ export function BatchDetailsClient({
                             >
                               <div className="flex flex-col gap-3">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-muted-foreground font-mono text-xs w-6">{index + 1}.</span>
+                                  <span className="text-muted-foreground font-mono text-xs w-6">
+                                    {index + 1}.
+                                  </span>
                                   <Input
                                     className="h-9 font-bold text-sm bg-background border-2 border-secondary/20 focus:border-secondary transition-all"
                                     value={subject.name || ""}
@@ -1022,7 +1062,10 @@ export function BatchDetailsClient({
                                       onClick={() => {
                                         setOptionalSubjectConfigs((prev) => {
                                           const newArr = [...prev];
-                                          [newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]];
+                                          [newArr[index - 1], newArr[index]] = [
+                                            newArr[index],
+                                            newArr[index - 1],
+                                          ];
                                           return newArr;
                                         });
                                       }}
@@ -1035,11 +1078,17 @@ export function BatchDetailsClient({
                                       variant="secondary"
                                       size="icon"
                                       className="h-8 w-8"
-                                      disabled={index === optionalSubjectConfigs.length - 1}
+                                      disabled={
+                                        index ===
+                                        optionalSubjectConfigs.length - 1
+                                      }
                                       onClick={() => {
                                         setOptionalSubjectConfigs((prev) => {
                                           const newArr = [...prev];
-                                          [newArr[index], newArr[index + 1]] = [newArr[index + 1], newArr[index]];
+                                          [newArr[index], newArr[index + 1]] = [
+                                            newArr[index + 1],
+                                            newArr[index],
+                                          ];
                                           return newArr;
                                         });
                                       }}
@@ -1049,7 +1098,7 @@ export function BatchDetailsClient({
                                     </Button>
                                   </div>
                                 </div>
-                                
+
                                 <div className="flex flex-wrap items-center gap-3 pl-8 mt-1">
                                   <div className="flex items-center gap-2">
                                     <Input
@@ -1066,9 +1115,11 @@ export function BatchDetailsClient({
                                         )
                                       }
                                     />
-                                    <span className="text-xs text-muted-foreground whitespace-nowrap">টি প্রশ্ন</span>
+                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                      টি প্রশ্ন
+                                    </span>
                                   </div>
-                                  
+
                                   <Button
                                     type="button"
                                     variant="outline"
@@ -1082,7 +1133,8 @@ export function BatchDetailsClient({
                                     }
                                   >
                                     <ListChecks className="w-3 h-3 mr-1 text-secondary-foreground" />
-                                    প্রশ্ন বাছুন ({subject.question_ids?.length || 0})
+                                    প্রশ্ন বাছুন (
+                                    {subject.question_ids?.length || 0})
                                   </Button>
 
                                   <Button
@@ -1091,21 +1143,30 @@ export function BatchDetailsClient({
                                     size="sm"
                                     className="h-8 text-xs border-dashed border-emerald-500/50 text-emerald-600 hover:bg-emerald-50"
                                     onClick={() => {
-                                      setOptionalSubjectConfigs((prev) => prev.filter((s) => s.id !== subject.id));
-                                      setMandatorySubjectConfigs((prev) => [...prev, { ...subject, type: "mandatory" }]);
+                                      setOptionalSubjectConfigs((prev) =>
+                                        prev.filter((s) => s.id !== subject.id),
+                                      );
+                                      setMandatorySubjectConfigs((prev) => [
+                                        ...prev,
+                                        { ...subject, type: "mandatory" },
+                                      ]);
                                     }}
                                     title="Move to Mandatory"
                                   >
                                     <ArrowUp className="w-3 h-3 mr-1" />
                                     বাধ্যতামূলক করুন
                                   </Button>
-                                  
+
                                   <Button
                                     type="button"
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-destructive hover:bg-destructive/10 ml-auto"
-                                    onClick={() => setOptionalSubjectConfigs((prev) => prev.filter((s) => s.id !== subject.id))}
+                                    onClick={() =>
+                                      setOptionalSubjectConfigs((prev) =>
+                                        prev.filter((s) => s.id !== subject.id),
+                                      )
+                                    }
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -1125,9 +1186,19 @@ export function BatchDetailsClient({
                       <div className="pt-4 border-t flex gap-2 items-center">
                         <Select
                           onValueChange={(val) => {
-                            const subject = availableSubjects.find(s => s.id === val);
+                            const subject = availableSubjects.find(
+                              (s) => s.id === val,
+                            );
                             if (subject) {
-                              setMandatorySubjectConfigs(prev => [...prev, { ...subject, type: 'mandatory', count: 0, question_ids: [] }]);
+                              setMandatorySubjectConfigs((prev) => [
+                                ...prev,
+                                {
+                                  ...subject,
+                                  type: "mandatory",
+                                  count: 0,
+                                  question_ids: [],
+                                },
+                              ]);
                             }
                           }}
                         >
@@ -1136,25 +1207,45 @@ export function BatchDetailsClient({
                           </SelectTrigger>
                           <SelectContent>
                             {availableSubjects
-                              .filter(s => 
-                                !mandatorySubjectConfigs.some(m => m.id === s.id) && 
-                                !optionalSubjectConfigs.some(o => o.id === s.id)
+                              .filter(
+                                (s) =>
+                                  !mandatorySubjectConfigs.some(
+                                    (m) => m.id === s.id,
+                                  ) &&
+                                  !optionalSubjectConfigs.some(
+                                    (o) => o.id === s.id,
+                                  ),
                               )
-                              .map(s => (
-                                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                              ))
-                            }
+                              .map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  {s.name}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
-                        
+
                         <Button
                           type="button"
                           variant="secondary"
                           onClick={() => {
                             const newId = `custom_${Date.now()}`;
-                            const newSubject = { id: newId, name: "নতুন সেকশন" };
-                            setAvailableSubjects(prev => [...prev, newSubject]);
-                            setMandatorySubjectConfigs(prev => [...prev, { ...newSubject, type: 'mandatory', count: 0, question_ids: [] }]);
+                            const newSubject = {
+                              id: newId,
+                              name: "নতুন সেকশন",
+                            };
+                            setAvailableSubjects((prev) => [
+                              ...prev,
+                              newSubject,
+                            ]);
+                            setMandatorySubjectConfigs((prev) => [
+                              ...prev,
+                              {
+                                ...newSubject,
+                                type: "mandatory",
+                                count: 0,
+                                question_ids: [],
+                              },
+                            ]);
                           }}
                         >
                           <Plus className="w-4 h-4 mr-2" />

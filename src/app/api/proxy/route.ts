@@ -66,14 +66,17 @@ async function handleRequest(request: NextRequest) {
         const data = JSON.parse(responseText);
         return NextResponse.json(data, { status: response.status });
       } catch {
-        console.error("[API-PROXY] JSON Parse Error. Raw response:", responseText);
+        console.error(
+          "[API-PROXY] JSON Parse Error. Raw response:",
+          responseText,
+        );
         return NextResponse.json(
           {
             success: false,
             message: "Backend returned invalid JSON",
             error: responseText,
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
     } else {
@@ -84,8 +87,12 @@ async function handleRequest(request: NextRequest) {
           data: response.ok ? responseText : null,
         },
         {
-          status: response.ok ? 200 : (response.status === 200 ? 502 : response.status),
-        }
+          status: response.ok
+            ? 200
+            : response.status === 200
+              ? 502
+              : response.status,
+        },
       );
     }
   } catch (error) {
