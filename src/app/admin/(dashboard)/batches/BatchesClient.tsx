@@ -15,10 +15,16 @@ import { useToast } from "@/hooks/use-toast";
 import ConfirmPasswordDialog from "@/components/ConfirmPasswordDialog";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import type { Batch } from "@/lib/types";
-import { createBatch, deleteBatch } from "@/lib/actions";
+import {
+  createBatch,
+  deleteBatch,
+  exportBatchData,
+  importBatchData,
+} from "@/lib/actions";
 import { EditBatchModal } from "@/components/EditBatchModal";
 import { BatchCard } from "@/components/BatchCard";
 import { CustomLoader } from "@/components";
+import { Download, Upload } from "lucide-react";
 
 import {
   Select,
@@ -29,6 +35,15 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface BatchWithCount extends Batch {
   student_count?: number;
@@ -49,6 +64,11 @@ export function BatchesClient({
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importPassword, setImportPassword] = useState("");
 
   const refetchBatches = async () => {
     const { apiRequest } = await import("@/lib/api");
@@ -171,14 +191,180 @@ export function BatchesClient({
     setIsSubmitting(false);
   };
 
+  const handleExportBatch = async (batchId: string) => {
+    setIsExporting(true);
+    try {
+      const result = await exportBatchData(batchId);
+      if (result.success && result.data && result.filename) {
+        const element = document.createElement("a");
+        element.setAttribute(
+          "href",
+          "data:text/plain;charset=utf-8," + encodeURIComponent(result.data),
+        );
+        element.setAttribute("download", result.filename);
+        element.style.display = "none";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        toast({
+          title: "এক্সপোর্ট সফল",
+          description: "ব্যাচ ডেটা ডাউনলোড হয়েছে।",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "এক্সপোর্ট ব্যর্থ",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "এক্সপোর্ট ব্যর্থ",
+        description: (error as Error).message,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportBatch = async (file: File) => {
+    if (!admin) {
+      toast({ variant: "destructive", title: "অনুমতি নেই" });
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("adminPassword", importPassword);
+      formData.append("adminUid", admin.uid);
+
+      const result = await importBatchData(formData);
+
+      if (result.success) {
+        toast({
+          title: "ইমপোর্ট সফল",
+          description: result.message,
+        });
+        setIsImportDialogOpen(false);
+        setImportPassword("");
+        await refetchBatches();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "ইমপোর্ট ব্যর্থ",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "ইমপোর্ট ব্যর্থ",
+        description: (error as Error).message,
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>ব্যাচ পরিচালনা</CardTitle>
-          <CardDescription>
-            নতুন ব্যাচ তৈরি করুন এবং বিদ্যমান ব্যাচ পরিচালনা করুন।
-          </CardDescription>
+          <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-2">
+            <div>
+              <CardTitle>ব্যাচ পরিচালনা</CardTitle>
+              <CardDescription>
+                নতুন ব্যাচ তৈরি করুন এবং বিদ্যমান ব্যাচ পরিচালনা করুন।
+              </CardDescription>
+            </div>
+            <Dialog
+              open={isImportDialogOpen}
+              onOpenChange={setIsImportDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-1">
+                  <Upload className="h-3.5 w-3.5" />
+                  <span className="whitespace-nowrap">ইমপোর্ট ব্যাচ</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>ব্যাচ ডেটা ইমপোর্ট করুন</DialogTitle>
+                  <DialogDescription>
+                    পূর্ববর্তী এক্সপোর্টকৃত ব্যাচ JSON ফাইল নির্বাচন করুন। এটি
+                    নতুন ব্যাচ হিসেবে তৈরি হবে।
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="import-file">JSON ফাইল</Label>
+                    <Input
+                      id="import-file"
+                      type="file"
+                      accept=".json"
+                      disabled={isImporting}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="import-password">অ্যাডমিন পাসওয়ার্ড</Label>
+                    <Input
+                      id="import-password"
+                      type="password"
+                      placeholder="আপনার পাসওয়ার্ড"
+                      value={importPassword}
+                      onChange={(e) => setImportPassword(e.target.value)}
+                      disabled={isImporting}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsImportDialogOpen(false)}
+                    disabled={isImporting}
+                  >
+                    বাতিল করুন
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const fileInput = document.getElementById(
+                        "import-file",
+                      ) as HTMLInputElement;
+                      const file = fileInput?.files?.[0];
+                      if (!file) {
+                        toast({
+                          variant: "destructive",
+                          title: "ফাইল বেছে নিন",
+                        });
+                        return;
+                      }
+                      if (!importPassword) {
+                        toast({
+                          variant: "destructive",
+                          title: "পাসওয়ার্ড দিন",
+                        });
+                        return;
+                      }
+                      handleImportBatch(file);
+                    }}
+                    disabled={isImporting}
+                  >
+                    {isImporting ? (
+                      <>
+                        <CustomLoader />
+                        ইমপোর্ট হচ্ছে...
+                      </>
+                    ) : (
+                      "ইমপোর্ট করুন"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent className="p-3 md:p-6">
           <form
@@ -299,6 +485,7 @@ export function BatchesClient({
                 examCount={batch.exam_count}
                 onEdit={handleEditBatch}
                 onDelete={handleDeleteBatch}
+                onExport={handleExportBatch}
               />
             ))}
           </div>

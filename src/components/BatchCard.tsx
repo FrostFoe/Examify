@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { Batch } from "@/lib/types";
-import { Pencil, Trash2, Users, FileText } from "lucide-react";
+import { Pencil, Trash2, Users, FileText, Download } from "lucide-react";
 
 interface BatchCardProps {
   batch: Batch;
@@ -20,6 +20,7 @@ interface BatchCardProps {
   examCount?: number;
   onEdit?: (batch: Batch) => void;
   onDelete?: (batchId: string) => void;
+  onExport?: (batchId: string) => void;
 }
 
 export function BatchCard({
@@ -28,6 +29,7 @@ export function BatchCard({
   examCount,
   onEdit,
   onDelete,
+  onExport,
 }: BatchCardProps) {
   const isBase64 = batch.icon_url?.startsWith("data:image");
 
@@ -108,6 +110,9 @@ export function BatchCard({
           </Button>
         </Link>
         <div className="space-x-2">
+          <Button variant="secondary" size="sm" onClick={() => onExport?.(batch.id)}>
+             <Download className="h-4 w-4" />
+          </Button>
           <Button variant="secondary" size="sm" onClick={() => onEdit?.(batch)}>
             <Pencil className="h-4 w-4" />
           </Button>

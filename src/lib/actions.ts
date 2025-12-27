@@ -656,3 +656,262 @@ export async function importUsersData(formData: FormData) {
     };
   }
 }
+
+export async function exportBatchData(batchId: string) {
+  try {
+    // 1. Fetch Batch Details
+    const batchResult = await apiRequest<Batch>("batches", "GET", null, {
+      id: batchId,
+    });
+    if (!batchResult.success || !batchResult.data) {
+      throw new Error(batchResult.message || "Failed to fetch batch details");
+    }
+    const batch = batchResult.data;
+
+    // 2. Fetch Enrolled Students
+    const studentsResult = await apiRequest<User[]>("students", "GET", null, {
+      batch_id: batchId,
+      limit: "1000000",
+    });
+    const students =
+      studentsResult.success && studentsResult.data ? studentsResult.data : [];
+
+    // 3. Fetch Exams
+    const examsResult = await apiRequest<Exam[]>("exams", "GET", null, {
+      batch_id: batchId,
+    });
+    const examsList =
+      examsResult.success && examsResult.data ? examsResult.data : [];
+
+    // 4. Fetch Questions for each Exam
+    const examsWithQuestions = await Promise.all(
+      examsList.map(async (exam) => {
+        const examDetailResult = await apiRequest<Exam>("exams", "GET", null, {
+          id: exam.id,
+        });
+        if (examDetailResult.success && examDetailResult.data) {
+          // The API already returns questions in the exam detail
+          return examDetailResult.data;
+        }
+        return exam;
+      }),
+    );
+
+    const data = {
+      exportedAt: new Date().toISOString(),
+      version: "1.0",
+      batch,
+      students,
+      exams: examsWithQuestions,
+    };
+
+    return {
+      success: true,
+      data: JSON.stringify(data, null, 2),
+      filename: `batch-${batch.name.replace(/[^a-z0-9]/gi, "_").toLowerCase()}-${new Date().toISOString().split("T")[0]}.json`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Export failed: " + (error as Error).message,
+    };
+  }
+}
+
+export async function importBatchData(formData: FormData) {
+  try {
+    const jsonFile = formData.get("file") as File;
+    const adminPassword = formData.get("adminPassword") as string;
+    const adminUid = formData.get("adminUid") as string;
+
+    if (!jsonFile) {
+      return { success: false, message: "No file selected" };
+    }
+
+    if (!(await verifyPasswordInternal(adminUid, adminPassword))) {
+      return { success: false, message: "Invalid password or unauthorized" };
+    }
+
+    const fileContent = await jsonFile.text();
+    const importedData = JSON.parse(fileContent);
+
+    if (!importedData.batch || !importedData.batch.name) {
+      return {
+        success: false,
+        message: "Invalid file format: missing batch data",
+      };
+    }
+
+    // 1. Create Batch
+    const batchData = importedData.batch;
+    const newBatchId = crypto.randomUUID();
+
+    const batchResult = await apiRequest<Batch>(
+      "batches",
+      "POST",
+      {
+        id: newBatchId,
+        name: batchData.name + " (Imported)",
+        description: batchData.description,
+        icon_url: batchData.icon_url,
+        status: batchData.status,
+        is_public: batchData.is_public,
+      },
+      { action: "create" },
+    );
+
+    if (!batchResult.success) {
+      throw new Error("Failed to create batch: " + batchResult.message);
+    }
+
+    const createdBatchId = batchResult.data?.id || newBatchId;
+
+    // 2. Import Students & Enroll
+    let studentCount = 0;
+    if (importedData.students && Array.isArray(importedData.students)) {
+      for (const student of importedData.students) {
+        // First, try to fetch the student to see if they exist
+        const existingStudentResult = await apiRequest<User>(
+          "students",
+          "GET",
+          null,
+          { uid: student.uid },
+        );
+        if (existingStudentResult.success && existingStudentResult.data) {
+          // Student exists, update enrolled_batches
+          await apiRequest(
+            "students",
+            "POST",
+            { uid: student.uid, batch_id: createdBatchId },
+            { action: "enroll" },
+          );
+        } else {
+          // Create new student
+          await apiRequest(
+            "students",
+            "POST",
+            {
+              uid: student.uid,
+              name: student.name,
+              roll: student.roll,
+              pass: student.pass,
+              enrolled_batches: [createdBatchId],
+            },
+            { action: "create" },
+          );
+        }
+        studentCount++;
+      }
+    }
+
+    // 3. Import Exams & Questions
+    let examCount = 0;
+    if (importedData.exams && Array.isArray(importedData.exams)) {
+      for (const exam of importedData.exams) {
+        const newExamId = crypto.randomUUID();
+        // Create Exam
+        const examResult = await apiRequest(
+          "exams",
+          "POST",
+          {
+            id: newExamId,
+            name: exam.name,
+            description: exam.description,
+            course_name: exam.course_name,
+            batch_id: createdBatchId, // Link to new batch
+            duration_minutes: exam.duration_minutes,
+            marks_per_question: exam.marks_per_question,
+            negative_marks_per_wrong: exam.negative_marks_per_wrong,
+            is_practice: exam.is_practice,
+            shuffle_questions: exam.shuffle_questions,
+            start_at: exam.start_at,
+            end_at: exam.end_at,
+            total_subjects: exam.total_subjects,
+            mandatory_subjects: exam.mandatory_subjects,
+            optional_subjects: exam.optional_subjects,
+            question_ids: [],
+          },
+          { action: "create" },
+        );
+
+        if (examResult.success) {
+          examCount++;
+          // Create Questions
+          if (exam.questions && Array.isArray(exam.questions)) {
+            for (const question of exam.questions) {
+              const imageToUse =
+                question.question_image &&
+                !question.question_image.startsWith("data:") &&
+                !question.question_image.startsWith("http")
+                  ? question.question_image_url
+                  : question.question_image;
+
+              const explanationImageToUse =
+                question.explanation_image &&
+                !question.explanation_image.startsWith("data:") &&
+                !question.explanation_image.startsWith("http")
+                  ? question.explanation_image_url
+                  : question.explanation_image;
+
+              await apiRequest(
+                "create-question",
+                "POST",
+                {
+                  exam_id: newExamId,
+                  question_text: question.question_text || question.question,
+                  option1:
+                    question.option1 ||
+                    (Array.isArray(question.options)
+                      ? question.options[0]
+                      : question.options?.option1),
+                  option2:
+                    question.option2 ||
+                    (Array.isArray(question.options)
+                      ? question.options[1]
+                      : question.options?.option2),
+                  option3:
+                    question.option3 ||
+                    (Array.isArray(question.options)
+                      ? question.options[2]
+                      : question.options?.option3),
+                  option4:
+                    question.option4 ||
+                    (Array.isArray(question.options)
+                      ? question.options[3]
+                      : question.options?.option4),
+                  option5:
+                    question.option5 ||
+                    (Array.isArray(question.options)
+                      ? question.options[4]
+                      : question.options?.option5),
+                  answer: question.answer,
+                  explanation: question.explanation,
+                  question_image: imageToUse,
+                  explanation_image: explanationImageToUse,
+                  subject: question.subject,
+                  paper: question.paper,
+                  chapter: question.chapter,
+                  highlight: question.highlight,
+                  type: question.type,
+                  order_index: question.order_index,
+                },
+              );
+            }
+          }
+        }
+      }
+    }
+
+    revalidatePath("/admin/batches");
+
+    return {
+      success: true,
+      message: `Batch imported successfully. Students: ${studentCount}, Exams: ${examCount}`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Import failed: " + (error as Error).message,
+    };
+  }
+}
