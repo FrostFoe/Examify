@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/api";
 import { useParams, useRouter } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { PageHeader } from "@/components";
-import { maskMobileNumber } from "@/lib/utils";
+import { maskMobileNumber, formatExamDateTime } from "@/lib/utils";
 import CustomLoader from "@/components/CustomLoader";
 import {
   Card,
@@ -301,6 +301,30 @@ export default function AdminExamResultsPage() {
           description="সমস্ত শিক্ষার্থীর পরীক্ষার ফলাফল"
         />
       </div>
+
+      {/* Exam Time Information */}
+      {(exam.start_at || exam.end_at) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">পরীক্ষার সময়কাল</CardTitle>
+            <CardDescription>পরীক্ষার শুরু ও শেষের সময়</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-4">
+            {exam.start_at && (
+              <div className="flex-1 min-w-[200px]">
+                <h4 className="text-sm font-medium text-muted-foreground mb-1">শুরুর সময়</h4>
+                <p className="font-medium">{formatExamDateTime(exam.start_at)}</p>
+              </div>
+            )}
+            {exam.end_at && (
+              <div className="flex-1 min-w-[200px]">
+                <h4 className="text-sm font-medium text-muted-foreground mb-1">শেষ সময়</h4>
+                <p className="font-medium">{formatExamDateTime(exam.end_at)}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">

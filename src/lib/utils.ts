@@ -158,15 +158,25 @@ export const formatExamDateTime = (date: Date | string | null | undefined) => {
 export const maskMobileNumber = (input: string): string => {
   if (!input) return input;
 
-  // Remove any non-digit characters to check length
-  const digitsOnly = input.replace(/\D/g, '');
+  // Extract only digit characters (both ASCII and Bengali digits)
+  // ASCII digits: 0-9 (0x30-0x39), Bengali digits: ০-৯ (0x09E6-0x09EF)
+  const digitsOnly = input.replace(/[^\d\u09E6-\u09EF]/g, '');
+
+  // Count total number of digits (converting Bengali to ASCII for counting)
+  const digitCount = digitsOnly.replace(/[\u09E6-\u09EF]/g, (match) => {
+    return String.fromCharCode(match.charCodeAt(0) - 0x09E6 + 0x30); // Convert Bengali to ASCII for counting
+  }).length;
 
   // If it's 8 or more digits, consider it a phone number and mask it
-  if (digitsOnly.length >= 8) {
-    // Keep only the last 4 digits, replace the rest with '*'
-    const visibleDigits = digitsOnly.slice(-4);
-    const maskedPart = '*'.repeat(Math.max(0, digitsOnly.length - 4));
-    return maskedPart + visibleDigits;
+  if (digitCount >= 8) {
+    // Extract the last 4 digits from the original digitsOnly string
+    const lastFourDigits = digitsOnly.slice(-4);
+
+    // Create the masked part by replacing all but the last 4 digits with '*'
+    const digitsToMask = Math.max(0, digitCount - 4);
+    const maskedPart = '*'.repeat(digitsToMask);
+
+    return maskedPart + lastFourDigits;
   }
 
   // If less than 8 digits, return as is (likely a roll number)
