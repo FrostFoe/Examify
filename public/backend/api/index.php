@@ -52,7 +52,8 @@ $routes = [
     'stats' => 'routes/stats.php',
     'settings' => 'routes/settings.php',
     'save-task' => 'routes/save-task.php',
-    'get-report' => 'routes/get-report.php'
+    'get-report' => 'routes/get-report.php',
+    'backup' => 'routes/backup.php'
 ];
 
 function attachImageUrls(array $question): array

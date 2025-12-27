@@ -8,6 +8,7 @@ import {
   User,
   Home,
   FileText,
+  Save,
 } from "lucide-react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import CustomLoader from "@/components/CustomLoader";
@@ -22,6 +23,7 @@ const sidebarNavItems = [
   { title: "পরীক্ষা", href: "/admin/exams", icon: FileText },
   { title: "প্রশ্ন ব্যাংক", href: "/admin/questions", icon: ClipboardList },
   { title: "ব্যাচ", href: "/admin/batches", icon: ClipboardList },
+  { title: "ব্যাকআপ", href: "/admin/backup", icon: Save },
   { title: "সেটিংস", href: "/admin/settings", icon: Settings },
 ];
 
@@ -42,6 +44,8 @@ export default function AdminDashboardLayout({
     } else if (item.href === "/admin/settings") {
       isActive =
         pathname.startsWith(item.href) || pathname.startsWith("/admin/users");
+    } else if (item.href === "/admin/backup") {
+      isActive = pathname.startsWith(item.href);
     } else {
       isActive = pathname.startsWith(item.href);
     }

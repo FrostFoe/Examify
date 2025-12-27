@@ -263,7 +263,7 @@ function SubjectSelectionScreen({
       } else if (v instanceof Date) {
         dateValue = v;
       } else {
-        dateValue = new Date(v);
+        dateValue = new Date(String(v));
       }
 
       if (dateValue && !isNaN(dateValue.getTime())) {
