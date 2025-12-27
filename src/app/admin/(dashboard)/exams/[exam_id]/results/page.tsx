@@ -5,6 +5,7 @@ import { apiRequest } from "@/lib/api";
 import { useParams, useRouter } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { PageHeader } from "@/components";
+import { maskMobileNumber } from "@/lib/utils";
 import CustomLoader from "@/components/CustomLoader";
 import {
   Card,
@@ -424,7 +425,7 @@ export default function AdminExamResultsPage() {
                   <TableRow key={result.id}>
                     <TableCell>{idx + 1}</TableCell>
                     <TableCell>
-                      {result.student_id_obj?.roll || "N/A"}
+                      {maskMobileNumber(result.student_id_obj?.roll || "N/A")}
                     </TableCell>
                     <TableCell>
                       {result.student_id_obj?.name || "N/A"}

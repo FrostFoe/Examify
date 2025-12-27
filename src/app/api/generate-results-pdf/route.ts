@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiRequest } from "@/lib/api";
+import { maskMobileNumber } from "@/lib/utils";
 
 export const runtime = "edge";
 
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     const processedResults = (results || []).map((result) => ({
       ...result,
-      student_id: { name: result.student_name, roll: result.student_roll },
+      student_id: { name: result.student_name, roll: maskMobileNumber(result.student_roll) },
       score:
         parseFloat(result.correct_answers) -
         parseFloat(result.wrong_answers) * (exam.negative_marks_per_wrong || 0),
@@ -195,7 +196,7 @@ export async function POST(request: NextRequest) {
                       (r, idx) => `
                       <tr>
                           <td>${idx + 1}</td>
-                          <td>${r.student_id.roll || "N/A"}</td>
+                          <td>${maskMobileNumber(r.student_id.roll || "N/A")}</td>
                           <td>${r.student_id.name || "N/A"}</td>
                           <td><strong>${r.score?.toFixed(2) || 0}</strong></td>
                           <td>${r.correct_answers || 0}</td>
