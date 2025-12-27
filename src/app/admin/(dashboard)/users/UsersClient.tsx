@@ -32,7 +32,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import ConfirmPasswordDialog from "@/components/ConfirmPasswordDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -165,7 +174,7 @@ export function UsersClient({
   const [batches] = useState<Batch[]>(initialBatches);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false);
-  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newUserCredentials, setNewUserCredentials] = useState<
     (User & { pass: string }) | null
@@ -217,7 +226,7 @@ export function UsersClient({
 
   const openDeleteConfirm = (user: User) => {
     setUserToDelete(user);
-    setIsPasswordOpen(true);
+    setIsDeleteAlertOpen(true);
   };
 
   const openEnrollDialog = (user: User) => {
@@ -225,19 +234,20 @@ export function UsersClient({
     setIsEnrollDialogOpen(true);
   };
 
-  const handleDeleteUserConfirmed = async (password: string) => {
+  const handleDeleteUserConfirmed = async () => {
     if (!userToDelete) return;
 
     if (!admin) {
       toast({ variant: "destructive", title: "অনুমতি নেই" });
-      setIsPasswordOpen(false);
+      setIsDeleteAlertOpen(false);
       setUserToDelete(null);
       return;
     }
 
     const formData = new FormData();
     formData.append("uid", userToDelete.uid);
-    formData.append("password", password);
+    // Password is no longer needed
+    // formData.append("password", password);
     formData.append("admin_uid", admin.uid);
 
     const result = await deleteUser(formData);
@@ -256,7 +266,7 @@ export function UsersClient({
       });
     }
 
-    setIsPasswordOpen(false);
+    setIsDeleteAlertOpen(false);
     setUserToDelete(null);
   };
 
@@ -699,21 +709,31 @@ export function UsersClient({
         </CardContent>
       </Card>
 
-      <ConfirmPasswordDialog
-        open={isPasswordOpen}
+      <AlertDialog
+        open={isDeleteAlertOpen}
         onOpenChange={(open) => {
-          setIsPasswordOpen(open);
+          setIsDeleteAlertOpen(open);
           if (!open) setUserToDelete(null);
         }}
-        title="ইউজার মুছবেন?"
-        description={
-          userToDelete
-            ? `আপনি ${userToDelete.name} (রোল: ${userToDelete.roll}) কে মুছে ফেলতে চলেছেন। এই কাজটি необратиযোগ্য। আপনার অ্যাডমিন পাসওয়ার্ড দিন:`
-            : undefined
-        }
-        confirmLabel="মুছে ফেলুন"
-        onConfirm={handleDeleteUserConfirmed}
-      />
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>আপনি কি নিশ্চিত?</AlertDialogTitle>
+            <AlertDialogDescription>
+              আপনি {userToDelete?.name} (রোল: {userToDelete?.roll})-কে মুছে ফেলতে চলেছেন। এই কাজটি ফিরিয়ে নেওয়া যাবে না।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>বাতিল করুন</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => handleDeleteUserConfirmed()}
+            >
+              মুছে ফেলুন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={isEnrollDialogOpen} onOpenChange={setIsEnrollDialogOpen}>
         <DialogContent>

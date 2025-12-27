@@ -503,12 +503,13 @@ export async function removeStudentFromBatch(formData: FormData) {
 
 export async function deleteUser(formData: FormData) {
   const uid = formData.get("uid") as string;
-  const password = formData.get("password") as string;
-  const admin_uid = formData.get("admin_uid") as string;
+  // Password verification removed as per request
+  // const password = formData.get("password") as string;
+  // const admin_uid = formData.get("admin_uid") as string;
 
-  if (!(await verifyPasswordInternal(admin_uid, password))) {
-    return { success: false, message: "Invalid password or unauthorized" };
-  }
+  // if (!(await verifyPasswordInternal(admin_uid, password))) {
+  //   return { success: false, message: "Invalid password or unauthorized" };
+  // }
 
   const result = await apiRequest(
     "students",
