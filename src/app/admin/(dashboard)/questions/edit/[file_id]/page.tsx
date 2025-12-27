@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import dynamic from "next/dynamic";
 import {
   PageHeader,
   CustomLoader,
@@ -20,12 +21,17 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
-import LatexRenderer from "@/components/LatexRenderer";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useParams, useRouter } from "next/navigation";
 import { useDebounce } from "use-debounce";
 import type { Question } from "@/lib/types";
+
+// Lazy load LatexRenderer - only used in this page
+const LatexRenderer = dynamic(() => import("@/components/LatexRenderer"), {
+  loading: () => <span className="text-muted-foreground">Loading...</span>,
+  ssr: false
+});
 
 interface FileRecord {
   id: string;

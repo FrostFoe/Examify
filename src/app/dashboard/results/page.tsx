@@ -28,19 +28,8 @@ import {
   TrendingUp,
   CheckCircle2,
   XCircle,
-  BarChart,
   Trophy,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart as RechartsBarChart,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  Bar,
-  CartesianGrid,
-} from "recharts";
 import type { Exam, Batch } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -358,48 +347,6 @@ export default function ResultsPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Chart Card */}
-      {chartData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <BarChart className="h-5 w-5 mr-2" />
-              সাম্প্রতিক পরীক্ষার পারফরম্যান্স
-            </CardTitle>
-            <CardDescription>আপনার শেষ ১০টি পরীক্ষার স্কোর</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsBarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="name"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      borderColor: "hsl(var(--border))",
-                    }}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="score"
-                    fill="hsl(var(--primary))"
-                    name="স্কোর"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </RechartsBarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Detailed Results */}
       <Card>
