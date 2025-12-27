@@ -9,6 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Download,
+  Upload,
   Check,
   Copy,
   Edit,
@@ -52,7 +54,13 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { User, Batch, UserFormResult } from "@/lib/types";
-import { createUser, updateUser, deleteUser } from "@/lib/actions";
+import {
+  createUser,
+  updateUser,
+  deleteUser,
+  exportUsersData,
+  importUsersData,
+} from "@/lib/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -167,12 +175,17 @@ export function UsersClient({
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importPassword, setImportPassword] = useState("");
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(
     searchParams.get("search") || "",
   );
+  const { admin } = useAdminAuth();
 
   useEffect(() => {
     setUsers(initialUsers);
@@ -198,13 +211,11 @@ export function UsersClient({
     setIsEnrollDialogOpen(true);
   };
 
-  const { admin } = useAdminAuth();
-
   const handleDeleteUserConfirmed = async (password: string) => {
     if (!userToDelete) return;
 
     if (!admin) {
-      toast({ variant: "destructive", title: "প্রমাণীকরণ ত্রুটি" });
+      toast({ variant: "destructive", title: "অনুমতি নেই" });
       setIsPasswordOpen(false);
       setUserToDelete(null);
       return;
@@ -220,14 +231,14 @@ export function UsersClient({
     if (!result.success) {
       toast({
         variant: "destructive",
-        title: "ব্যর্থ হয়েছে",
+        title: "সমস্যা",
         description: result.message,
       });
     } else {
       setUsers(users.filter((user) => user.uid !== userToDelete.uid));
       toast({
-        title: "সফল",
-        description: `ব্যবহারকারী ${userToDelete.name} মুছে ফেলা হয়েছে।`,
+        title: "সম্পূর্ণ",
+        description: `${userToDelete.name} মুছে গেছে।`,
       });
     }
 
@@ -245,8 +256,8 @@ export function UsersClient({
       setNewUserCredentials(data as User & { pass: string });
       setUsers((prev) => [...prev, data as User]);
       toast({
-        title: "সফল",
-        description: "নতুন ব্যবহারকারী সফলভাবে তৈরি হয়েছে।",
+        title: "সম্পূর্ণ",
+        description: "নতুন ইউজার তৈরি হয়েছে।",
       });
     } else if (selectedUser && "uid" in data) {
       // Edit mode
@@ -254,8 +265,8 @@ export function UsersClient({
         prev.map((u) => (u.uid === data.uid ? (data as User) : u)),
       );
       toast({
-        title: "সফল",
-        description: "ব্যবহারকারী সফলভাবে আপডেট করা হয়েছে।",
+        title: "সম্পূর্ণ",
+        description: "ইউজার আপডেট হয়েছে।",
       });
     }
   };
@@ -269,8 +280,8 @@ export function UsersClient({
     if (!userToUpdate) {
       toast({
         variant: "destructive",
-        title: "ত্রুটি",
-        description: "ব্যবহারকারী খুঁজে পাওয়া যায়নি।",
+        title: "সমস্যা",
+        description: "ইউজার পাওয়া যায়নি।",
       });
       setIsEnrolling(false);
       return;
@@ -282,8 +293,8 @@ export function UsersClient({
     ) {
       toast({
         variant: "destructive",
-        title: "ভর্তি ব্যর্থ হয়েছে",
-        description: "এই ব্যবহারকারী ইতিমধ্যে এই ব্যাচে আছেন।",
+        title: "ইতিমধ্যে আছে",
+        description: "এই ইউজার এই ব্যাচে আছে।",
       });
     } else {
       const result = await apiRequest<User>(
@@ -299,8 +310,8 @@ export function UsersClient({
       if (!result.success || !result.data) {
         toast({
           variant: "destructive",
-          title: "ভর্তি ব্যর্থ হয়েছে",
-          description: "ব্যবহারকারীকে ব্যাচে ভর্তি করা যায়নি।",
+          title: "সমস্যা",
+          description: "ভর্তি করা যাচ্ছে না।",
         });
       } else {
         const updatedUser = result.data;
@@ -308,8 +319,8 @@ export function UsersClient({
           users.map((u) => (u.uid === updatedUser.uid ? updatedUser : u)),
         );
         toast({
-          title: "সফল",
-          description: `${userToEnroll.name} ব্যাচে ভর্তি হয়েছেন।`,
+          title: "সম্পূর্ণ",
+          description: `${userToEnroll.name} ভর্তি হয়েছে।`,
         });
         setIsEnrollDialogOpen(false);
         setUserToEnroll(null);
@@ -331,6 +342,84 @@ export function UsersClient({
       }
       router.push(`/admin/users?${params.toString()}`);
     });
+  };
+
+  const handleExportUsers = async () => {
+    setIsExporting(true);
+    try {
+      const result = await exportUsersData();
+      if (result.success && result.data && result.filename) {
+        const element = document.createElement("a");
+        element.setAttribute(
+          "href",
+          "data:text/plain;charset=utf-8," + encodeURIComponent(result.data),
+        );
+        element.setAttribute("download", result.filename);
+        element.style.display = "none";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        toast({
+          title: "এক্সপোর্ট সফল",
+          description: `${users.length} জন ইউজারের ডেটা ডাউনলোড হয়েছে।`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "এক্সপোর্ট ব্যর্থ",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "এক্সপোর্ট ব্যর্থ",
+        description: (error as Error).message,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportUsers = async (file: File) => {
+    if (!admin) {
+      toast({ variant: "destructive", title: "অনুমতি নেই" });
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("adminPassword", importPassword);
+      formData.append("adminUid", admin.uid);
+
+      const result = await importUsersData(formData);
+
+      if (result.success) {
+        toast({
+          title: "ইমপোর্ট সফল",
+          description: result.message,
+        });
+        setIsImportDialogOpen(false);
+        setImportPassword("");
+        router.refresh();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "ইমপোর্ট ব্যর্থ",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "ইমপোর্ট ব্যর্থ",
+        description: (error as Error).message,
+      });
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -356,17 +445,116 @@ export function UsersClient({
                 আপনার প্ল্যাটফর্মে সমস্ত নিবন্ধিত ব্যবহারকারীদের পরিচালনা করুন।
               </CardDescription>
             </div>
-            <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto">
+            <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto flex-wrap">
               <form onSubmit={handleSearch} className="relative w-full md:w-64">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="নাম বা রোল দিয়ে খুঁজুন..."
+                  placeholder="নাম বা রোল দিয়ে খুঁজুন..."
                   className="pl-8"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </form>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1"
+                onClick={handleExportUsers}
+                disabled={isExporting}
+              >
+                <Download className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                  {isExporting ? "এক্সপোর্ট করা হচ্ছে..." : "এক্সপোর্ট"}
+                </span>
+              </Button>
+              <Dialog
+                open={isImportDialogOpen}
+                onOpenChange={setIsImportDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="gap-1">
+                    <Upload className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      ইমপোর্ট
+                    </span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>ইউজার ডেটা ইমপোর্ট করুন</DialogTitle>
+                    <DialogDescription>
+                      পূর্ববর্তী এক্সপোর্টকৃত JSON ফাইল নির্বাচন করুন।
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="import-file">JSON ফাইল</Label>
+                      <Input
+                        id="import-file"
+                        type="file"
+                        accept=".json"
+                        disabled={isImporting}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="import-password">
+                        অ্যাডমিন পাসওয়ার্ড
+                      </Label>
+                      <Input
+                        id="import-password"
+                        type="password"
+                        placeholder="আপনার পাসওয়ার্ড"
+                        value={importPassword}
+                        onChange={(e) => setImportPassword(e.target.value)}
+                        disabled={isImporting}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsImportDialogOpen(false)}
+                      disabled={isImporting}
+                    >
+                      বাতিল করুন
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        const fileInput = document.getElementById(
+                          "import-file",
+                        ) as HTMLInputElement;
+                        const file = fileInput?.files?.[0];
+                        if (!file) {
+                          toast({
+                            variant: "destructive",
+                            title: "ফাইল বেছে নিন",
+                          });
+                          return;
+                        }
+                        if (!importPassword) {
+                          toast({
+                            variant: "destructive",
+                            title: "পাসওয়ার্ড দিন",
+                          });
+                          return;
+                        }
+                        handleImportUsers(file);
+                      }}
+                      disabled={isImporting}
+                    >
+                      {isImporting ? (
+                        <>
+                          <CustomLoader />
+                          ইমপোর্ট হচ্ছে...
+                        </>
+                      ) : (
+                        "ইমপোর্ট করুন"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
               <Dialog
                 open={isUserDialogOpen}
                 onOpenChange={setIsUserDialogOpen}
@@ -503,7 +691,7 @@ export function UsersClient({
           setIsPasswordOpen(open);
           if (!open) setUserToDelete(null);
         }}
-        title="ব্যবহারকারী মুছে ফেলা নিশ্চিত করুন"
+        title="ইউজার মুছবেন?"
         description={
           userToDelete
             ? `আপনি ${userToDelete.name} (রোল: ${userToDelete.roll}) কে মুছে ফেলতে চলেছেন। এই কাজটি необратиযোগ্য। আপনার অ্যাডমিন পাসওয়ার্ড দিন:`
@@ -539,10 +727,10 @@ export function UsersClient({
             {isEnrolling ? (
               <>
                 <CustomLoader />
-                ভর্তি করা হচ্ছে...
+                ভর্তি হচ্ছে...
               </>
             ) : (
-              "ভর্তি নিশ্চিত করুন"
+              "ভর্তি করুন"
             )}
           </Button>
         </DialogContent>

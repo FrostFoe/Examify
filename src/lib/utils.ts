@@ -148,4 +148,3 @@ export const formatExamDateTime = (date: Date | string | null | undefined) => {
     return null;
   }
 };
-

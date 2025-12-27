@@ -558,3 +558,100 @@ export async function deleteStudentExamResult(formData: FormData) {
 
   return { success: true, message: "Result deleted" };
 }
+
+export async function exportUsersData() {
+  try {
+    const result = await apiRequest<User[]>("students", "GET", null, {
+      limit: 1000000,
+    });
+
+    if (!result.success || !result.data) {
+      return {
+        success: false,
+        message: "Failed to fetch users data",
+      };
+    }
+
+    const data = {
+      exportedAt: new Date().toISOString(),
+      version: "1.0",
+      users: result.data,
+    };
+
+    return {
+      success: true,
+      data: JSON.stringify(data, null, 2),
+      filename: `users-backup-${new Date().toISOString().split("T")[0]}.json`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Export failed: " + (error as Error).message,
+    };
+  }
+}
+
+export async function importUsersData(formData: FormData) {
+  try {
+    const jsonFile = formData.get("file") as File;
+    const adminPassword = formData.get("adminPassword") as string;
+    const adminUid = formData.get("adminUid") as string;
+
+    if (!jsonFile) {
+      return { success: false, message: "No file selected" };
+    }
+
+    if (!(await verifyPasswordInternal(adminUid, adminPassword))) {
+      return { success: false, message: "Invalid password or unauthorized" };
+    }
+
+    const fileContent = await jsonFile.text();
+    const importedData = JSON.parse(fileContent);
+
+    if (!importedData.users || !Array.isArray(importedData.users)) {
+      return { success: false, message: "Invalid file format" };
+    }
+
+    let importedCount = 0;
+    const errors = [];
+
+    for (const user of importedData.users) {
+      try {
+        const result = await apiRequest(
+          "students",
+          "POST",
+          {
+            uid: user.uid,
+            name: user.name,
+            roll: user.roll || "",
+            pass: user.pass || "",
+            enrolled_batches: user.enrolled_batches || [],
+          },
+          { action: "create" },
+        );
+
+        if (result.success) {
+          importedCount++;
+        } else {
+          errors.push(`${user.name} (${user.roll}): ${result.message}`);
+        }
+      } catch (error) {
+        errors.push(`${user.name} (${user.roll}): ${(error as Error).message}`);
+      }
+    }
+
+    revalidatePath("/admin/users");
+
+    return {
+      success: true,
+      message: `${importedCount} users imported successfully${errors.length > 0 ? `, ${errors.length} errors` : ""}`,
+      importedCount,
+      errors,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Import failed: " + (error as Error).message,
+    };
+  }
+}

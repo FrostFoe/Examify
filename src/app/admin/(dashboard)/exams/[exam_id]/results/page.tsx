@@ -85,7 +85,7 @@ export default function AdminExamResultsPage() {
 
         if (!examResult.success || !examResult.data) {
           toast({
-            title: "পরীক্ষা খুঁজে পাওয়া যায়নি",
+            title: "পরীক্ষা পাওয়া যায়নি",
             variant: "destructive",
           });
           router.push("/admin/exams");
@@ -198,7 +198,7 @@ export default function AdminExamResultsPage() {
       document.body.removeChild(a);
 
       toast({
-        title: "CSV সফলভাবে ডাউনলোড হয়েছে",
+        title: "CSV ডাউনলোড হয়েছে",
       });
     } catch (err) {
       console.error(err);
@@ -220,7 +220,7 @@ export default function AdminExamResultsPage() {
     if (!pendingResultToDelete) return;
 
     if (!admin) {
-      toast({ variant: "destructive", title: "অধিকার নেই" });
+      toast({ variant: "destructive", title: "অনুমতি নেই" });
       setIsPasswordOpen(false);
       setPendingResultToDelete(null);
       return;
@@ -241,7 +241,7 @@ export default function AdminExamResultsPage() {
         variant: "destructive",
       });
     } else {
-      toast({ title: "ফলাফল সফলভাবে মুছে ফেলা হয়েছে" });
+      toast({ title: "ফলাফল মুছে গেছে" });
       setResults(results.filter((r) => r.id !== pendingResultToDelete.id));
     }
 
@@ -268,7 +268,7 @@ export default function AdminExamResultsPage() {
   if (!exam) {
     return (
       <div className="container mx-auto p-4">
-        <p className="text-red-600">পরীক্ষা খুঁজে পাওয়া যায়নি</p>
+        <p className="text-red-600">পরীক্ষা পাওয়া যায়নি</p>
       </div>
     );
   }

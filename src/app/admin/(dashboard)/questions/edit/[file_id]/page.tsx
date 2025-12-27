@@ -31,7 +31,7 @@ import type { Question } from "@/lib/types";
 // Lazy load LatexRenderer - only used in this page
 const LatexRenderer = dynamic(() => import("@/components/LatexRenderer"), {
   loading: () => <span className="text-muted-foreground">Loading...</span>,
-  ssr: false
+  ssr: false,
 });
 
 interface FileRecord {

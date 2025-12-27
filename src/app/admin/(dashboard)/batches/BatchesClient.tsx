@@ -111,7 +111,7 @@ export function BatchesClient({
     if (!pendingBatchToDelete) return;
 
     if (!admin) {
-      toast({ variant: "destructive", title: "অধিকার নেই" });
+      toast({ variant: "destructive", title: "অনুমতি নেই" });
       setIsPasswordOpen(false);
       setPendingBatchToDelete(null);
       return;
@@ -126,7 +126,7 @@ export function BatchesClient({
 
     if (result.success) {
       toast({
-        title: "ব্যাচ সফলভাবে মুছে ফেলা হয়েছে",
+        title: "ব্যাচ মুছে গেছে",
       });
       // Refetch batches to remove deleted batch from list
       await refetchBatches();
@@ -153,7 +153,7 @@ export function BatchesClient({
     const result = await createBatch(formData);
     if (result.success) {
       toast({
-        title: "ব্যাচ সফলভাবে যোগ করা হয়েছে",
+        title: "ব্যাচ যুক্ত হয়েছে",
       });
       formRef.current?.reset();
       setIsPublic(false);

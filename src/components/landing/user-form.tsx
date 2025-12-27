@@ -28,10 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 // Updated schema to handle both create and edit
 const formSchema = z.object({
@@ -68,7 +65,12 @@ export function UserForm({
   const form = useForm<UserFormValues>({
     resolver: zodResolver(
       isCreateMode
-        ? formSchema.pick({ name: true, roll: true, batch_id: true, passwordMode: true })
+        ? formSchema.pick({
+            name: true,
+            roll: true,
+            batch_id: true,
+            passwordMode: true,
+          })
         : formSchema.extend({
             pass: z
               .string()
@@ -185,7 +187,7 @@ export function UserForm({
         )}
         {isCreateMode && (
           <FormItem>
-            <FormLabel>পাসওয়ার্ড মোড</FormLabel>
+            <FormLabel>পাসওয়ার্ড</FormLabel>
             <FormControl>
               <RadioGroup
                 value={passwordMode}
@@ -199,13 +201,13 @@ export function UserForm({
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="auto" id="mode-auto" />
                   <label htmlFor="mode-auto" className="cursor-pointer">
-                    স্বয়ংক্রিয় তৈরি (সুপারিশকৃত)
+                    অটো
                   </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="manual" id="mode-manual" />
                   <label htmlFor="mode-manual" className="cursor-pointer">
-                    ম্যানুয়াল প্রবেশ
+                    ম্যানুয়াল
                   </label>
                 </div>
               </RadioGroup>

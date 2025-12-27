@@ -247,17 +247,20 @@ function SubjectSelectionScreen({
 
       let dateValue: Date | null = null;
 
-      if (typeof v === 'string') {
+      if (typeof v === "string") {
         // Handle different date formats that might come from the database
         // Try to parse as ISO string first
         dateValue = new Date(v);
 
         // If it's not a valid date or it contains space (like 'YYYY-MM-DD HH:MM:SS'),
         // it might be in a format that needs timezone handling
-        if (isNaN(dateValue.getTime()) || (v.includes(' ') && !v.includes('T'))) {
+        if (
+          isNaN(dateValue.getTime()) ||
+          (v.includes(" ") && !v.includes("T"))
+        ) {
           // For 'YYYY-MM-DD HH:MM:SS' format, treat as Bangladesh time (UTC+6)
           // Convert to ISO format and add timezone offset
-          const bdTimeStr = v.replace(' ', 'T') + '+06:00';
+          const bdTimeStr = v.replace(" ", "T") + "+06:00";
           dateValue = new Date(bdTimeStr);
         }
       } else if (v instanceof Date) {
@@ -748,7 +751,7 @@ export default function TakeExamPage() {
             variant: "destructive",
           });
         } else {
-          toast({ title: "পরীক্ষা সফলভাবে জমা হয়েছে!" });
+          toast({ title: "পরীক্ষা জমা হয়েছে!" });
         }
       } catch (err) {
         console.error("Error submitting exam:", err);
@@ -890,11 +893,7 @@ export default function TakeExamPage() {
         const now = Date.now();
         const diff = endTime - now;
         if (diff <= 0) {
-          setTimeLeft(0);
-          // Only submit if we haven't already
-          if (!isSubmitting && !submitted) {
-            handleSubmitExam();
-          }
+          setTimeLeft(0); // Keep showing 0 but don't auto-submit
         } else {
           setTimeLeft(Math.floor(diff / 1000));
         }
@@ -1018,7 +1017,7 @@ export default function TakeExamPage() {
         const isEnrolled = userResult.data.enrolled_batches?.includes(
           exam.batch_id,
         );
-        
+
         // If enrolled in batch, allow access
         if (isEnrolled) {
           setIsAuthorized(true);
@@ -1286,7 +1285,8 @@ export default function TakeExamPage() {
           <CardHeader>
             <CardTitle>অনুমতি নেই</CardTitle>
             <CardDescription>
-              এই পরীক্ষায় অংশগ্রহণের জন্য আপনার অনুমতি নেই। দয়া করে নিশ্চিত করুন যে আপনি সঠিক batch এ নথিভুক্ত আছেন।
+              এই পরীক্ষায় অংশগ্রহণের জন্য আপনার অনুমতি নেই। দয়া করে নিশ্চিত
+              করুন যে আপনি সঠিক batch এ নথিভুক্ত আছেন।
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -1407,12 +1407,14 @@ export default function TakeExamPage() {
                     <div className="space-y-1 text-sm">
                       {startDate && (
                         <div>
-                          <strong>শুরুর সময়:</strong> {formatExamDateTime(startDate)}
+                          <strong>শুরুর সময়:</strong>{" "}
+                          {formatExamDateTime(startDate)}
                         </div>
                       )}
                       {endDate && (
                         <div>
-                          <strong>সম্ভাব্য শেষ সময়:</strong> {formatExamDateTime(endDate)}
+                          <strong>সম্ভাব্য শেষ সময়:</strong>{" "}
+                          {formatExamDateTime(endDate)}
                         </div>
                       )}
                       {!startDate && !endDate && (
@@ -1424,11 +1426,13 @@ export default function TakeExamPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  {!allowStart && timeValidation.reason === "exam_not_started" && (
-                    <div className="text-xs text-muted-foreground px-3 py-2 rounded bg-blue-50 dark:bg-blue-950">
-                      ⏰ পরীক্ষা শুরু হওয়ার সময় হলে আপনার এখানে ফিরে আসতে হবে।
-                    </div>
-                  )}
+                  {!allowStart &&
+                    timeValidation.reason === "exam_not_started" && (
+                      <div className="text-xs text-muted-foreground px-3 py-2 rounded bg-blue-50 dark:bg-blue-950">
+                        ⏰ পরীক্ষা শুরু হওয়ার সময় হলে আপনার এখানে ফিরে আসতে
+                        হবে।
+                      </div>
+                    )}
                   {!allowStart && timeValidation.reason === "exam_ended" && (
                     <div className="text-xs text-destructive px-3 py-2 rounded bg-red-50 dark:bg-red-950">
                       ⛔ এই পরীক্ষার সময়সীমা শেষ হয়ে গেছে।
@@ -1742,10 +1746,14 @@ export default function TakeExamPage() {
                     <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
                   </Button>
                 ) : (
-                  <div className="flex-1 h-10 flex items-center justify-center px-2 rounded-md bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
-                    <CustomLoader minimal />
-                    <span className="ml-2">সময় শেষ হলে স্বয়ংক্রিয় জমা দেওয়া হবে...</span>
-                  </div>
+                  <Button
+                    onClick={() => setShowSubmitDialog(true)}
+                    disabled={isSubmitting}
+                    className="flex-1 h-10 px-2 text-xs sm:text-sm"
+                  >
+                    জমা দিন
+                    <Send className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
+                  </Button>
                 )}
               </footer>
               <hr className="h-20 border-transparent" />

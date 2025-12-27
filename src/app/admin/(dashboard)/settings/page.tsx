@@ -61,7 +61,7 @@ export default function AdminSettingsPage() {
       if (result.success) {
         toast({
           title: "সফল",
-          description: "অ্যাডমিন পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে।",
+          description: "পাসওয়ার্ড বদলে গেছে।",
         });
         setOldPassword("");
         setNewPassword("");
@@ -69,7 +69,7 @@ export default function AdminSettingsPage() {
       } else {
         toast({
           variant: "destructive",
-          title: "ব্যর্থ হয়েছে",
+          title: "সমস্যা",
           description: result.message || "পাসওয়ার্ড পরিবর্তন করা যায়নি।",
         });
       }

@@ -158,7 +158,7 @@ export default function AdminFilesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-2 md:p-4 space-y-4">
-            <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-center justify-between">
+          <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-center justify-between">
             <div className="relative w-full md:w-1/2">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input

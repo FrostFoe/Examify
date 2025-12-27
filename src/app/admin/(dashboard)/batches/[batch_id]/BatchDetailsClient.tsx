@@ -251,7 +251,7 @@ export function BatchDetailsClient({
     if (pendingDelete.type === "exam") {
       const result = await deleteExam(formData);
       if (result.success) {
-        toast({ title: "পরীক্ষা সফলভাবে মুছে ফেলা হয়েছে" });
+        toast({ title: "পরীক্ষা মুছে গেছে" });
         // Remove from exams list immediately
         setExams((prev) => prev.filter((e) => e.id !== pendingDelete.id));
       } else {
@@ -265,7 +265,7 @@ export function BatchDetailsClient({
       formData.append("user_id", pendingDelete.id);
       const result = await removeStudentFromBatch(formData);
       if (result.success) {
-        toast({ title: "ছাত্রছাত্রী সফলভাবে মুছে ফেলা হয়েছে" });
+        toast({ title: "স্টুডেন্ট মুছে গেছে" });
         // Remove from students list immediately
         setEnrolledStudents((prev) =>
           prev.filter((s) => s.uid !== pendingDelete.id),
@@ -339,7 +339,7 @@ export function BatchDetailsClient({
     const result = await enrollStudent(formData);
     if (result.success) {
       toast({
-        title: "ছাত্রছাত্রী সফলভাবে যোগ করা হয়েছে",
+        title: "স্টুডেন্ট যুক্ত হয়েছে",
         description: `${pendingStudent.name} (রোল: ${pendingStudent.roll}) ব্যাচে যুক্ত হয়েছেন।`,
       });
 
@@ -407,7 +407,7 @@ export function BatchDetailsClient({
 
     const result = await createExam(formData);
     if (result.success) {
-      toast({ title: "পরীক্ষা সফলভাবে যোগ করা হয়েছে" });
+      toast({ title: "পরীক্ষা যুক্ত হয়েছে" });
       addExamFormRef.current?.reset();
       setSelectedQuestionIds([]);
       setMandatorySubjectConfigs([]);
