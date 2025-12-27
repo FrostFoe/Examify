@@ -38,7 +38,26 @@ if ($method === 'GET') {
     }
     $action = $_GET['action'] ?? '';
 
-    if ($action === 'submit') {
+    if ($action === 'start') {
+        try {
+            $id = $input['id'] ?? uuidv4();
+            $exam_id = $input['exam_id'] ?? '';
+            $student_id = $input['student_id'] ?? '';
+            $started_at = $input['started_at'] ?? date('Y-m-d H:i:s');
+
+            if (empty($exam_id) || empty($student_id)) {
+                throw new Exception("Missing exam_id or student_id");
+            }
+
+            $stmt = $pdo->prepare("INSERT INTO student_exams (id, exam_id, student_id, started_at) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE started_at = IFNULL(started_at, VALUES(started_at))");
+            $stmt->execute([$id, $exam_id, $student_id, $started_at]);
+            
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    } elseif ($action === 'submit') {
         try {
             $id = $input['id'] ?? uuidv4();
             $exam_id = $input['exam_id'] ?? '';
@@ -47,13 +66,14 @@ if ($method === 'GET') {
             $correct_answers = isset($input['correct_answers']) ? (int)$input['correct_answers'] : 0;
             $wrong_answers = isset($input['wrong_answers']) ? (int)$input['wrong_answers'] : 0;
             $unattempted = isset($input['unattempted']) ? (int)$input['unattempted'] : 0;
+            $started_at = $input['started_at'] ?? null;
 
             if (empty($exam_id) || empty($student_id)) {
                 throw new Exception("Missing exam_id or student_id");
             }
 
-            $stmt = $pdo->prepare("INSERT INTO student_exams (id, exam_id, student_id, score, correct_answers, wrong_answers, unattempted) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score), correct_answers = VALUES(correct_answers), wrong_answers = VALUES(wrong_answers), unattempted = VALUES(unattempted), submitted_at = CURRENT_TIMESTAMP");
-            $stmt->execute([$id, $exam_id, $student_id, $score, $correct_answers, $wrong_answers, $unattempted]);
+            $stmt = $pdo->prepare("INSERT INTO student_exams (id, exam_id, student_id, score, correct_answers, wrong_answers, unattempted, started_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score), correct_answers = VALUES(correct_answers), wrong_answers = VALUES(wrong_answers), unattempted = VALUES(unattempted), submitted_at = CURRENT_TIMESTAMP, started_at = IFNULL(started_at, VALUES(started_at))");
+            $stmt->execute([$id, $exam_id, $student_id, $score, $correct_answers, $wrong_answers, $unattempted, $started_at]);
             
             echo json_encode(['success' => true]);
         } catch (Exception $e) {

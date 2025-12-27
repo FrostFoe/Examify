@@ -157,6 +157,7 @@ CREATE TABLE IF NOT EXISTS `student_exams` (
   `correct_answers` int(11) DEFAULT '0',
   `wrong_answers` int(11) DEFAULT '0',
   `unattempted` int(11) DEFAULT '0',
+  `started_at` datetime DEFAULT NULL,
   `submitted_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `negative_marks_per_wrong` float DEFAULT '0.25',
   `marks_per_question` float DEFAULT '1',

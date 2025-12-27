@@ -99,6 +99,7 @@ export type StudentExam = {
   correct_answers?: number;
   wrong_answers?: number;
   unattempted?: number;
+  started_at?: string;
   submitted_at?: string;
   marks_per_question?: number;
 };

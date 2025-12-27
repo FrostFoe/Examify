@@ -485,6 +485,7 @@ export default function TakeExamPage() {
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
   const [orderedSubjects, setOrderedSubjects] = useState<string[]>([]);
   const [endTime, setEndTime] = useState<number | null>(null);
+  const [startedAt, setStartedAt] = useState<string | null>(null);
 
   // Restore guest session
   useEffect(() => {
@@ -644,7 +645,22 @@ export default function TakeExamPage() {
       setSelectedSubject("all");
     }
     // setTimeLeft handled by effect
+    const now = new Date().toISOString();
+    setStartedAt(now);
     setExamStarted(true);
+
+    if (user?.uid && exam_id) {
+      apiRequest(
+        "results",
+        "POST",
+        {
+          exam_id: exam_id.toString(),
+          student_id: user.uid,
+          started_at: now,
+        },
+        { action: "start" },
+      ).catch((err) => console.error("Error recording exam start:", err));
+    }
   };
 
   const handleNextPage = () => {
@@ -740,6 +756,7 @@ export default function TakeExamPage() {
             correct_answers: correctAnswers,
             wrong_answers: wrongAnswers,
             unattempted: questions.length - Object.keys(selectedAnswers).length,
+            started_at: startedAt,
           },
           { action: "submit" },
         );
@@ -787,6 +804,7 @@ export default function TakeExamPage() {
         wrong_answers: wrongAnswers,
         unattempted: questions.length - Object.keys(selectedAnswers).length,
         submitted_at: new Date().toISOString(),
+        started_at: startedAt,
       };
 
       localStorage.setItem(storageKey, JSON.stringify(dataToStore));
@@ -823,6 +841,7 @@ export default function TakeExamPage() {
         if (staticData.orderedSubjects)
           setOrderedSubjects(staticData.orderedSubjects);
         if (staticData.endTime) setEndTime(staticData.endTime);
+        if (staticData.startedAt) setStartedAt(staticData.startedAt);
         if (staticData.examStarted) setExamStarted(true);
         if (staticData.selectedSubject)
           setSelectedSubject(staticData.selectedSubject);
@@ -849,6 +868,7 @@ export default function TakeExamPage() {
       questions,
       orderedSubjects,
       endTime,
+      startedAt,
       examStarted: true,
       selectedSubject,
     };
@@ -1378,7 +1398,22 @@ export default function TakeExamPage() {
       }
       setQuestions(allQuestions);
       // setTimeLeft handled by effect
+      const now = new Date().toISOString();
+      setStartedAt(now);
       setExamStarted(true);
+
+      if (user?.uid && exam_id) {
+        apiRequest(
+          "results",
+          "POST",
+          {
+            exam_id: exam_id.toString(),
+            student_id: user.uid,
+            started_at: now,
+          },
+          { action: "start" },
+        ).catch((err) => console.error("Error recording exam start:", err));
+      }
     };
 
     if (isCustomExam) {
