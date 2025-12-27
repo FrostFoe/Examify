@@ -168,9 +168,9 @@ export default function BatchLeaderboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="relative w-full overflow-x-auto scrollbar-hide">
-            <Table>
-              <TableHeader>
+          <div className="relative w-full overflow-x-auto">
+            <Table className="min-w-full">
+              <TableHeader className="hidden md:table-header-group">
                 <TableRow>
                   <TableHead className="whitespace-nowrap">র‌্যাঙ্ক</TableHead>
                   <TableHead className="whitespace-nowrap">নাম</TableHead>
@@ -185,20 +185,40 @@ export default function BatchLeaderboardPage() {
                   leaderboard.map((entry, idx) => (
                     <TableRow
                       key={entry.student_id}
-                      className={
-                        entry.student_id === user?.uid ? "bg-primary/10" : ""
-                      }
+                      className="md:table-row"
                     >
-                      <TableCell className="font-medium whitespace-nowrap">
+                      {/* Mobile view - collapsed card style */}
+                      <TableCell className="md:hidden p-0">
+                        <div className="border rounded-lg p-3 mb-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="font-medium">র‌্যাঙ্ক: </span>
+                              <span className="font-medium">{idx + 1}</span>
+                            </div>
+                            {entry.student_id === user?.uid && (
+                              <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                                আপনি
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-2">
+                            <div><span className="font-medium">নাম: </span>{entry.student_name}</div>
+                            <div><span className="font-medium">রোল: </span>{maskMobileNumber(entry.student_roll)}</div>
+                            <div><span className="font-medium">মোট স্কোর: </span><span className="font-bold">{parseFloat(String(entry.total_score)).toFixed(2)}</span></div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      {/* Desktop view - normal table cells */}
+                      <TableCell className="hidden md:table-cell font-medium whitespace-nowrap">
                         {idx + 1}
                       </TableCell>
-                      <TableCell className="min-w-[120px]">
+                      <TableCell className="hidden md:table-cell min-w-[120px]">
                         {entry.student_name}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="hidden md:table-cell whitespace-nowrap">
                         {maskMobileNumber(entry.student_roll)}
                       </TableCell>
-                      <TableCell className="text-right font-bold whitespace-nowrap">
+                      <TableCell className="hidden md:table-cell text-right font-bold whitespace-nowrap">
                         {parseFloat(String(entry.total_score)).toFixed(2)}
                       </TableCell>
                     </TableRow>

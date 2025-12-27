@@ -420,8 +420,8 @@ export default function AdminExamResultsPage() {
         </CardHeader>
 
         <CardContent className="overflow-x-auto">
-          <Table>
-            <TableHeader>
+          <Table className="min-w-full">
+            <TableHeader className="hidden md:table-header-group">
               <TableRow>
                 <TableHead>ক্র.স.</TableHead>
                 <TableHead>রোল</TableHead>
@@ -446,34 +446,66 @@ export default function AdminExamResultsPage() {
                 </TableRow>
               ) : (
                 results.map((result, idx) => (
-                  <TableRow key={result.id}>
-                    <TableCell>{idx + 1}</TableCell>
-                    <TableCell>
+                  <TableRow key={result.id} className="md:table-row">
+                    {/* Mobile view - collapsed card style */}
+                    <TableCell className="md:hidden p-0">
+                      <div className="border rounded-lg p-3 mb-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="font-medium">ক্র.স.: </span>
+                            <span>{idx + 1}</span>
+                          </div>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => requestDeleteResult(result)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <div className="mt-2">
+                          <div><span className="font-medium">রোল: </span>{maskMobileNumber(result.student_id_obj?.roll || "N/A")}</div>
+                          <div><span className="font-medium">নাম: </span>{result.student_id_obj?.name || "N/A"}</div>
+                          <div><span className="font-medium">স্কোর: </span><span className="font-bold">{result.score ? parseFloat(String(result.score)).toFixed(2) : 0}</span></div>
+                          <div className="flex gap-2 mt-1">
+                            <span className="text-green-600"><span className="font-medium">সঠিক: </span>{result.correct_answers || 0}</span>
+                            <span className="text-destructive"><span className="font-medium">ভুল: </span>{result.wrong_answers || 0}</span>
+                            <span className="text-muted-foreground"><span className="font-medium">উত্তর না দেওয়া: </span>{result.unattempted || 0}</span>
+                          </div>
+                          <div><span className="font-medium">সময়: </span>{new Date(result.submitted_at).toLocaleString("bn-BD", {
+                            timeZone: "Asia/Dhaka",
+                          })}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    {/* Desktop view - normal table cells */}
+                    <TableCell className="hidden md:table-cell">{idx + 1}</TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {maskMobileNumber(result.student_id_obj?.roll || "N/A")}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {result.student_id_obj?.name || "N/A"}
                     </TableCell>
-                    <TableCell className="text-right font-bold">
+                    <TableCell className="hidden md:table-cell text-right font-bold">
                       {result.score
                         ? parseFloat(String(result.score)).toFixed(2)
                         : 0}
                     </TableCell>
-                    <TableCell className="text-center text-green-600">
+                    <TableCell className="hidden md:table-cell text-center text-green-600">
                       {result.correct_answers || 0}
                     </TableCell>
-                    <TableCell className="text-center text-destructive">
+                    <TableCell className="hidden md:table-cell text-center text-destructive">
                       {result.wrong_answers || 0}
                     </TableCell>
-                    <TableCell className="text-center text-muted-foreground">
+                    <TableCell className="hidden md:table-cell text-center text-muted-foreground">
                       {result.unattempted || 0}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {new Date(result.submitted_at).toLocaleString("bn-BD", {
                         timeZone: "Asia/Dhaka",
                       })}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="hidden md:table-cell text-right">
                       <Button
                         variant="destructive"
                         size="icon"
