@@ -21,6 +21,7 @@ export type Admin = {
 export type Batch = {
   id: string;
   name: string;
+  section?: string;
   description?: string;
   icon_url?: string;
   status: "live" | "end";
@@ -31,6 +32,7 @@ export type Batch = {
 export type Exam = {
   id: string;
   name: string;
+  title?: string;
   description?: string | null;
   course_name?: string | null;
   batch_id?: string | null;

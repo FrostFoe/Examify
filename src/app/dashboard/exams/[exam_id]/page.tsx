@@ -1738,20 +1738,10 @@ export default function TakeExamPage() {
                     <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
                   </Button>
                 ) : (
-                  <Button
-                    onClick={() => setShowSubmitDialog(true)}
-                    disabled={isSubmitting}
-                    className="flex-1 h-10 px-2 text-xs sm:text-sm shadow-lg shadow-primary/20"
-                  >
-                    {isSubmitting ? (
-                      <CustomLoader minimal />
-                    ) : (
-                      <>
-                        জমা দিন
-                        <Send className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex-1 h-10 flex items-center justify-center px-2 rounded-md bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
+                    <CustomLoader minimal />
+                    <span className="ml-2">সময় শেষ হলে স্বয়ংক্রিয় জমা দেওয়া হবে...</span>
+                  </div>
                 )}
               </footer>
               <hr className="h-20 border-transparent" />

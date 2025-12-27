@@ -291,21 +291,27 @@ VALUES (@demo_batch_id, 'Demo Admission Batch', 'This is a sample admission batc
 CREATE TABLE IF NOT EXISTS student_tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_uid VARCHAR(255) NOT NULL,
+    batch_id VARCHAR(255) NOT NULL,
     task_1 TEXT,
     task_2 TEXT,
     exam_links JSON,
     exam_marks JSON,
     task_date DATE NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY student_day (student_uid, task_date)
+    UNIQUE KEY student_batch_day (student_uid, batch_id, task_date),
+    KEY idx_student_batch (student_uid, batch_id),
+    KEY idx_task_date (task_date)
 );
 
 CREATE TABLE IF NOT EXISTS student_attendance (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_uid VARCHAR(255) NOT NULL,
+    batch_id VARCHAR(255) NOT NULL,
     status ENUM('Yes', 'No') DEFAULT 'No',
     attendance_date DATE NOT NULL,
-    UNIQUE KEY student_day (student_uid, attendance_date)
+    UNIQUE KEY student_batch_day (student_uid, batch_id, attendance_date),
+    KEY idx_student_batch (student_uid, batch_id),
+    KEY idx_attendance_date (attendance_date)
 );
 
 
