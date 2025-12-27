@@ -1246,7 +1246,7 @@ export default function TakeExamPage() {
     );
   }
 
-  if (!isAuthorized) {
+  if (isAuthorized === false && !authLoading) {
     return (
       <div className="container mx-auto p-2 md:p-4 text-center">
         <Card className="max-w-md mx-auto">
@@ -1264,6 +1264,11 @@ export default function TakeExamPage() {
         </Card>
       </div>
     );
+  }
+
+  // Show loader while authorization is being determined
+  if (isAuthorized === false && authLoading) {
+    return <CustomLoader />;
   }
 
   if (loading) {

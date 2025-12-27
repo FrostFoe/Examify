@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import {
   PageHeader,
   EmptyState,
+  CustomLoader,
 } from "@/components";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, CalendarClock, Zap } from "lucide-react";
@@ -170,7 +171,7 @@ export default function StudentBatchExamsPage() {
     }
   }, [exams, user, loading]);
 
-  if (!isAuthorized) {
+  if (isAuthorized === false) {
     return (
       <div className="container mx-auto px-4 py-6 text-center">
         <Card className="max-w-md mx-auto">
@@ -186,6 +187,11 @@ export default function StudentBatchExamsPage() {
         </Card>
       </div>
     );
+  }
+
+  // Show loader while authorization is being determined
+  if (isAuthorized === null || loading) {
+    return <CustomLoader />;
   }
 
   return (

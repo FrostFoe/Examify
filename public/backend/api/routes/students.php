@@ -8,7 +8,7 @@ if ($method === 'GET') {
     if ($uid) {
         $stmt = $pdo->prepare("SELECT uid, name, roll, enrolled_batches, created_at FROM students WHERE uid = ?");
         $stmt->execute([$uid]);
-        $student = $student = $stmt->fetch();
+        $student = $stmt->fetch();
         if ($student) {
             $student['enrolled_batches'] = json_decode($student['enrolled_batches'] ?? '[]', true);
         }
