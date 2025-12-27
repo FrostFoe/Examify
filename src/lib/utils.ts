@@ -75,3 +75,77 @@ export const parseDhakaDateTime = (isoString: string) => {
     period: period,
   };
 };
+
+/**
+ * Validate if current device time is within exam time window
+ * @param startTime - Exam start time (ISO string or Date)
+ * @param endTime - Exam end time (ISO string or Date)
+ * @returns { isAllowed: boolean, reason?: string }
+ */
+export const validateExamTime = (
+  startTime: string | Date | null | undefined,
+  endTime: string | Date | null | undefined,
+): { isAllowed: boolean; reason?: string } => {
+  try {
+    // Get current time from device
+    const now = new Date();
+    const currentTime = new Date(
+      now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }),
+    );
+
+    // If no time restrictions, allow
+    if (!startTime && !endTime) {
+      return { isAllowed: true };
+    }
+
+    // Parse start time
+    const start = startTime ? new Date(startTime) : null;
+    const end = endTime ? new Date(endTime) : null;
+
+    // Check if current time is before exam start
+    if (start && currentTime < start) {
+      return {
+        isAllowed: false,
+        reason: `exam_not_started`,
+      };
+    }
+
+    // Check if current time is after exam end
+    if (end && currentTime > end) {
+      return {
+        isAllowed: false,
+        reason: `exam_ended`,
+      };
+    }
+
+    // Current time is within the allowed window
+    return { isAllowed: true };
+  } catch (error) {
+    console.error("Error validating exam time:", error);
+    return { isAllowed: false, reason: `invalid_time_data` };
+  }
+};
+
+/**
+ * Get formatted time strings for display
+ * @param date - Date to format
+ * @returns Formatted date string in Dhaka timezone
+ */
+export const formatExamDateTime = (date: Date | string | null | undefined) => {
+  if (!date) return null;
+  try {
+    const d = new Date(date);
+    return d.toLocaleString("bn-BD", {
+      timeZone: "Asia/Dhaka",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  } catch {
+    return null;
+  }
+};
+

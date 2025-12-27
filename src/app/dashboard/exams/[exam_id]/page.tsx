@@ -61,7 +61,7 @@ import {
   ListChecks,
   HelpCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, validateExamTime, formatExamDateTime } from "@/lib/utils";
 
 export const runtime = "edge";
 
@@ -1346,18 +1346,18 @@ export default function TakeExamPage() {
     const now = new Date();
     const isPractice = exam?.is_practice;
 
-    const allowStart =
-      isPractice ||
-      ((!startDate || now >= startDate) && (!endDate || now <= endDate));
+    // Validate exam time window using device time
+    const timeValidation = validateExamTime(startDate, endDate);
+    const allowStart = isPractice || timeValidation.isAllowed;
 
     const handleStart = () => {
       if (!allowStart) {
-        if (startDate && now < startDate) {
+        if (timeValidation.reason === "exam_not_started") {
           toast({
             title: "পরীক্ষা এখনও শুরু হয়নি",
-            description: `এই পরীক্ষা ${startDate.toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })} থেকে শুরু হবে। অনুগ্রহ করে তখন আসুন।`,
+            description: `এই পরীক্ষা ${formatExamDateTime(startDate)} থেকে শুরু হবে। অনুগ্রহ করে তখন আসুন।`,
           });
-        } else if (endDate && now > endDate) {
+        } else if (timeValidation.reason === "exam_ended") {
           toast({
             title: "লাইভ পরীক্ষার সময় শেষ",
             description:
@@ -1365,7 +1365,11 @@ export default function TakeExamPage() {
             variant: "destructive",
           });
         } else {
-          toast({ title: "শুরু করা সম্ভব নয়", variant: "destructive" });
+          toast({
+            title: "শুরু করা সম্ভব নয়",
+            description: "সময়ের তথ্যে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+            variant: "destructive",
+          });
         }
         return;
       }
@@ -1397,20 +1401,14 @@ export default function TakeExamPage() {
                     </div>
                   ) : (
                     <div className="space-y-1 text-sm">
-                      {startDate && now < startDate && (
+                      {startDate && (
                         <div>
-                          <strong>শুরুর সময়:</strong>{" "}
-                          {startDate.toLocaleString("bn-BD", {
-                            timeZone: "Asia/Dhaka",
-                          })}
+                          <strong>শুরুর সময়:</strong> {formatExamDateTime(startDate)}
                         </div>
                       )}
                       {endDate && (
                         <div>
-                          <strong>সম্ভাব্য শেষ সময়:</strong>{" "}
-                          {endDate.toLocaleString("bn-BD", {
-                            timeZone: "Asia/Dhaka",
-                          })}
+                          <strong>সম্ভাব্য শেষ সময়:</strong> {formatExamDateTime(endDate)}
                         </div>
                       )}
                       {!startDate && !endDate && (
@@ -1421,11 +1419,15 @@ export default function TakeExamPage() {
                     </div>
                   )}
                 </div>
-
                 <div className="flex items-center gap-2">
-                  {!allowStart && startDate && now < startDate && (
-                    <div className="text-xs text-muted-foreground">
-                      পরীক্ষা শুরু হওয়ার আগে আপনার এখানে ফিরে আসতে হবে।
+                  {!allowStart && timeValidation.reason === "exam_not_started" && (
+                    <div className="text-xs text-muted-foreground px-3 py-2 rounded bg-blue-50 dark:bg-blue-950">
+                      ⏰ পরীক্ষা শুরু হওয়ার সময় হলে আপনার এখানে ফিরে আসতে হবে।
+                    </div>
+                  )}
+                  {!allowStart && timeValidation.reason === "exam_ended" && (
+                    <div className="text-xs text-destructive px-3 py-2 rounded bg-red-50 dark:bg-red-950">
+                      ⛔ এই পরীক্ষার সময়সীমা শেষ হয়ে গেছে।
                     </div>
                   )}
                 </div>
