@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/api";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { PageHeader, CustomLoader } from "@/components";
-import { maskMobileNumber } from "@/lib/utils";
+import { maskMobileNumber, formatExamDateTime } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -33,6 +33,9 @@ interface StudentResult {
     roll: string;
   };
   score: number;
+  correct_answers: number;
+  wrong_answers: number;
+  unattempted: number;
   submitted_at: string;
 }
 
@@ -40,8 +43,9 @@ interface ApiResult {
   id: string;
   student_name: string;
   student_roll: string;
-  correct_answers: string;
-  wrong_answers: string;
+  correct_answers: number;
+  wrong_answers: number;
+  unattempted: number;
   score: string;
   submitted_at: string;
 }
@@ -86,6 +90,9 @@ export default function ExamLeaderboardPage() {
             id: r.id,
             student: { name: r.student_name, roll: r.student_roll },
             score: parseFloat(r.score),
+            correct_answers: r.correct_answers,
+            wrong_answers: r.wrong_answers,
+            unattempted: r.unattempted,
             submitted_at: r.submitted_at,
           })),
         );

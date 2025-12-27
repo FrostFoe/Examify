@@ -61,6 +61,7 @@ export function UserForm({
   batches = [],
 }: UserFormProps) {
   const [passwordMode, setPasswordMode] = useState<"auto" | "manual">("auto");
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(
@@ -233,12 +234,22 @@ export function UserForm({
               <FormItem>
                 <FormLabel>পাসওয়ার্ড</FormLabel>
                 <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="ব্যবহারকারীর পাসওয়ার্ড"
-                    {...field}
-                    disabled={formState.isSubmitting}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="create-password-field"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="ব্যবহারকারীর পাসওয়ার্ড"
+                      {...field}
+                      disabled={formState.isSubmitting}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? 'লুকান' : 'দেখান'}
+                    </button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -271,12 +282,22 @@ export function UserForm({
                 <FormItem>
                   <FormLabel>পাসওয়ার্ড</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="নতুন পাসওয়ার্ড (খালি রাখলে পুরনো পাসওয়ার্ড অপরিবর্তিত থাকবে)"
-                      {...field}
-                      disabled={formState.isSubmitting}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password-field"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="নতুন পাসওয়ার্ড (খালি রাখলে পুরনো পাসওয়ার্ড অপরিবর্তিত থাকবে)"
+                        {...field}
+                        disabled={formState.isSubmitting}
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? 'লুকান' : 'দেখান'}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
