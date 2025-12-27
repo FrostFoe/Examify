@@ -247,7 +247,7 @@ export function UserForm({
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? 'লুকান' : 'দেখান'}
+                      {showPassword ? "লুকান" : "দেখান"}
                     </button>
                   </div>
                 </FormControl>
@@ -295,7 +295,7 @@ export function UserForm({
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? 'লুকান' : 'দেখান'}
+                        {showPassword ? "লুকান" : "দেখান"}
                       </button>
                     </div>
                   </FormControl>

@@ -7,7 +7,7 @@ import { User } from "./types";
 export function createTemporaryGuestUser(name: string, roll: string): User {
   // Create a temporary UID for the session (not stored in database)
   const tempUid = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
+
   return {
     uid: tempUid,
     name: name,
@@ -21,17 +21,17 @@ export function createTemporaryGuestUser(name: string, roll: string): User {
  * Checks if a user is a temporary guest user
  */
 export function isTemporaryGuestUser(user: User | null): boolean {
-  return user?.uid.startsWith('guest_') || false;
+  return user?.uid.startsWith("guest_") || false;
 }
 
 /**
  * Gets guest user data from session storage
  */
 export function getGuestUserFromSession(): User | null {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
-  
+
   const savedGuest = sessionStorage.getItem("guest_user");
   if (savedGuest) {
     try {
@@ -48,7 +48,7 @@ export function getGuestUserFromSession(): User | null {
  * Saves guest user data to session storage
  */
 export function saveGuestUserToSession(user: User): void {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     sessionStorage.setItem("guest_user", JSON.stringify(user));
   }
 }
@@ -57,7 +57,7 @@ export function saveGuestUserToSession(user: User): void {
  * Clears guest user session data
  */
 export function clearGuestUserSession(): void {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     sessionStorage.removeItem("guest_user");
   }
 }

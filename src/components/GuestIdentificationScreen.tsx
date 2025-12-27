@@ -12,7 +12,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { createTemporaryGuestUser, saveGuestUserToSession } from "@/lib/guest-utils";
+import {
+  createTemporaryGuestUser,
+  saveGuestUserToSession,
+} from "@/lib/guest-utils";
 import type { User } from "@/lib/types";
 
 export function GuestIdentificationScreen({
@@ -38,10 +41,10 @@ export function GuestIdentificationScreen({
     try {
       // Create a temporary guest user without calling the backend API
       const tempUser = createTemporaryGuestUser(name, roll);
-      
+
       // Save to session storage for persistence during this session
       saveGuestUserToSession(tempUser);
-      
+
       // Call the onIdentify callback with the temporary user
       onIdentify(tempUser);
     } catch (error) {

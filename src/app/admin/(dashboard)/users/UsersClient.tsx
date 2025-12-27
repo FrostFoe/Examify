@@ -720,7 +720,8 @@ export function UsersClient({
           <AlertDialogHeader>
             <AlertDialogTitle>আপনি কি নিশ্চিত?</AlertDialogTitle>
             <AlertDialogDescription>
-              আপনি {userToDelete?.name} (রোল: {userToDelete?.roll})-কে মুছে ফেলতে চলেছেন। এই কাজটি ফিরিয়ে নেওয়া যাবে না।
+              আপনি {userToDelete?.name} (রোল: {userToDelete?.roll})-কে মুছে
+              ফেলতে চলেছেন। এই কাজটি ফিরিয়ে নেওয়া যাবে না।
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

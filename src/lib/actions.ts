@@ -853,49 +853,45 @@ export async function importBatchData(formData: FormData) {
                   ? question.explanation_image_url
                   : question.explanation_image;
 
-              await apiRequest(
-                "create-question",
-                "POST",
-                {
-                  exam_id: newExamId,
-                  question_text: question.question_text || question.question,
-                  option1:
-                    question.option1 ||
-                    (Array.isArray(question.options)
-                      ? question.options[0]
-                      : question.options?.option1),
-                  option2:
-                    question.option2 ||
-                    (Array.isArray(question.options)
-                      ? question.options[1]
-                      : question.options?.option2),
-                  option3:
-                    question.option3 ||
-                    (Array.isArray(question.options)
-                      ? question.options[2]
-                      : question.options?.option3),
-                  option4:
-                    question.option4 ||
-                    (Array.isArray(question.options)
-                      ? question.options[3]
-                      : question.options?.option4),
-                  option5:
-                    question.option5 ||
-                    (Array.isArray(question.options)
-                      ? question.options[4]
-                      : question.options?.option5),
-                  answer: question.answer,
-                  explanation: question.explanation,
-                  question_image: imageToUse,
-                  explanation_image: explanationImageToUse,
-                  subject: question.subject,
-                  paper: question.paper,
-                  chapter: question.chapter,
-                  highlight: question.highlight,
-                  type: question.type,
-                  order_index: question.order_index,
-                },
-              );
+              await apiRequest("create-question", "POST", {
+                exam_id: newExamId,
+                question_text: question.question_text || question.question,
+                option1:
+                  question.option1 ||
+                  (Array.isArray(question.options)
+                    ? question.options[0]
+                    : question.options?.option1),
+                option2:
+                  question.option2 ||
+                  (Array.isArray(question.options)
+                    ? question.options[1]
+                    : question.options?.option2),
+                option3:
+                  question.option3 ||
+                  (Array.isArray(question.options)
+                    ? question.options[2]
+                    : question.options?.option3),
+                option4:
+                  question.option4 ||
+                  (Array.isArray(question.options)
+                    ? question.options[3]
+                    : question.options?.option4),
+                option5:
+                  question.option5 ||
+                  (Array.isArray(question.options)
+                    ? question.options[4]
+                    : question.options?.option5),
+                answer: question.answer,
+                explanation: question.explanation,
+                question_image: imageToUse,
+                explanation_image: explanationImageToUse,
+                subject: question.subject,
+                paper: question.paper,
+                chapter: question.chapter,
+                highlight: question.highlight,
+                type: question.type,
+                order_index: question.order_index,
+              });
             }
           }
         }

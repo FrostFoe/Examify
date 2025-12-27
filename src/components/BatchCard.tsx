@@ -110,8 +110,12 @@ export function BatchCard({
           </Button>
         </Link>
         <div className="space-x-2">
-          <Button variant="secondary" size="sm" onClick={() => onExport?.(batch.id)}>
-             <Download className="h-4 w-4" />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onExport?.(batch.id)}
+          >
+            <Download className="h-4 w-4" />
           </Button>
           <Button variant="secondary" size="sm" onClick={() => onEdit?.(batch)}>
             <Pencil className="h-4 w-4" />

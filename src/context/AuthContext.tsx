@@ -9,6 +9,7 @@ import {
 import { apiRequest } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import type { User } from "@/lib/types";
+import { setCookie, deleteCookie } from "@/lib/cookie";
 
 type AuthContextType = {
   user: User | null;
@@ -41,11 +42,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         setUser(JSON.parse(storedUser));
+        setCookie("student-token", "true");
       }
     } catch (error) {
       console.error("Failed to parse user from localStorage", error);
       if (typeof window !== "undefined") {
         localStorage.removeItem("user");
+        deleteCookie("student-token");
       }
     } finally {
       setLoading(false);
@@ -87,6 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Guard localStorage access
     if (typeof window !== "undefined") {
       localStorage.setItem("user", JSON.stringify(userData));
+      setCookie("student-token", "true");
     }
 
     if (redirectTo) {
@@ -100,6 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData);
     if (typeof window !== "undefined") {
       localStorage.setItem("user", JSON.stringify(userData));
+      setCookie("student-token", "true");
     }
   };
 
@@ -109,6 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Guard localStorage access
     if (typeof window !== "undefined") {
       localStorage.removeItem("user");
+      deleteCookie("student-token");
     }
 
     router.push("/login");

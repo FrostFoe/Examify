@@ -9,6 +9,7 @@ import {
 import { apiRequest } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import type { Admin } from "@/lib/types";
+import { setCookie, deleteCookie } from "@/lib/cookie";
 
 type AdminAuthContextType = {
   admin: Admin | null;
@@ -33,10 +34,12 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
         const storedAdmin = localStorage.getItem("admin-user");
         if (storedAdmin) {
           setAdmin(JSON.parse(storedAdmin));
+          setCookie("admin-token", "true");
         }
       } catch (error) {
         console.error("Failed to parse admin user from localStorage", error);
         localStorage.removeItem("admin-user");
+        deleteCookie("admin-token");
       }
     }
     setLoading(false);
@@ -74,11 +77,13 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     const adminData = result.data;
     setAdmin(adminData);
     localStorage.setItem("admin-user", JSON.stringify(adminData));
+    setCookie("admin-token", "true");
   };
 
   const signOut = () => {
     setAdmin(null);
     localStorage.removeItem("admin-user");
+    deleteCookie("admin-token");
     router.push("/admin/login");
   };
 
