@@ -29,20 +29,14 @@ export function ExamsClient({
   const { admin } = useAdminAuth();
   const [exams, setExams] = useState<Exam[]>(initialExams);
 
-  const runningExams = useMemo(() => {
-    const now = new Date();
-    return exams.filter((exam) => {
-      if (exam.is_practice) return true; // Practice exams are always "running"
-      if (!exam.start_at || !exam.end_at) return false;
-      const start = new Date(exam.start_at);
-      const end = new Date(exam.end_at);
-      return now >= start && now <= end;
-    });
+  // For admin, show all exams, not just running ones
+  const allExams = useMemo(() => {
+    return exams;
   }, [exams]);
 
   const publicExams = useMemo(
-    () => runningExams.filter((exam) => !exam.batch_id),
-    [runningExams],
+    () => allExams.filter((exam) => !exam.batch_id),
+    [allExams],
   );
 
   const batchedExams = useMemo(
@@ -50,10 +44,10 @@ export function ExamsClient({
       initialBatches
         .map((batch) => ({
           ...batch,
-          exams: runningExams.filter((exam) => exam.batch_id === batch.id),
+          exams: allExams.filter((exam) => exam.batch_id === batch.id),
         }))
         .filter((batch) => batch.exams.length > 0),
-    [runningExams, initialBatches],
+    [allExams, initialBatches],
   );
 
   if (!admin) {
@@ -87,9 +81,9 @@ export function ExamsClient({
     <div className="container mx-auto p-2 md:p-4 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>চলমান পরীক্ষা (অ্যাডমিন)</CardTitle>
+          <CardTitle>সকল পরীক্ষা (অ্যাডমিন)</CardTitle>
           <CardDescription>
-            বর্তমানে চলমান পাবলিক ও ব্যাচ-ভিত্তিক পরীক্ষাগুলি এখানে দেখুন
+            সকল পাবলিক ও ব্যাচ-ভিত্তিক পরীক্ষাগুলি এখানে দেখুন এবং পরিচালনা করুন
           </CardDescription>
         </CardHeader>
         <CardContent className="p-3 md:p-6">
@@ -104,7 +98,7 @@ export function ExamsClient({
                   renderExamGrid(publicExams)
                 ) : (
                   <p className="text-muted-foreground text-sm">
-                    বর্তমানে কোনো পাবলিক পরীক্ষা চলমান নেই।
+                    কোনো পাবলিক পরীক্ষা নেই।
                   </p>
                 )}
               </CollapsibleContent>
