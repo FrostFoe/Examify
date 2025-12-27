@@ -48,7 +48,6 @@ import {
 } from "@/lib/examConstants";
 import { ExamInstructions } from "@/components/ExamInstruction";
 import LatexRenderer from "@/components/LatexRenderer";
-import { createTemporaryGuestUser, saveGuestUserToSession, isTemporaryGuestUser } from "@/lib/guest-utils";
 import {
   Clock,
   Flag,
