@@ -18,13 +18,13 @@ import type { Batch } from "@/lib/types";
 import {
   createBatch,
   deleteBatch,
-  exportBatchData,
   importBatchData,
+  exportBatchData,
 } from "@/lib/actions";
 import { EditBatchModal } from "@/components/EditBatchModal";
 import { BatchCard } from "@/components/BatchCard";
 import { CustomLoader } from "@/components";
-import { Download, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 
 import {
   Select,
@@ -65,7 +65,6 @@ export function BatchesClient({
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [importPassword, setImportPassword] = useState("");
@@ -162,6 +161,40 @@ export function BatchesClient({
     setPendingBatchToDelete(null);
   };
 
+  const handleExportBatch = async (batchId: string) => {
+    try {
+      const result = await exportBatchData(batchId);
+      if (result.success && result.data && result.filename) {
+        const element = document.createElement("a");
+        element.setAttribute(
+          "href",
+          "data:text/plain;charset=utf-8," + encodeURIComponent(result.data),
+        );
+        element.setAttribute("download", result.filename);
+        element.style.display = "none";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        toast({
+          title: "এক্সপোর্ট সফল",
+          description: "ব্যাচের ডেটা ডাউনলোড হয়েছে।",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "এক্সপোর্ট ব্যর্থ",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "এক্সপোর্ট ব্যর্থ",
+        description: (error as Error).message,
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -189,43 +222,6 @@ export function BatchesClient({
       });
     }
     setIsSubmitting(false);
-  };
-
-  const handleExportBatch = async (batchId: string) => {
-    setIsExporting(true);
-    try {
-      const result = await exportBatchData(batchId);
-      if (result.success && result.data && result.filename) {
-        const element = document.createElement("a");
-        element.setAttribute(
-          "href",
-          "data:text/plain;charset=utf-8," + encodeURIComponent(result.data),
-        );
-        element.setAttribute("download", result.filename);
-        element.style.display = "none";
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-        toast({
-          title: "এক্সপোর্ট সফল",
-          description: "ব্যাচ ডেটা ডাউনলোড হয়েছে।",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "এক্সপোর্ট ব্যর্থ",
-          description: result.message,
-        });
-      }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "এক্সপোর্ট ব্যর্থ",
-        description: (error as Error).message,
-      });
-    } finally {
-      setIsExporting(false);
-    }
   };
 
   const handleImportBatch = async (file: File) => {

@@ -54,6 +54,7 @@ import {
   Trash2,
   Plus,
   Copy,
+  Download,
 } from "lucide-react";
 import { EditExamModal } from "@/components/EditExamModal";
 import { CSVUploadComponent, CustomLoader } from "@/components";
@@ -64,6 +65,7 @@ import {
   deleteExam,
   enrollStudent,
   removeStudentFromBatch,
+  exportBatchData,
 } from "@/lib/actions";
 import {
   Select,
@@ -427,6 +429,42 @@ export function BatchDetailsClient({
     setIsSubmittingExam(false);
   };
 
+  const handleExportBatch = async () => {
+    if (!batch_id) return;
+
+    try {
+      const result = await exportBatchData(batch_id);
+      if (result.success && result.data && result.filename) {
+        const element = document.createElement("a");
+        element.setAttribute(
+          "href",
+          "data:text/plain;charset=utf-8," + encodeURIComponent(result.data),
+        );
+        element.setAttribute("download", result.filename);
+        element.style.display = "none";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        toast({
+          title: "এক্সপোর্ট সফল",
+          description: "ব্যাচের ডেটা ডাউনলোড হয়েছে।",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "এক্সপোর্ট ব্যর্থ",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "এক্সপোর্ট ব্যর্থ",
+        description: (error as Error).message,
+      });
+    }
+  };
+
   if (!batch) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -438,9 +476,16 @@ export function BatchDetailsClient({
   return (
     <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>ব্যাচের তথ্য - {batch.name}</CardTitle>
-          <CardDescription>ব্যাচের বিবরণ এবং অবস্থা দেখুন।</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>ব্যাচের তথ্য - {batch.name}</CardTitle>
+            <CardDescription>ব্যাচের বিবরণ এবং অবস্থা দেখুন।</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleExportBatch}>
+            <Download className="h-4 w-4 mr-2" />
+            <span className="hidden md:inline">এক্সপোর্ট</span>
+            <span className="md:hidden">ডাউনলোড</span>
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
