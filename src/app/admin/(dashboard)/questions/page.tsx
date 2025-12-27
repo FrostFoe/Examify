@@ -148,7 +148,7 @@ export default function AdminFilesPage() {
   }
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
+    <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>প্রশ্ন ব্যাংক (Question Bank)</CardTitle>
@@ -157,8 +157,8 @@ export default function AdminFilesPage() {
             করুন
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-4 md:p-6 space-y-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <CardContent className="p-2 md:p-4 space-y-4">
+            <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-center justify-between">
             <div className="relative w-full md:w-1/2">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input

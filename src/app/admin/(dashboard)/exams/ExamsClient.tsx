@@ -52,7 +52,7 @@ export function ExamsClient({
 
   if (!admin) {
     return (
-      <div className="container mx-auto p-2 md:p-4 flex items-center justify-center min-h-[50vh]">
+      <div className="container mx-auto p-1 md:p-2 lg:p-4 flex items-center justify-center min-h-[50vh]">
         <CustomLoader />
       </div>
     );
@@ -86,14 +86,14 @@ export function ExamsClient({
             সকল পাবলিক ও ব্যাচ-ভিত্তিক পরীক্ষাগুলি এখানে দেখুন এবং পরিচালনা করুন
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-3 md:p-6">
+        <CardContent className="p-2 md:p-6">
           <div className="space-y-4">
             <Collapsible className="rounded-lg border" defaultOpen={true}>
-              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 font-semibold">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-2 md:p-4 font-semibold">
                 <span>পাবলিক পরীক্ষা ({publicExams.length})</span>
                 <ChevronDown className="h-5 w-5 transition-transform duration-300 [&[data-state=open]]:rotate-180" />
               </CollapsibleTrigger>
-              <CollapsibleContent className="p-4 pt-0">
+              <CollapsibleContent className="p-2 md:p-4 pt-0">
                 {publicExams.length > 0 ? (
                   renderExamGrid(publicExams)
                 ) : (
@@ -110,13 +110,13 @@ export function ExamsClient({
                 className="rounded-lg border"
                 defaultOpen={true}
               >
-                <CollapsibleTrigger className="flex w-full items-center justify-between p-4 font-semibold">
+                <CollapsibleTrigger className="flex w-full items-center justify-between p-2 md:p-4 font-semibold">
                   <span>
                     {batch.name} ({batch.exams.length})
                   </span>
                   <ChevronDown className="h-5 w-5 transition-transform duration-300 [&[data-state=open]]:rotate-180" />
                 </CollapsibleTrigger>
-                <CollapsibleContent className="p-4 pt-0">
+                <CollapsibleContent className="p-2 md:p-4 pt-0">
                   {renderExamGrid(batch.exams)}
                 </CollapsibleContent>
               </Collapsible>

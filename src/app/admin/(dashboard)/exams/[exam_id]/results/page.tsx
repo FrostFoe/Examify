@@ -288,7 +288,7 @@ export default function AdminExamResultsPage() {
       : 0;
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
+    <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
       <div className="flex items-center gap-3">
         <Link href="/admin/exams">
           <Button variant="ghost" size="icon">

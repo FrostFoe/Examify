@@ -436,7 +436,7 @@ export function BatchDetailsClient({
   }
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
+    <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>ব্যাচের তথ্য - {batch.name}</CardTitle>

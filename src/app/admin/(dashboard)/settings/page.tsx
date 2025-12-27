@@ -85,7 +85,7 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
+    <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
       <div className="flex items-center space-x-2">
         <Settings className="h-6 w-6 text-muted-foreground" />
         <h1 className="text-2xl font-bold tracking-tight">সেটিংস</h1>

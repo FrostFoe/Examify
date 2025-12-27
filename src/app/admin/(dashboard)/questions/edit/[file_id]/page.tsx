@@ -161,7 +161,7 @@ export default function EditFileQuestionsPage() {
   }
 
   return (
-    <div className="container mx-auto p-2 md:p-4 space-y-6">
+    <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -220,7 +220,7 @@ export default function EditFileQuestionsPage() {
 
       {/* Search Area */}
       <Card className="border-none bg-muted/20">
-        <CardContent className="p-4">
+        <CardContent className="p-2 md:p-4">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
             <input
@@ -251,7 +251,7 @@ export default function EditFileQuestionsPage() {
               key={q.id}
               className="overflow-hidden group hover:shadow-lg hover:border-primary/30 transition-all duration-300 border-muted-foreground/10 rounded-2xl"
             >
-              <CardHeader className="p-5 pb-3 flex flex-row items-start justify-between gap-4 bg-muted/5">
+              <CardHeader className="p-2 md:p-5 pb-2 md:pb-3 flex flex-col sm:flex-row items-start justify-between gap-2 md:gap-4 bg-muted/5">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-3">
                     <Badge
@@ -332,8 +332,8 @@ export default function EditFileQuestionsPage() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="p-5 pt-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+              <CardContent className="p-2 md:p-5 pt-1 md:pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 mt-2 md:mt-3">
                   {[q.option1, q.option2, q.option3, q.option4, q.option5]
                     .filter(Boolean)
                     .map((opt, i) => {

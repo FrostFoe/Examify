@@ -95,7 +95,7 @@ export default function ExamQuestionsPage() {
   if (editingQuestion) {
     const isNew = !editingQuestion.id;
     return (
-      <div className="container mx-auto p-2 md:p-4 space-y-6">
+      <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">
         <PageHeader
           title={isNew ? "নতুন প্রশ্ন যোগ করুন" : "প্রশ্ন এডিট করুন"}
           description={

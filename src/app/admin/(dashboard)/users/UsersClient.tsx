@@ -346,7 +346,7 @@ export function UsersClient({
       </div>
       <Card className={isPending ? "opacity-60 transition-opacity" : ""}>
         <CardHeader>
-          <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
+          <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-2 md:gap-4">
             <div>
               <CardTitle className="flex items-center gap-2">
                 ব্যবহারকারীগণ
@@ -356,7 +356,7 @@ export function UsersClient({
                 আপনার প্ল্যাটফর্মে সমস্ত নিবন্ধিত ব্যবহারকারীদের পরিচালনা করুন।
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto">
               <form onSubmit={handleSearch} className="relative w-full md:w-64">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -379,7 +379,7 @@ export function UsersClient({
                     </span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[90vh] w-[95vw] rounded-2xl md:max-w-lg p-4 md:p-6 overflow-hidden flex flex-col">
+                <DialogContent className="max-h-[90vh] w-[95vw] rounded-2xl md:max-w-lg p-2 md:p-6 overflow-hidden flex flex-col">
                   <DialogHeader className="shrink-0">
                     <DialogTitle>
                       {selectedUser
