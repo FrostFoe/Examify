@@ -615,7 +615,9 @@ export default function SolvePage() {
             পিছনে যান
           </Button>
           <Button
-            onClick={() => router.push(`/dashboard/exams/${exam_id}/leaderboard`)}
+            onClick={() =>
+              router.push(`/dashboard/exams/${exam_id}/leaderboard`)
+            }
             className="w-full sm:flex-1 h-12"
             size="lg"
           >

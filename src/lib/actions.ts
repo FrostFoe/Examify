@@ -427,7 +427,7 @@ export async function updateExam(formData: FormData) {
     };
   }
 
-  const revalidatePathString = `/admin/batches/${batch_id}`;
+  const revalidatePathString = `/admin/batches/${String(batch_id)}`;
   revalidatePath(revalidatePathString);
   revalidatePath("/admin/exams");
 
@@ -562,7 +562,7 @@ export async function deleteStudentExamResult(formData: FormData) {
 export async function exportUsersData() {
   try {
     const result = await apiRequest<User[]>("students", "GET", null, {
-      limit: 1000000,
+      limit: "1000000",
     });
 
     if (!result.success || !result.data) {

@@ -2,16 +2,11 @@
 
 import { Settings, Users, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 
 export default function AdminSettingsPage() {
-  const { admin } = useAdminAuth();
+  useAdminAuth();
 
   return (
     <div className="container mx-auto p-1 md:p-2 lg:p-4 space-y-6">

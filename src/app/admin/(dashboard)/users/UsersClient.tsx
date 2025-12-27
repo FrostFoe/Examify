@@ -199,7 +199,7 @@ export function UsersClient({
   const handleEditUser = (user: User) => {
     // Fetch the user with password for editing
     apiRequest<User>(`students`, "GET", null, { uid: user.uid })
-      .then(result => {
+      .then((result) => {
         if (result.success && result.data) {
           setSelectedUser(result.data);
         } else {

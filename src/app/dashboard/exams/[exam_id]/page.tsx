@@ -1347,7 +1347,6 @@ export default function TakeExamPage() {
       "endDate",
     ]);
 
-    const now = new Date();
     const isPractice = exam?.is_practice;
 
     // Validate exam time window using device time
@@ -1470,7 +1469,9 @@ export default function TakeExamPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push(`/dashboard/exams/${exam_id}/leaderboard`)}
+                  onClick={() =>
+                    router.push(`/dashboard/exams/${exam_id}/leaderboard`)
+                  }
                   className="text-xs"
                 >
                   <Zap className="h-3 w-3 mr-1" />

@@ -312,13 +312,19 @@ export default function AdminExamResultsPage() {
           <CardContent className="flex flex-wrap gap-4">
             {exam.start_at && (
               <div className="flex-1 min-w-[200px]">
-                <h4 className="text-sm font-medium text-muted-foreground mb-1">শুরুর সময়</h4>
-                <p className="font-medium">{formatExamDateTime(exam.start_at)}</p>
+                <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                  শুরুর সময়
+                </h4>
+                <p className="font-medium">
+                  {formatExamDateTime(exam.start_at)}
+                </p>
               </div>
             )}
             {exam.end_at && (
               <div className="flex-1 min-w-[200px]">
-                <h4 className="text-sm font-medium text-muted-foreground mb-1">শেষ সময়</h4>
+                <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                  শেষ সময়
+                </h4>
                 <p className="font-medium">{formatExamDateTime(exam.end_at)}</p>
               </div>
             )}
@@ -464,22 +470,56 @@ export default function AdminExamResultsPage() {
                           </Button>
                         </div>
                         <div className="mt-2">
-                          <div><span className="font-medium">রোল: </span>{maskMobileNumber(result.student_id_obj?.roll || "N/A")}</div>
-                          <div><span className="font-medium">নাম: </span>{result.student_id_obj?.name || "N/A"}</div>
-                          <div><span className="font-medium">স্কোর: </span><span className="font-bold">{result.score ? parseFloat(String(result.score)).toFixed(2) : 0}</span></div>
-                          <div className="flex gap-2 mt-1">
-                            <span className="text-green-600"><span className="font-medium">সঠিক: </span>{result.correct_answers || 0}</span>
-                            <span className="text-destructive"><span className="font-medium">ভুল: </span>{result.wrong_answers || 0}</span>
-                            <span className="text-muted-foreground"><span className="font-medium">উত্তর না দেওয়া: </span>{result.unattempted || 0}</span>
+                          <div>
+                            <span className="font-medium">রোল: </span>
+                            {maskMobileNumber(
+                              result.student_id_obj?.roll || "N/A",
+                            )}
                           </div>
-                          <div><span className="font-medium">সময়: </span>{new Date(result.submitted_at).toLocaleString("bn-BD", {
-                            timeZone: "Asia/Dhaka",
-                          })}</div>
+                          <div>
+                            <span className="font-medium">নাম: </span>
+                            {result.student_id_obj?.name || "N/A"}
+                          </div>
+                          <div>
+                            <span className="font-medium">স্কোর: </span>
+                            <span className="font-bold">
+                              {result.score
+                                ? parseFloat(String(result.score)).toFixed(2)
+                                : 0}
+                            </span>
+                          </div>
+                          <div className="flex gap-2 mt-1">
+                            <span className="text-green-600">
+                              <span className="font-medium">সঠিক: </span>
+                              {result.correct_answers || 0}
+                            </span>
+                            <span className="text-destructive">
+                              <span className="font-medium">ভুল: </span>
+                              {result.wrong_answers || 0}
+                            </span>
+                            <span className="text-muted-foreground">
+                              <span className="font-medium">
+                                উত্তর না দেওয়া:{" "}
+                              </span>
+                              {result.unattempted || 0}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-medium">সময়: </span>
+                            {new Date(result.submitted_at).toLocaleString(
+                              "bn-BD",
+                              {
+                                timeZone: "Asia/Dhaka",
+                              },
+                            )}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
                     {/* Desktop view - normal table cells */}
-                    <TableCell className="hidden md:table-cell">{idx + 1}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {idx + 1}
+                    </TableCell>
                     <TableCell className="hidden md:table-cell">
                       {maskMobileNumber(result.student_id_obj?.roll || "N/A")}
                     </TableCell>

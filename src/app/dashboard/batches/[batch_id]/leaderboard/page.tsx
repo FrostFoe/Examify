@@ -183,10 +183,7 @@ export default function BatchLeaderboardPage() {
               <TableBody>
                 {leaderboard.length > 0 ? (
                   leaderboard.map((entry, idx) => (
-                    <TableRow
-                      key={entry.student_id}
-                      className="md:table-row"
-                    >
+                    <TableRow key={entry.student_id} className="md:table-row">
                       {/* Mobile view - collapsed card style */}
                       <TableCell className="md:hidden p-0">
                         <div className="border rounded-lg p-3 mb-2">
@@ -202,9 +199,22 @@ export default function BatchLeaderboardPage() {
                             )}
                           </div>
                           <div className="mt-2">
-                            <div><span className="font-medium">নাম: </span>{entry.student_name}</div>
-                            <div><span className="font-medium">রোল: </span>{maskMobileNumber(entry.student_roll)}</div>
-                            <div><span className="font-medium">মোট স্কোর: </span><span className="font-bold">{parseFloat(String(entry.total_score)).toFixed(2)}</span></div>
+                            <div>
+                              <span className="font-medium">নাম: </span>
+                              {entry.student_name}
+                            </div>
+                            <div>
+                              <span className="font-medium">রোল: </span>
+                              {maskMobileNumber(entry.student_roll)}
+                            </div>
+                            <div>
+                              <span className="font-medium">মোট স্কোর: </span>
+                              <span className="font-bold">
+                                {parseFloat(String(entry.total_score)).toFixed(
+                                  2,
+                                )}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </TableCell>

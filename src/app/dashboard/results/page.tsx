@@ -191,14 +191,6 @@ export default function ResultsPage() {
     );
   });
 
-  const chartData = sortedResults
-    .slice(0, 10)
-    .reverse()
-    .map((r) => ({
-      name: new Date(r.submitted_at).toLocaleDateString("bn-BD"),
-      score: r.score,
-    }));
-
   const totalAttempts = filteredResults.length;
   const averageScore =
     filteredResults.length > 0

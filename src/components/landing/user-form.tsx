@@ -76,10 +76,9 @@ export function UserForm({
               .string()
               .optional()
               .transform((val) => val?.trim() || "")
-              .refine(
-                (val) => val === "" || val.length >= 4,
-                { message: "পাসওয়ার্ড কমপক্ষে ৪টি অক্ষরের হতে হবে।" }
-              ),
+              .refine((val) => val === "" || val.length >= 4, {
+                message: "পাসওয়ার্ড কমপক্ষে ৪টি অক্ষরের হতে হবে।",
+              }),
           }),
     ),
     defaultValues: {

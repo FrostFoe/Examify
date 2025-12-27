@@ -57,7 +57,10 @@ export async function POST(request: NextRequest) {
 
     const processedResults = (results || []).map((result) => ({
       ...result,
-      student_id: { name: result.student_name, roll: maskMobileNumber(result.student_roll) },
+      student_id: {
+        name: result.student_name,
+        roll: maskMobileNumber(result.student_roll),
+      },
       score:
         parseFloat(result.correct_answers) -
         parseFloat(result.wrong_answers) * (exam.negative_marks_per_wrong || 0),
